@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="p-8 h-full overflow-y-auto">
+    <!-- Header -->
+    <header class="mb-8 flex justify-between items-center">
+        <div>
+            <h2 class="text-2xl font-bold text-slate-800">Panel de Control</h2>
+            <p class="text-slate-500">Gestión de Acompañamiento Estudiantil</p>
+        </div>
+        <div>
+            <span class="bg-blue-100 text-blue-700 font-medium px-4 py-1.5 rounded-full text-sm">
+                <i class="fa-solid fa-calendar mr-2"></i>2026
+            </span>
+        </div>
+    </header>
+
+    <!-- Stats Overview -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
+            <div>
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Total Reportes</p>
+                <h3 class="text-2xl font-bold text-slate-800">0</h3>
+            </div>
+            <div class="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">
+                <i class="fa-solid fa-chart-simple text-lg"></i>
+            </div>
+        </div>
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
+            <div>
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Abiertos</p>
+                <h3 class="text-2xl font-bold text-emerald-600">0</h3>
+            </div>
+            <div class="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                <i class="fa-solid fa-folder-open text-lg"></i>
+            </div>
+        </div>
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
+            <div>
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Cerrados</p>
+                <h3 class="text-2xl font-bold text-slate-800">0</h3>
+            </div>
+            <div class="w-10 h-10 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center">
+                <i class="fa-solid fa-check text-lg"></i>
+            </div>
+        </div>
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
+            <div>
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Mis Pendientes</p>
+                <h3 class="text-2xl font-bold text-amber-500">0</h3>
+            </div>
+            <div class="w-10 h-10 rounded-full bg-amber-50 text-amber-500 flex items-center justify-center">
+                <i class="fa-solid fa-clock text-lg"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Student List Section (Takes up 2 cols) -->
+        <div class="lg:col-span-2 flex flex-col h-full">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 flex-1 flex flex-col overflow-hidden">
+                <!-- Toolbar -->
+                <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-white sticky top-0 z-10">
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-lg" id="course-title">Estudiantes</h3>
+                        <p class="text-sm text-slate-400" id="course-subtitle">Selecciona un curso</p>
+                    </div>
+                    <div class="relative">
+                        <i
+                            class="fa-solid fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+                        <input type="text" placeholder="Buscar estudiante..."
+                            class="pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 w-64 transition-all">
+                    </div>
+                </div>
+
+                <!-- Content Area: Table List -->
+                <div id="content-area" class="flex-1 overflow-y-auto p-0 scroll-smooth">
+                    <div class="flex flex-col items-center justify-center h-64 text-slate-400">
+                        <div class="bg-slate-50 p-6 rounded-full mb-4">
+                            <i class="fa-solid fa-chalkboard-user text-3xl text-slate-300"></i>
+                        </div>
+                        <p>Selecciona un curso del menú lateral</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity / Reports Side Panel (Takes up 1 col) -->
+        <div class="flex flex-col h-full">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 flex-1 flex flex-col overflow-hidden">
+                <div class="p-5 border-b border-slate-100">
+                    <h3 class="font-bold text-slate-800 text-lg">Actividad Reciente</h3>
+                    <p class="text-sm text-slate-400">Últimos reportes generados</p>
+                </div>
+                <div id="recent-reports-area" class="flex-1 overflow-y-auto p-0">
+                    <!-- Dynamic Reports List -->
+                    <div class="p-6 text-center text-slate-400 text-sm">
+                        Cargando actividad...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Report Modal -->
+    <div id="report-modal"
+        class="fixed inset-0 bg-slate-900/50 hidden items-center justify-center z-50 backdrop-blur-sm transition-opacity duration-300">
+        <div
+            class="bg-white rounded-2xl w-full max-w-lg shadow-2xl transform transition-all scale-95 opacity-0 modal-content">
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center">
+                <h3 class="text-lg font-bold text-slate-800">Nuevo Reporte de Acompañamiento</h3>
+                <button onclick="closeReportModal()" class="text-slate-400 hover:text-slate-600 transition-colors">
+                    <i class="fa-solid fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <form id="report-form" class="p-6">
+                <input type="hidden" id="student_id" name="student_id">
+
+                <div class="mb-4">
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Estudiante</label>
+                    <input type="text" id="student_name_display"
+                        class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-600 focus:outline-none"
+                        readonly>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Fin Educativo</label>
+                        <select id="purpose" name="purpose"
+                            class="w-full border border-slate-200 rounded-lg px-3 py-2 text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                            required>
+                            <option value="Convivencia">Convivencia</option>
+                            <option value="Académico">Académico</option>
+                            <option value="Espiritual">Espiritual</option>
+                            <option value="Psicoafectivo">Psicoafectivo</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Remitir Caso A</label>
+                    <select id="assigned_to" name="assigned_to"
+                        class="w-full border border-slate-200 rounded-lg px-3 py-2 text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                        <option value="">-- Seleccionar (Opcional) --</option>
+                        <!-- Dynamic Options -->
+                    </select>
+                    <p class="text-xs text-slate-400 mt-1">Si no selecciona nadie, quedará sin asignar.</p>
+                </div>
+
+                <div class="mb-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Periodo</label>
+                        <select id="academic_period" name="academic_period"
+                            class="w-full border border-slate-200 rounded-lg px-3 py-2 text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                            required>
+                            <option value="2026-1">2026-1</option>
+                            <option value="2026-2">2026-2</option>
+                            <option value="2026-3">2026-3</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Objetivo del
+                        Acompañamiento</label>
+                    <textarea id="objective" name="objective" rows="4"
+                        class="w-full border border-slate-200 rounded-lg px-3 py-2 text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                        placeholder="Describe el objetivo principal..." required></textarea>
+                </div>
+
+                <div class="flex justify-end space-x-3">
+                    <button type="button" onclick="closeReportModal()"
+                        class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors font-medium">Cancelar</button>
+                    <button type="submit"
+                        class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-md hover:shadow-lg transition-all font-medium">Crear
+                        Reporte</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script src="/static/js/dashboard.js"></script>
+{% endblock %}
+{% endblock %}

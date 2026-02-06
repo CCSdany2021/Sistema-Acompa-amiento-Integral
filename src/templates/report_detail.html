@@ -1,0 +1,305 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="h-full flex flex-col bg-white overflow-hidden">
+    <!-- Top Bar / Header -->
+    <div class="bg-slate-900 text-white px-6 py-4 flex justify-between items-center shadow-md z-20">
+        <div class="flex items-center">
+            <a href="/dashboard" class="mr-4 text-slate-400 hover:text-white transition-colors">
+                <i class="fa-solid fa-arrow-left text-xl"></i>
+            </a>
+            <div>
+                <h1 class="text-xl font-bold tracking-tight">Sistema de Acompañamiento Integral</h1>
+                <p class="text-xs text-slate-400 uppercase tracking-widest">Reporte Acompañamiento Fin Educativo: {{
+                    report.purpose.value }}</p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-4">
+            <div class="text-right">
+                <p class="text-sm font-semibold">{{ user.name }}</p>
+                <p class="text-xs text-slate-400">{{ user.role }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content - Scrollable Form -->
+    <div class="flex-1 overflow-y-auto bg-slate-50 p-6 md:p-10">
+        <div class="max-w-5xl mx-auto bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+
+            <!-- Section: Student Info -->
+            <div class="p-8 border-b border-slate-100">
+                <div class="mb-6">
+                    <label class="block text-xs font-bold text-slate-800 uppercase mb-2 flex items-center">
+                        <i class="fa-solid fa-user mr-2 text-blue-600"></i> Nombre Alumno
+                    </label>
+                    <div
+                        class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-slate-700 font-medium shadow-sm">
+                        {{ report.student.full_name }}
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Fecha de Creación</label>
+                        <div class="w-full bg-white border border-slate-200 rounded-lg px-4 py-2 text-slate-600">
+                            {{ report.created_at.strftime('%d / %B / %Y') }}
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Fines Educativos</label>
+                        <div class="w-full bg-white border border-slate-200 rounded-lg px-4 py-2 text-slate-600 italic">
+                            {{ report.purpose.value }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section: Status & Actors -->
+            <div class="p-8 border-b border-slate-100 bg-slate-50/50">
+                <div class="mb-6">
+                    <label class="block text-xs font-bold text-slate-800 uppercase mb-2 flex items-center">
+                        <i class="fa-solid fa-flag mr-2 text-red-500"></i> Estado
+                    </label>
+                    <div
+                        class="inline-flex items-center px-4 py-2 rounded-lg bg-emerald-100 text-emerald-800 font-bold shadow-sm">
+                        {{ report.status.value }}
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-800 uppercase mb-2 flex items-center">
+                            <i class="fa-solid fa-building-user mr-2 text-purple-600"></i> Quien Remite
+                        </label>
+                        <div
+                            class="w-full bg-white border border-slate-200 rounded-lg px-4 py-3 text-slate-700 shadow-sm">
+                            {{ report.created_by.full_name }}
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-800 uppercase mb-2 flex items-center">
+                            <i class="fa-solid fa-user-doctor mr-2 text-blue-600"></i> Quien Atiende
+                        </label>
+                        <div
+                            class="w-full bg-white border border-slate-200 rounded-lg px-4 py-3 text-slate-700 shadow-sm">
+                            {% if report.assigned_to %}
+                            {{ report.assigned_to.full_name }}
+                            {% else %}
+                            <span class="text-slate-400 italic">Sin asignar</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section: Objective -->
+            <div class="p-8">
+                <label class="block text-xs font-bold text-slate-800 uppercase mb-2 flex items-center">
+                    <i class="fa-solid fa-bullseye mr-2 text-amber-500"></i> Objetivo del Acompañamiento
+                </label>
+                <div
+                    class="w-full bg-yellow-50 border border-yellow-200 rounded-xl p-6 text-slate-700 leading-relaxed shadow-inner min-h-[100px]">
+                    {{ report.objective }}
+                </div>
+            </div>
+
+            <!-- Section: Observations History -->
+            <div id="observations-section" class="p-8 border-t border-slate-100 bg-slate-50/30">
+                <div class="flex justify-between items-center mb-6">
+                    <label class="block text-xs font-bold text-slate-800 uppercase flex items-center">
+                        <i class="fa-solid fa-clipboard-list mr-2 text-brand-blue"></i> Historial de Seguimiento
+                    </label>
+                    <span class="bg-brand-blue text-white text-xs font-bold px-2 py-1 rounded-full">{{
+                        report.observations|length }}</span>
+                </div>
+
+                <div class="space-y-6">
+                    {% if report.observations %}
+                    {% for obs in report.observations|sort(attribute='date_log', reverse=True) %}
+                    <div
+                        class="relative pl-8 border-l-2 border-slate-200 hover:border-brand-gold transition-colors group">
+                        <!-- Timeline Dot -->
+                        <div
+                            class="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-white border-2 border-slate-300 group-hover:border-brand-gold group-hover:bg-brand-gold/10 transition-colors">
+                        </div>
+
+                        <!-- Card -->
+                        <div
+                            class="bg-white border border-slate-200 rounded-lg p-5 shadow-sm hover:shadow-md transition-shadow">
+                            <div class="flex flex-wrap justify-between items-start mb-3 gap-2">
+                                <h4 class="font-bold text-slate-800 text-sm">{{ obs.title }}</h4>
+                                <span
+                                    class="text-xs text-slate-400 font-medium bg-slate-50 px-2 py-1 rounded border border-slate-100">
+                                    {{ obs.date_log.strftime('%d / %B / %Y') if obs.date_log else 'Fecha desconocida' }}
+                                </span>
+                            </div>
+                            <p class="text-slate-600 text-sm whitespace-pre-line leading-relaxed mb-3">{{ obs.content }}
+                            </p>
+                            <div class="flex items-center text-xs text-slate-400">
+                                <i class="fa-solid fa-user-pen mr-1.5"></i>
+                                <span>Registrado por: {{ obs.created_by.full_name }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="text-center py-10 bg-white rounded-lg border border-dashed border-slate-300">
+                        <i class="fa-regular fa-folder-open text-4xl text-slate-300 mb-3"></i>
+                        <p class="text-slate-500 text-sm font-medium">No hay observaciones registradas aún.</p>
+                        <button onclick="openObsModal()"
+                            class="mt-4 text-brand-blue text-xs font-bold uppercase hover:underline">
+                            + Agregar primera observación
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Bottom Action Bar -->
+    <div class="bg-brand-dark border-t border-brand-navy p-4 md:px-10 flex flex-wrap justify-center gap-4 z-20">
+        <button onclick="openObsModal()"
+            class="px-6 py-2 bg-brand-navy hover:bg-brand-blue text-slate-200 rounded-lg font-medium transition-colors text-sm uppercase tracking-wide border border-white/10 shadow-lg hover:shadow-brand-blue/30">
+            <i class="fa-solid fa-pen-to-square mr-2"></i> Editar Observaciones
+        </button>
+        <button onclick="document.getElementById('observations-section').scrollIntoView({behavior: 'smooth'})"
+            class="px-6 py-2 bg-brand-navy hover:bg-brand-blue text-slate-200 rounded-lg font-medium transition-colors text-sm uppercase tracking-wide border border-white/10 shadow-lg">
+            <i class="fa-solid fa-clipboard-list mr-2"></i> Ver Observaciones
+        </button>
+        <button onclick="alert('Funcionalidad en desarrollo: Recomendaciones')"
+            class="px-6 py-2 bg-brand-navy hover:bg-brand-blue text-slate-200 rounded-lg font-medium transition-colors text-sm uppercase tracking-wide border border-white/10 shadow-lg">
+            <i class="fa-solid fa-heart-pulse mr-2"></i> Recomendaciones
+        </button>
+        <button
+            class="ml-auto px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold transition-colors text-sm uppercase tracking-wide shadow-lg hover:shadow-red-900/50">
+            <i class="fa-solid fa-lock mr-2"></i> Cerrar Caso
+        </button>
+    </div>
+</div>
+
+<!-- Modal: Editar Observación / Seguimiento -->
+<div id="observations-modal"
+    class="fixed inset-0 z-[60] hidden bg-slate-900/80 backdrop-blur-sm flex justify-center items-center p-4">
+    <div
+        class="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto transform transition-all scale-100">
+        <!-- Header -->
+        <div class="bg-brand-dark px-6 py-4 flex justify-between items-center border-b border-brand-navy">
+            <h3 class="text-lg font-bold text-white uppercase tracking-wider">
+                <i class="fa-solid fa-file-signature text-brand-gold mr-2"></i> Editar Observación
+            </h3>
+            <button onclick="closeObsModal()" class="text-slate-400 hover:text-white transition-colors">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+        </div>
+
+        <!-- Form -->
+        <form id="observation-form" class="p-8 space-y-6">
+            <input type="hidden" id="report_id" value="{{ report.id }}">
+
+            <!-- Student Readonly -->
+            <div>
+                <label class="block text-xs font-bold text-slate-800 uppercase mb-2">Apellidos Nombre</label>
+                <div
+                    class="w-full bg-slate-100 border border-slate-300 rounded-lg px-4 py-3 text-slate-700 font-medium">
+                    {{ report.student.full_name }}
+                </div>
+            </div>
+
+            <!-- Purpose Readonly -->
+            <div>
+                <label class="block text-xs font-bold text-slate-800 uppercase mb-2">Fin Educativo</label>
+                <div class="w-full bg-slate-100 border border-slate-300 rounded-lg px-4 py-3 text-slate-700 italic">
+                    {{ report.purpose.value }}
+                </div>
+            </div>
+
+            <!-- Date Picker -->
+            <div>
+                <label class="block text-xs font-bold text-slate-800 uppercase mb-2 text-red-600">* Fecha</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fa-regular fa-calendar text-slate-400"></i>
+                    </div>
+                    <input type="date" id="obs_date" required
+                        class="pl-10 w-full bg-white border border-slate-300 rounded-lg px-4 py-3 text-slate-700 focus:ring-2 focus:ring-brand-blue focus:border-brand-blue transition-all outline-none">
+                </div>
+            </div>
+
+            <!-- Observations Textarea -->
+            <div>
+                <label class="block text-xs font-bold text-slate-800 uppercase mb-2">Observaciones</label>
+                <textarea id="obs_content" rows="6" required
+                    class="w-full bg-white border border-slate-300 rounded-lg p-4 text-slate-700 focus:ring-2 focus:ring-brand-blue focus:border-brand-blue transition-all outline-none resize-none"
+                    placeholder="Escriba aquí las observaciones del seguimiento..."></textarea>
+            </div>
+
+            <!-- Footer Actions -->
+            <div class="flex justify-center gap-4 pt-4 border-t border-slate-100">
+                <button type="submit"
+                    class="px-8 py-3 bg-brand-blue hover:bg-blue-600 text-white rounded-lg font-bold transition-transform transform hover:scale-105 shadow-lg flex items-center">
+                    <i class="fa-solid fa-save mr-2"></i> Guardar Registro
+                </button>
+                <button type="button" onclick="closeObsModal()"
+                    class="px-8 py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg font-bold transition-colors shadow-md flex items-center">
+                    <i class="fa-solid fa-times mr-2"></i> Salir
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function openObsModal() {
+        const modal = document.getElementById('observations-modal');
+        modal.classList.remove('hidden');
+        // Ensure date is set
+        if (!document.getElementById('obs_date').value) {
+            document.getElementById('obs_date').valueAsDate = new Date();
+        }
+    }
+
+    function closeObsModal() {
+        document.getElementById('observations-modal').classList.add('hidden');
+    }
+
+    document.getElementById('observation-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const reportId = document.getElementById('report_id').value;
+        const dateLog = document.getElementById('obs_date').value;
+        const content = document.getElementById('obs_content').value;
+
+        // Construct payload. Note: Schema requires 'title' and 'content'.
+        // The form doesn't have 'title', so we'll auto-generate it or use "Seguimiento".
+        const payload = {
+            title: "Seguimiento",
+            content: content,
+            date_log: dateLog ? new Date(dateLog).toISOString() : null
+        };
+
+        try {
+            const response = await fetch(`/api/reports/${reportId}/observations`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                alert('Observación guardada exitosamente.');
+                location.reload(); // Reload to update status and potentially show list
+            } else {
+                const error = await response.json();
+                alert('Error al guardar: ' + (error.detail || 'Desconocido'));
+            }
+        } catch (err) {
+            alert('Error de red: ' + err);
+        }
+    });
+</script>
+{% endblock %}
