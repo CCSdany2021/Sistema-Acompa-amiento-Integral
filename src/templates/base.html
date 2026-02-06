@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAI - Sistema de Acompañamiento Integral</title>
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            dark: '#163459',      // bto14
+                            navy: '#253C59',      // bto7
+                            blue: '#0078D7',      // bto5
+                            light: '#BCE6FF',     // bto10
+                            gold: '#ffbf00',      // bto13
+                            purple: '#8B328C',    // bto6
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #f1f5f9;
+            /* Slate 100 - less harsh white */
+        }
+
+        .sidebar-item {
+            transition: all 0.2s ease;
+            color: #94a3b8;
+            /* Slate 400 */
+        }
+
+        .sidebar-item:hover,
+        .sidebar-item.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            border-right: 3px solid #ffbf00;
+            /* Gold accent */
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+
+<body class="text-slate-800 antialiased overflow-hidden">
+
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        {% if user %}
+        <aside
+            class="w-64 bg-brand-dark border-r border-brand-navy flex-shrink-0 flex flex-col justify-between hidden md:flex transition-all duration-300 z-20 shadow-xl text-white">
+            <div>
+                <div class="h-16 flex items-center justify-center border-b border-brand-navy bg-brand-navy/30">
+                    <h1 class="text-xl font-bold tracking-tight text-white"><i
+                            class="fa-solid fa-graduation-cap text-brand-gold mr-2"></i>SAI Calasanz</h1>
+                </div>
+
+                <div class="p-4">
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 px-4">Menu Principal</p>
+                    <nav class="space-y-1">
+                        <a href="/dashboard" class="sidebar-item flex items-center px-4 py-3 rounded-lg group ">
+                            <i class="fa-solid fa-chart-pie w-5 h-5 mr-3"></i>
+                            <span class="font-medium">Dashboard</span>
+                        </a>
+                        <!-- Course Selector dynamic injection here later -->
+                    </nav>
+                </div>
+            </div>
+
+            <div class="p-4 border-t border-brand-navy bg-brand-navy/30">
+                <div class="flex items-center">
+                    <div
+                        class="w-10 h-10 rounded-full bg-brand-blue text-white flex items-center justify-center font-bold border-2 border-brand-navy shadow-lg">
+                        {{ user.name[0] }}
+                    </div>
+                    <div class="ml-3 overflow-hidden">
+                        <p class="text-sm font-medium text-white truncate">{{ user.name }}</p>
+                        <p class="text-xs text-brand-light truncate">{{ user.role }}</p>
+                    </div>
+                    <a href="/auth/logout" class="ml-auto text-slate-400 hover:text-white transition-colors"
+                        title="Cerrar Sesión">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </a>
+                </div>
+            </div>
+        </aside>
+        {% endif %}
+
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col relative overflow-hidden bg-[#f1f5f9]">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    {% block scripts %}{% endblock %}
+</body>
+
+</html>

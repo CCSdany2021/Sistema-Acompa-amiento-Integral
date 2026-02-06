@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center w-full relative">
+
+    <!-- Background Decor -->
+    <div class="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
+        <div class="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] bg-blue-400/20 rounded-full blur-[100px]"></div>
+        <div class="absolute top-[40%] -right-[10%] w-[40%] h-[40%] bg-purple-400/20 rounded-full blur-[100px]"></div>
+    </div>
+
+    <!-- Login Card -->
+    <div
+        class="glass-panel p-10 rounded-2xl w-full max-w-md z-10 text-center transform transition-all hover:scale-[1.01] duration-500">
+        <div class="mb-8">
+            <div
+                class="w-16 h-16 bg-accent/10 text-accent rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl">
+                <i class="fa-solid fa-school"></i>
+            </div>
+            <h2 class="text-3xl font-bold text-slate-800 mb-2">Bienvenido</h2>
+            <p class="text-slate-500">Sistema de Acompañamiento Integral</p>
+        </div>
+
+        <a href="/auth/login"
+            class="flex items-center justify-center w-full px-6 py-3.5 mb-4 text-white bg-[#2f2f2f] hover:bg-black rounded-lg transition-colors focus:outline-none focus:ring-4 focus:ring-slate-300 font-medium shadow-lg hover:shadow-xl transform active:scale-95 duration-200">
+            <i class="fa-brands fa-microsoft mr-3 text-xl"></i>
+            Iniciar sesión con Microsoft
+        </a>
+
+        <!-- Dev Bypass -->
+        <a href="/auth/dev_login"
+            class="flex items-center justify-center w-full px-6 py-3.5 mb-4 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors focus:outline-none focus:ring-4 focus:ring-slate-300 font-medium border border-slate-300">
+            <i class="fa-solid fa-code mr-3"></i>
+            Ingreso Desarrollador (Bypass)
+        </a>
+
+        <p class="text-xs text-slate-400 mt-6">
+            © 2026 Calasanz Suba - Soporte TI
+        </p>
+    </div>
+</div>
+{% endblock %}
