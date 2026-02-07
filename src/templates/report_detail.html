@@ -92,35 +92,35 @@
                 <div class="hidden md:block text-xs text-slate-400"></div>
 
                 <!-- Center Actions Group (4 Buttons) -->
-                <div class="flex items-center gap-4">
+                <div class="flex items-center gap-3 flex-wrap justify-center">
                     <!-- Observations: Create (Solid) / View (Outline) -->
                     <button onclick="openObsModal()"
-                        class="px-5 py-2.5 bg-[#0060ac] hover:bg-[#004e8c] text-white text-xs font-bold uppercase rounded shadow-sm hover:shadow transition-all flex items-center">
-                        <i class="fa-solid fa-plus mr-2"></i> Crear Obs.
+                        class="px-6 py-3 bg-[#0060ac] hover:bg-[#004e8c] text-white text-sm font-bold uppercase rounded-lg shadow-md hover:shadow-lg transition-all flex items-center whitespace-nowrap">
+                        <i class="fa-solid fa-plus mr-2"></i> Crear Observación
                     </button>
                     <button onclick="openViewObsModal()"
-                        class="px-5 py-2.5 bg-white border border-[#0060ac] text-[#0060ac] hover:bg-blue-50 text-xs font-bold uppercase rounded shadow-sm transition-all flex items-center">
-                        <i class="fa-solid fa-list mr-2"></i> Ver Obs.
+                        class="px-6 py-3 bg-white border-2 border-[#0060ac] text-[#0060ac] hover:bg-blue-50 text-sm font-bold uppercase rounded-lg shadow-sm transition-all flex items-center whitespace-nowrap">
+                        <i class="fa-solid fa-list mr-2"></i> Ver Observaciones
                     </button>
 
                     <!-- Divider -->
-                    <div class="h-6 w-px bg-slate-300 mx-2"></div>
+                    <div class="h-8 w-px bg-slate-300 mx-1"></div>
 
                     <!-- Recommendations: Create (Solid) / View (Outline) -->
                     <button onclick="openRecModal()"
-                        class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold uppercase rounded shadow-sm hover:shadow transition-all flex items-center">
-                        <i class="fa-solid fa-plus mr-2"></i> Crear Rec.
+                        class="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold uppercase rounded-lg shadow-md hover:shadow-lg transition-all flex items-center whitespace-nowrap">
+                        <i class="fa-solid fa-plus mr-2"></i> Crear Recomendación
                     </button>
                     <button onclick="openViewRecModal()"
-                        class="px-5 py-2.5 bg-white border border-emerald-600 text-emerald-600 hover:bg-emerald-50 text-xs font-bold uppercase rounded shadow-sm transition-all flex items-center">
-                        <i class="fa-solid fa-list mr-2"></i> Ver Rec.
+                        class="px-6 py-3 bg-white border-2 border-emerald-600 text-emerald-600 hover:bg-emerald-50 text-sm font-bold uppercase rounded-lg shadow-sm transition-all flex items-center whitespace-nowrap">
+                        <i class="fa-solid fa-list mr-2"></i> Ver Recomendaciones
                     </button>
                 </div>
 
                 <!-- Far Right Action -->
                 <div>
                     <button onclick="closeCase()"
-                        class="px-4 py-2 text-[#d32f2f] hover:text-[#b71c1c] hover:bg-red-50 text-xs font-bold uppercase rounded transition-colors flex items-center">
+                        class="px-5 py-3 text-[#d32f2f] hover:text-white hover:bg-red-600 border border-red-300 text-sm font-bold uppercase rounded-lg transition-all flex items-center whitespace-nowrap">
                         <i class="fa-solid fa-ban mr-2"></i> Cerrar Caso
                     </button>
                 </div>
