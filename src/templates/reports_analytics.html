@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="h-full flex flex-col bg-slate-50 overflow-hidden">
+    <!-- Header / Filters (Visual Placeholder for now) -->
+    <div class="bg-white border-b border-slate-200 px-6 py-4 shrink-0 flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Tablero de Control</h1>
+            <p class="text-xs text-slate-500 uppercase tracking-wider">Estadísticas de Acompañamiento Integral</p>
+        </div>
+        <div class="flex gap-2">
+            <!-- Filter Placeholders -->
+            <select
+                class="text-xs border-slate-300 rounded-sm bg-slate-50 text-slate-600 px-3 py-1.5 focus:outline-none focus:border-blue-500">
+                <option>Todo el Periodo</option>
+            </select>
+            <select
+                class="text-xs border-slate-300 rounded-sm bg-slate-50 text-slate-600 px-3 py-1.5 focus:outline-none focus:border-blue-500">
+                <option>Todas las Secciones</option>
+            </select>
+            <button onclick="loadAnalyticsData()"
+                class="px-3 py-1.5 bg-blue-600 text-white rounded-sm text-xs font-bold hover:bg-blue-700 transition-colors">
+                <i class="fa-solid fa-sync mr-1"></i> Actualizar
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Dashboard Grid -->
+    <div class="flex-1 overflow-y-auto p-6 grid grid-cols-12 gap-6 pb-20">
+
+        <!-- Left Column (KPIs & Course Chart) -->
+        <div class="col-span-12 lg:col-span-3 flex flex-col gap-6">
+            <!-- KPI: Total Reports -->
+            <div
+                class="bg-white border border-slate-200 rounded-lg p-6 shadow-sm flex flex-col items-center justify-center h-32 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-1 h-full bg-blue-600"></div>
+                <span class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-1">Total Reportes</span>
+                <span class="text-5xl font-extrabold text-slate-800" id="kpi-total-reports">--</span>
+            </div>
+
+            <!-- KPI: Total Reported Students -->
+            <div
+                class="bg-white border border-slate-200 rounded-lg p-6 shadow-sm flex flex-col items-center justify-center h-32 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-1 h-full bg-brand-navy"></div>
+                <span class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-1">Alumnos Reportados</span>
+                <span class="text-5xl font-extrabold text-brand-navy" id="kpi-total-students">--</span>
+            </div>
+
+            <!-- Chart: Reports by Course -->
+            <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm flex-1 min-h-[400px]">
+                <h3 class="text-xs font-bold text-slate-700 uppercase mb-4 border-b border-slate-100 pb-2">Recuento por
+                    Curso</h3>
+                <div class="h-[90%] w-full relative">
+                    <canvas id="chartCourses"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Middle Column (Status & Pie Chart) -->
+        <div class="col-span-12 lg:col-span-3 flex flex-col gap-6">
+            <!-- Chart: Reports by Status (Bar) -->
+            <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm h-64">
+                <h3 class="text-xs font-bold text-slate-700 uppercase mb-4 border-b border-slate-100 pb-2">Recuento por
+                    Estado</h3>
+                <div class="h-[80%] w-full relative">
+                    <canvas id="chartStatus"></canvas>
+                </div>
+            </div>
+
+            <!-- Chart: Status Percentage (Pie) -->
+            <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm flex-1 min-h-[300px]">
+                <h3 class="text-xs font-bold text-slate-700 uppercase mb-4 border-b border-slate-100 pb-2">Porcentaje
+                    Estado</h3>
+                <div class="h-[85%] w-full relative flex justify-center">
+                    <canvas id="chartStatusPie"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column (Purpose & Detailed Table) -->
+        <div class="col-span-12 lg:col-span-6 flex flex-col gap-6">
+            <!-- Chart: Reports by Purpose (Horizontal Bar) -->
+            <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm h-64">
+                <h3 class="text-xs font-bold text-slate-700 uppercase mb-4 border-b border-slate-100 pb-2">Fin Educativo
+                </h3>
+                <div class="h-[80%] w-full relative">
+                    <canvas id="chartPurpose"></canvas>
+                </div>
+            </div>
+
+            <!-- Detailed Table -->
+            <div
+                class="bg-white border border-slate-200 rounded-lg shadow-sm flex-1 overflow-hidden flex flex-col min-h-[400px]">
+                <div class="px-4 py-3 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                    <h3 class="text-xs font-bold text-slate-700 uppercase">Alumnos con más reportes</h3>
+                    <button class="text-xs text-blue-600 hover:text-blue-800 font-bold">Ver todos</button>
+                </div>
+                <div class="overflow-y-auto flex-1 custom-scrollbar">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-100 text-slate-500 font-bold sticky top-0 z-10">
+                            <tr>
+                                <th class="px-4 py-2">Estudiante</th>
+                                <th class="px-4 py-2">Curso</th>
+                                <th class="px-4 py-2 text-right">Cant.</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ranking-table-body" class="divide-y divide-slate-100">
+                            <!-- JS Injection -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Analytics Logic -->
+<script src="/static/js/reports_analytics.js"></script>
+{% endblock %}

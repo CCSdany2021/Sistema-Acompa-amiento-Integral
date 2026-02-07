@@ -3,7 +3,7 @@ from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 from src import models, database, auth
 from src.config import settings
-from src.routers import api, ui
+from src.routers import api, ui, admin
 
 # Create DB Tables
 models.Base.metadata.create_all(bind=database.engine)
@@ -25,6 +25,9 @@ app.mount("/static", StaticFiles(directory="src/static"), name="static")
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(api.router)
 app.include_router(ui.router)
+app.include_router(admin.router)
+from src.routers import import_data
+app.include_router(import_data.router)
 
 if __name__ == "__main__":
     import uvicorn

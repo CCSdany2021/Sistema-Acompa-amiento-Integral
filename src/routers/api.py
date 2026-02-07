@@ -5,7 +5,7 @@ from src import crud, schemas, models, database, auth
 
 router = APIRouter(prefix="/api", tags=["api"])
 
-@router.get("/students", response_model=List[schemas.Student])
+@router.get("/students", response_model=List[schemas.StudentWithReports])
 def read_students(
     skip: int = 0, 
     limit: int = 100, 
@@ -16,7 +16,19 @@ def read_students(
 ):
     # Logic: Teachers/Coordinators should only see their section
     # This logic is partly in CRUD, strictly enforcing here if needed
-    return crud.get_students(db, skip=skip, limit=limit, section=section, course=course)
+    students = crud.get_students(db, skip=skip, limit=limit, section=section, course=course)
+    
+    # Populate active_reports manually or via optimized query
+    # For now, simplistic iteration (ignoring N+1 for small batch sizes)
+    result = []
+    for s in students:
+        s_dict = s.__dict__.copy() # Careful with SQLAlchemy objects
+        # Filter active reports
+        active = [r for r in s.reports if r.status in [models.ReportStatus.PROGRAMADO, models.ReportStatus.SEGUIMIENTO]]
+        s_dict['active_reports'] = active
+        result.append(s_dict)
+        
+    return result
 
 @router.get("/courses", response_model=List[str])
 def read_courses(
@@ -51,6 +63,21 @@ def create_report(
     db: Session = Depends(database.get_db),
     current_user: dict = Depends(auth.get_current_user)
 ):
+    # Check for existing active report first
+    existing = crud.get_active_report(db, report.student_id, report.purpose)
+    if existing:
+        # Get creator name safely
+        creator_name = existing.created_by.full_name if existing.created_by else "Desconocido"
+        raise HTTPException(
+            status_code=409, 
+            detail={
+                "message": f"El estudiante ya tiene un reporte activo para {report.purpose.value}.",
+                "report_id": existing.id,
+                "created_by": creator_name,
+                "created_at": existing.created_at.isoformat()
+            }
+        )
+
     try:
         return crud.create_report(db, report, user_id=current_user['id'])
     except ValueError as e:
@@ -64,3 +91,26 @@ def create_observation(
     current_user: dict = Depends(auth.get_current_user)
 ):
     return crud.create_observation(db, observation, report_id, current_user['id'])
+
+@router.post("/reports/{report_id}/recommendations", response_model=schemas.Recommendation)
+def create_recommendation(
+    report_id: int, 
+    recommendation: schemas.RecommendationCreate, 
+    db: Session = Depends(database.get_db),
+    current_user: dict = Depends(auth.get_current_user)
+):
+    return crud.create_recommendation(db, recommendation, report_id, current_user['id'])
+
+@router.get("/stats/analytics")
+def get_analytics(
+    db: Session = Depends(database.get_db),
+    current_user: dict = Depends(auth.get_current_user)
+):
+    # Determine permissions?
+    # For now, let all logged-in users see stats, or restrict to Admin/Coord?
+    # User didn't specify, but usually "Informes" is for Admins/Chords.
+    # Teachers might only see their stats?
+    # For this iteration, global stats (or we can filter inside CRUD if needed).
+    # Since crud.get_analytics_data is global, we'll strip it for now.
+    
+    return crud.get_analytics_data(db)

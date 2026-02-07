@@ -112,5 +112,71 @@ def create_observation(db: Session, observation: schemas.ObservationCreate, repo
         db.add(report)
         
     db.commit()
+    db.commit()
     db.refresh(db_obs)
     return db_obs
+
+def create_recommendation(db: Session, recommendation: schemas.RecommendationCreate, report_id: int, user_id: int):
+    rec_data = recommendation.dict()
+    if rec_data.get('date_log') is None:
+        del rec_data['date_log']
+        
+    db_rec = models.Recommendation(
+        **rec_data,
+        report_id=report_id,
+        created_by_id=user_id
+    )
+    db.add(db_rec)
+    db.commit()
+    db.refresh(db_rec)
+    return db_rec
+
+def get_analytics_data(db: Session):
+    from sqlalchemy import func
+    
+    # 1. Total Reports
+    total_reports = db.query(func.count(models.Report.id)).scalar()
+    
+    # 2. Total Students with Reports
+    total_students_distinct = db.query(func.count(func.distinct(models.Report.student_id))).scalar()
+    
+    # 3. By Status
+    # Result: [('PROGRAMADO', 5), ('ATENDIDO', 10)...]
+    status_counts = db.query(models.Report.status, func.count(models.Report.id))\
+                      .group_by(models.Report.status).all()
+                      
+    # 4. By Purpose
+    purpose_counts = db.query(models.Report.purpose, func.count(models.Report.id))\
+                       .group_by(models.Report.purpose).all()
+                       
+    # 5. By Course
+    # Join Report -> Student to get Course
+    course_counts = db.query(models.Student.course, func.count(models.Report.id))\
+                      .join(models.Report, models.Report.student_id == models.Student.id)\
+                      .group_by(models.Student.course).all()
+                      
+    # 6. Detailed List (Student Name, Course, Active Reports Count, Total Reports Count)
+    # This might be heavy if many students. Limit to top 50 or so? 
+    # Or just return all for now (assuming school size < 2000 students and not all have reports)
+    # Let's get top 100 students by report count
+    
+    student_stats = db.query(
+        models.Student.full_name,
+        models.Student.course,
+        func.count(models.Report.id).label('total_reports')
+    ).join(models.Report, models.Report.student_id == models.Student.id)\
+     .group_by(models.Student.id)\
+     .order_by(func.count(models.Report.id).desc())\
+     .limit(100).all()
+     
+    return {
+        "total_reports": total_reports,
+        "total_students": total_students_distinct,
+        "by_status": {s.value: c for s, c in status_counts},
+        "by_purpose": {p.value: c for p, c in purpose_counts},
+        "by_course": {c: count for c, count in course_counts},
+        "student_ranking": [
+            {"name": name, "course": course, "count": count} 
+            for name, course, count in student_stats
+        ]
+    }

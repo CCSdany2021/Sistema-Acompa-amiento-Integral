@@ -2,185 +2,210 @@
 
 {% block content %}
 <div class="p-8 h-full overflow-y-auto">
-    <!-- Header -->
-    <header class="mb-8 flex justify-between items-center">
-        <div>
-            <h2 class="text-2xl font-bold text-slate-800">Panel de Control</h2>
-            <p class="text-slate-500">Gestión de Acompañamiento Estudiantil</p>
-        </div>
-        <div>
-            <span class="bg-blue-100 text-blue-700 font-medium px-4 py-1.5 rounded-full text-sm">
-                <i class="fa-solid fa-calendar mr-2"></i>2026
-            </span>
-        </div>
-    </header>
+    <!-- Empty State / Clean Dashboard -->
+    <div id="empty-state" class="flex flex-col items-center justify-center min-h-[calc(100vh-8rem)]">
 
-    <!-- Stats Overview -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
-            <div>
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Total Reportes</p>
-                <h3 class="text-2xl font-bold text-slate-800">0</h3>
+        <div class="text-center max-w-lg mx-auto bg-white p-8 rounded-2xl border border-slate-100 shadow-sm">
+            <div
+                class="w-20 h-20 bg-brand-light/20 text-brand-blue rounded-full flex items-center justify-center mx-auto mb-6">
+                <i class="fa-solid fa-layer-group text-3xl"></i>
             </div>
-            <div class="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">
-                <i class="fa-solid fa-chart-simple text-lg"></i>
+
+            <h2 class="text-2xl font-bold text-brand-dark mb-3">Panel de Control</h2>
+            <p class="text-slate-500 mb-8 leading-relaxed">
+                Selecciona una sección y un curso del menú lateral para ver la lista de estudiantes y gestionar sus
+                reportes de acompañamiento.
+            </p>
+
+            {% if error %}
+            <div class="bg-red-50 text-red-600 px-4 py-3 rounded-lg mb-6 border border-red-100 flex items-center">
+                <i class="fa-solid fa-triangle-exclamation mr-2"></i> {{ error }}
             </div>
-        </div>
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
-            <div>
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Abiertos</p>
-                <h3 class="text-2xl font-bold text-emerald-600">0</h3>
-            </div>
-            <div class="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                <i class="fa-solid fa-folder-open text-lg"></i>
-            </div>
-        </div>
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
-            <div>
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Cerrados</p>
-                <h3 class="text-2xl font-bold text-slate-800">0</h3>
-            </div>
-            <div class="w-10 h-10 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center">
-                <i class="fa-solid fa-check text-lg"></i>
-            </div>
-        </div>
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
-            <div>
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Mis Pendientes</p>
-                <h3 class="text-2xl font-bold text-amber-500">0</h3>
-            </div>
-            <div class="w-10 h-10 rounded-full bg-amber-50 text-amber-500 flex items-center justify-center">
-                <i class="fa-solid fa-clock text-lg"></i>
+            {% endif %}
+
+            <div class="flex justify-center gap-4">
+                <button onclick="document.getElementById('sidebar-nav').scrollIntoView({ behavior: 'smooth' })"
+                    class="bg-brand-blue text-white px-6 py-2.5 rounded-lg hover:bg-brand-navy transition-all font-medium text-sm shadow-md hover:shadow-lg uppercase tracking-wide flex items-center">
+                    <i class="fa-solid fa-arrow-left mr-2"></i> Ir al Menú
+                </button>
             </div>
         </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <!-- Student List Section (Takes up 2 cols) -->
-        <div class="lg:col-span-2 flex flex-col h-full">
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 flex-1 flex flex-col overflow-hidden">
-                <!-- Toolbar -->
-                <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-white sticky top-0 z-10">
-                    <div>
-                        <h3 class="font-bold text-slate-800 text-lg" id="course-title">Estudiantes</h3>
-                        <p class="text-sm text-slate-400" id="course-subtitle">Selecciona un curso</p>
-                    </div>
-                    <div class="relative">
-                        <i
-                            class="fa-solid fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
-                        <input type="text" placeholder="Buscar estudiante..."
-                            class="pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 w-64 transition-all">
-                    </div>
+    <!-- Main Content Area (Hidden initially, shown by JS) -->
+    <div id="main-content" class="hidden flex-col h-full">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 flex-1 flex flex-col overflow-hidden">
+            <!-- Toolbar -->
+            <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-white sticky top-0 z-10">
+                <div>
+                    <h3 class="font-bold text-slate-800 text-lg" id="course-title">Estudiantes</h3>
+                    <p class="text-sm text-slate-400" id="course-subtitle">Selecciona un curso</p>
                 </div>
 
-                <!-- Content Area: Table List -->
-                <div id="content-area" class="flex-1 overflow-y-auto p-0 scroll-smooth">
-                    <div class="flex flex-col items-center justify-center h-64 text-slate-400">
-                        <div class="bg-slate-50 p-6 rounded-full mb-4">
-                            <i class="fa-solid fa-chalkboard-user text-3xl text-slate-300"></i>
-                        </div>
-                        <p>Selecciona un curso del menú lateral</p>
-                    </div>
+                <div class="flex space-x-2">
+                    <!-- Search could go here -->
                 </div>
             </div>
-        </div>
 
-        <!-- Recent Activity / Reports Side Panel (Takes up 1 col) -->
-        <div class="flex flex-col h-full">
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 flex-1 flex flex-col overflow-hidden">
-                <div class="p-5 border-b border-slate-100">
-                    <h3 class="font-bold text-slate-800 text-lg">Actividad Reciente</h3>
-                    <p class="text-sm text-slate-400">Últimos reportes generados</p>
-                </div>
-                <div id="recent-reports-area" class="flex-1 overflow-y-auto p-0">
-                    <!-- Dynamic Reports List -->
-                    <div class="p-6 text-center text-slate-400 text-sm">
-                        Cargando actividad...
-                    </div>
-                </div>
+            <!-- Content Area: Table List -->
+            <div id="content-area" class="flex-1 overflow-y-auto p-0 scroll-smooth">
+                <!-- Students table will be injected here -->
             </div>
         </div>
     </div>
+
     <!-- Report Modal -->
+    <!-- Report Modal (ESET Style Redesign) -->
     <div id="report-modal"
-        class="fixed inset-0 bg-slate-900/50 hidden items-center justify-center z-50 backdrop-blur-sm transition-opacity duration-300">
+        class="fixed inset-0 z-50 hidden bg-gray-900/40 backdrop-blur-sm flex justify-center items-center p-4 transition-opacity duration-300">
         <div
-            class="bg-white rounded-2xl w-full max-w-lg shadow-2xl transform transition-all scale-95 opacity-0 modal-content">
-            <div class="p-6 border-b border-slate-100 flex justify-between items-center">
-                <h3 class="text-lg font-bold text-slate-800">Nuevo Reporte de Acompañamiento</h3>
+            class="bg-white rounded shadow-2xl w-full max-w-2xl transform transition-all scale-100 flex flex-col max-h-[90vh] modal-content">
+
+            <!-- Header -->
+            <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-white rounded-t">
+                <h3 class="text-base font-bold text-slate-800">Nuevo Reporte de Acompañamiento</h3>
                 <button onclick="closeReportModal()" class="text-slate-400 hover:text-slate-600 transition-colors">
                     <i class="fa-solid fa-times text-xl"></i>
                 </button>
             </div>
 
-            <form id="report-form" class="p-6">
-                <input type="hidden" id="student_id" name="student_id">
+            <!-- Scrollable Content -->
+            <div class="p-6 overflow-y-auto custom-scrollbar">
+                <form id="report-form">
+                    <input type="hidden" id="student_id" name="student_id">
 
-                <div class="mb-4">
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Estudiante</label>
-                    <input type="text" id="student_name_display"
-                        class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-600 focus:outline-none"
-                        readonly>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4 mb-4">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Fin Educativo</label>
-                        <select id="purpose" name="purpose"
-                            class="w-full border border-slate-200 rounded-lg px-3 py-2 text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                            required>
-                            <option value="Convivencia">Convivencia</option>
-                            <option value="Académico">Académico</option>
-                            <option value="Espiritual">Espiritual</option>
-                            <option value="Psicoafectivo">Psicoafectivo</option>
-                        </select>
+                    <!-- Student Info (Read-only) -->
+                    <div class="mb-6 bg-slate-50 p-3 border border-slate-200 rounded-sm">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Estudiante
+                            Seleccionado</label>
+                        <input type="text" id="student_name_display"
+                            class="w-full bg-transparent border-none p-0 text-slate-700 font-bold focus:ring-0"
+                            readonly>
                     </div>
-                </div>
 
-                <div class="mb-4">
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Remitir Caso A</label>
-                    <select id="assigned_to" name="assigned_to"
-                        class="w-full border border-slate-200 rounded-lg px-3 py-2 text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
-                        <option value="">-- Seleccionar (Opcional) --</option>
-                        <!-- Dynamic Options -->
-                    </select>
-                    <p class="text-xs text-slate-400 mt-1">Si no selecciona nadie, quedará sin asignar.</p>
-                </div>
-
-                <div class="mb-4">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Periodo</label>
-                        <select id="academic_period" name="academic_period"
-                            class="w-full border border-slate-200 rounded-lg px-3 py-2 text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                            required>
-                            <option value="2026-1">2026-1</option>
-                            <option value="2026-2">2026-2</option>
-                            <option value="2026-3">2026-3</option>
-                        </select>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1.5">Fin Educativo <span
+                                    class="text-red-500">*</span></label>
+                            <select id="purpose" name="purpose"
+                                class="w-full border border-slate-300 rounded-sm px-3 py-2 text-sm text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-sm"
+                                required>
+                                <option value="Convivencia">Convivencia</option>
+                                <option value="Académico">Académico</option>
+                                <option value="Espiritual">Espiritual</option>
+                                <option value="Psicoafectivo">Psicoafectivo</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1.5">Periodo Académico <span
+                                    class="text-red-500">*</span></label>
+                            <select id="academic_period" name="academic_period"
+                                class="w-full border border-slate-300 rounded-sm px-3 py-2 text-sm text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-sm"
+                                required>
+                                <option value="2026-1">2026-1</option>
+                                <option value="2026-2">2026-2</option>
+                                <option value="2026-3">2026-3</option>
+                            </select>
+                        </div>
                     </div>
-                </div>
 
-                <div class="mb-6">
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Objetivo del
-                        Acompañamiento</label>
-                    <textarea id="objective" name="objective" rows="4"
-                        class="w-full border border-slate-200 rounded-lg px-3 py-2 text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                        placeholder="Describe el objetivo principal..." required></textarea>
-                </div>
+                    <div class="mb-6">
+                        <label class="block text-xs font-bold text-slate-700 mb-1.5">Asignar Responsable</label>
+                        <select id="assigned_to" name="assigned_to"
+                            class="w-full border border-slate-300 rounded-sm px-3 py-2 text-sm text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-sm">
+                            <option value="">-- Sin asignar (Responsable: Yo) --</option>
+                            <!-- Dynamic Options -->
+                        </select>
+                        <p class="text-[10px] text-slate-400 mt-1">Si dejas esto vacío, el caso quedará bajo tu
+                            responsabilidad.</p>
+                    </div>
 
-                <div class="flex justify-end space-x-3">
-                    <button type="button" onclick="closeReportModal()"
-                        class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors font-medium">Cancelar</button>
-                    <button type="submit"
-                        class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-md hover:shadow-lg transition-all font-medium">Crear
-                        Reporte</button>
+                    <div class="mb-2">
+                        <label class="block text-xs font-bold text-slate-700 mb-1.5">Objetivo del Acompañamiento <span
+                                class="text-red-500">*</span></label>
+                        <textarea id="objective" name="objective" rows="4"
+                            class="w-full border border-slate-300 rounded-sm px-3 py-2 text-sm text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-sm"
+                            placeholder="Describe brevemente qué se busca lograr con este proceso..."
+                            required></textarea>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Footer Actions -->
+            <div class="px-6 py-4 bg-gray-50 border-t border-slate-200 flex justify-end gap-3 rounded-b">
+                <button type="button" onclick="closeReportModal()"
+                    class="px-5 py-2 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 text-xs font-bold uppercase rounded shadow-sm transition-colors">
+                    Cancelar
+                </button>
+                <button type="button"
+                    onclick="document.getElementById('report-form').dispatchEvent(new Event('submit', {cancelable: true, bubbles: true}))"
+                    class="px-5 py-2 bg-[#0091d3] hover:bg-[#007aaf] text-white text-xs font-bold uppercase rounded shadow-sm transition-colors shadow-sm">
+                    Crear Reporte
+                </button>
+            </div>
+            </button>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- Duplicate Report Warning Modal -->
+<div id="duplicate-report-modal"
+    class="fixed inset-0 z-[60] hidden bg-gray-900/40 backdrop-blur-sm flex justify-center items-center p-4 transition-opacity duration-300">
+    <div
+        class="bg-white rounded shadow-2xl w-full max-w-lg transform transition-all scale-100 flex flex-col modal-content border-t-4 border-yellow-500">
+        <!-- Header -->
+        <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white rounded-t">
+            <h3 class="text-base font-bold text-slate-800 uppercase tracking-wider flex items-center">
+                <i class="fa-solid fa-triangle-exclamation text-yellow-500 mr-2 text-xl"></i> Reporte Existente
+            </h3>
+            <button onclick="closeDuplicateModal()" class="text-slate-400 hover:text-slate-600 transition-colors">
+                <i class="fa-solid fa-times text-xl"></i>
+            </button>
+        </div>
+
+        <!-- Content -->
+        <div class="p-6">
+            <p class="text-slate-600 text-sm mb-4" id="dup-message">
+                Este estudiante ya posee un proceso activo para el fin seleccionado.
+            </p>
+
+            <div class="bg-slate-50 border border-slate-200 rounded p-4 text-sm space-y-2">
+                <div class="flex justify-between">
+                    <span class="font-bold text-slate-500 text-xs uppercase">Creado por:</span>
+                    <span class="font-bold text-slate-700" id="dup-creator">--</span>
                 </div>
-            </form>
+                <div class="flex justify-between">
+                    <span class="font-bold text-slate-500 text-xs uppercase">Fecha y Hora:</span>
+                    <span class="font-bold text-slate-700" id="dup-date">--</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="px-6 py-4 bg-gray-50 border-t border-slate-200 flex justify-end gap-3 rounded-b">
+            <button type="button" onclick="closeDuplicateModal()"
+                class="px-5 py-2 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 text-xs font-bold uppercase rounded shadow-sm transition-colors">
+                Cancelar
+            </button>
+            <button type="button" id="dup-view-btn"
+                class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold uppercase rounded shadow-sm transition-colors shadow-sm flex items-center">
+                <i class="fa-solid fa-arrow-right mr-2"></i> Ver Reporte Actual
+            </button>
         </div>
     </div>
 </div>
 
 {% block scripts %}
 <script src="/static/js/dashboard.js"></script>
+{% if selected_course_name %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => {
+            loadStudents("{{ selected_course_name }}");
+        }, 100);
+    });
+</script>
+{% endif %}
 {% endblock %}
 {% endblock %}
