@@ -26,7 +26,23 @@ class ReportStatus(str, enum.Enum):
     SEGUIMIENTO = "SEGUIMIENTO"
     ATENDIDO = "ATENDIDO"
 
-# Models
+# Dynamic Menu Models
+class Section(Base):
+    __tablename__ = "sections"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, unique=True, index=True)
+    
+    courses = relationship("Course", back_populates="section", cascade="all, delete-orphan")
+
+class Course(Base):
+    __tablename__ = "courses"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String) # e.g. "10A"
+    
+    section_id = Column(Integer, ForeignKey("sections.id"))
+    section = relationship("Section", back_populates="courses")
 class User(Base):
     __tablename__ = "users"
 
@@ -44,6 +60,7 @@ class User(Base):
     reports_created = relationship("Report", back_populates="created_by", foreign_keys="Report.created_by_id")
     reports_assigned = relationship("Report", back_populates="assigned_to", foreign_keys="Report.assigned_to_id")
     observations_created = relationship("Observation", back_populates="created_by")
+    recommendations_created = relationship("Recommendation", back_populates="created_by")
 
 class Student(Base):
     __tablename__ = "students"
@@ -57,6 +74,10 @@ class Student(Base):
     course = Column(String) # "401", "1102", etc.
     
     reports = relationship("Report", back_populates="student")
+
+    @property
+    def active_reports(self):
+        return [r for r in self.reports if r.status in [ReportStatus.PROGRAMADO, ReportStatus.SEGUIMIENTO]]
 
 class Report(Base):
     __tablename__ = "reports"
@@ -82,6 +103,7 @@ class Report(Base):
     closed_at = Column(DateTime(timezone=True), nullable=True)
     
     observations = relationship("Observation", back_populates="report", cascade="all, delete-orphan")
+    recommendations = relationship("Recommendation", back_populates="report", cascade="all, delete-orphan")
 
     # Constraint: Only one ACTIVE report (Programado/Seguimiento) per Student per Purpose
     # Note: SQLite doesn't support partial indexes easily, but Postgres does.
@@ -103,4 +125,18 @@ class Observation(Base):
     
     title = Column(String)
     content = Column(Text) # Observaciones / Recomendaciones
+    date_log = Column(DateTime(timezone=True), server_default=func.now())
+
+class Recommendation(Base):
+    __tablename__ = "recommendations"
+
+    id = Column(Integer, primary_key=True, index=True)
+    
+    report_id = Column(Integer, ForeignKey("reports.id"))
+    report = relationship("Report", back_populates="recommendations")
+    
+    created_by_id = Column(Integer, ForeignKey("users.id"))
+    created_by = relationship("User", back_populates="recommendations_created")
+    
+    content = Column(Text) # Recomendaciones
     date_log = Column(DateTime(timezone=True), server_default=func.now())

@@ -15,6 +15,9 @@
     <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+    <!-- Alpine.js for Sidebar toggles -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
     <script>
         tailwind.config = {
             theme: {
@@ -78,54 +81,170 @@
     </style>
 </head>
 
-<body class="text-slate-800 antialiased overflow-hidden">
+<body class="text-slate-800 antialiased overflow-hidden bg-[#f4f5f7]">
 
-    <div class="flex h-screen">
-        <!-- Sidebar -->
+    <div class="flex h-screen w-full">
+        <!-- Sidebar (ESET Style) -->
         {% if user %}
         <aside
-            class="w-64 bg-brand-dark border-r border-brand-navy flex-shrink-0 flex flex-col justify-between hidden md:flex transition-all duration-300 z-20 shadow-xl text-white">
-            <div>
-                <div class="h-16 flex items-center justify-center border-b border-brand-navy bg-brand-navy/30">
-                    <h1 class="text-xl font-bold tracking-tight text-white"><i
-                            class="fa-solid fa-graduation-cap text-brand-gold mr-2"></i>SAI Calasanz</h1>
+            class="w-64 bg-[#2f353e] flex-shrink-0 flex flex-col transition-all duration-300 z-50 shadow-none font-sans">
+            <!-- Brand / Logo Area -->
+            <div class="h-[60px] flex items-center px-5 bg-[#252a32] border-b border-[#3b4249] shrink-0">
+                <div class="flex items-center gap-2 text-white">
+                    <!-- ESET-like Logo Placeholder -->
+                    <div
+                        class="w-8 h-8 rounded bg-[#0091d3] flex items-center justify-center text-white font-bold text-lg shadow-sm">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-base font-bold tracking-wide leading-none">SAI</span>
+                        <span
+                            class="text-[10px] text-[#0091d3] font-bold uppercase tracking-widest leading-none mt-0.5">Sistema
+                            de Acompañamiento Integral</span>
+                    </div>
                 </div>
-
-                <div class="p-4">
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 px-4">Menu Principal</p>
-                    <nav class="space-y-1">
-                        <a href="/dashboard" class="sidebar-item flex items-center px-4 py-3 rounded-lg group ">
-                            <i class="fa-solid fa-chart-pie w-5 h-5 mr-3"></i>
-                            <span class="font-medium">Dashboard</span>
-                        </a>
-                        <!-- Course Selector dynamic injection here later -->
-                    </nav>
-                </div>
+                <button class="ml-auto text-slate-500 hover:text-white transition-colors">
+                    <i class="fa-solid fa-braille text-xl"></i>
+                </button>
             </div>
 
-            <div class="p-4 border-t border-brand-navy bg-brand-navy/30">
-                <div class="flex items-center">
-                    <div
-                        class="w-10 h-10 rounded-full bg-brand-blue text-white flex items-center justify-center font-bold border-2 border-brand-navy shadow-lg">
-                        {{ user.name[0] }}
-                    </div>
-                    <div class="ml-3 overflow-hidden">
-                        <p class="text-sm font-medium text-white truncate">{{ user.name }}</p>
-                        <p class="text-xs text-brand-light truncate">{{ user.role }}</p>
-                    </div>
-                    <a href="/auth/logout" class="ml-auto text-slate-400 hover:text-white transition-colors"
-                        title="Cerrar Sesión">
-                        <i class="fa-solid fa-right-from-bracket"></i>
+            <!-- Menu Items -->
+            <div class="flex-1 overflow-y-auto py-2 custom-scrollbar">
+
+                <p class="px-5 py-2 text-[10px] font-bold text-[#6c7682] uppercase tracking-widest">General</p>
+                <nav class="space-y-0.5">
+                    <a href="/dashboard" class="flex items-center px-5 py-3 transition-colors group relative border-l-[3px] 
+                       {% if request.url.path == '/dashboard' %}
+                            bg-[#3b4249] text-white border-[#0091d3] shadow-inner
+                       {% else %}
+                            text-[#babfc4] border-transparent hover:bg-[#3b4249] hover:text-white hover:border-[#0091d3]
+                       {% endif %}">
+                        <i
+                            class="fa-solid fa-grip w-5 text-center mr-3 transition-colors 
+                           {% if request.url.path == '/dashboard' %} text-[#0091d3] {% else %} text-[#6c7682] group-hover:text-white {% endif %}"></i>
+                        <span class="text-sm font-medium tracking-wide">Dashboard</span>
                     </a>
-                </div>
+
+                    <!-- Render Sections dynamically as "Menu Groups" -->
+                    {% for section in nav_sections %}
+                    <div x-data="{ open: false }"
+                        x-init="if($el.querySelector(`a[href='${window.location.pathname}']`)) open = true">
+                        <button @click="open = !open"
+                            class="w-full flex items-center justify-between px-5 py-3 text-[#babfc4] hover:bg-[#3b4249] hover:text-white transition-colors group border-l-[3px] border-transparent">
+                            <div class="flex items-center">
+                                <i
+                                    class="fa-solid fa-folder-tree w-5 text-center mr-3 text-[#6c7682] group-hover:text-white transition-colors"></i>
+                                <span class="text-sm font-medium tracking-wide">{{ section.name }}</span>
+                            </div>
+                            <i class="fa-solid fa-caret-down text-xs transition-transform duration-200 opacity-50"
+                                :class="{ 'rotate-180': open }"></i>
+                        </button>
+                        <div x-show="open" x-transition class="bg-[#262b32] border-t border-[#3b4249]">
+                            {% for course in section.courses %}
+                            <a href="/courses/{{ course.id }}" class="block pl-14 pr-4 py-2 text-sm transition-colors border-l-2 ml-5
+                               {% if request.url.path == '/courses/' ~ course.id %}
+                                    text-white font-bold border-[#0091d3]
+                               {% else %}
+                                    text-[#8d949e] hover:text-white hover:bg-[#3b4249] border-transparent hover:border-[#0091d3]
+                               {% endif %}">
+                                {{ course.name }}
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    <div class="my-3 border-t border-[#3b4249]"></div>
+
+                    <p class="px-5 py-2 text-[10px] font-bold text-[#6c7682] uppercase tracking-widest">Gestión</p>
+
+                    <a href="#"
+                        class="flex items-center px-5 py-3 text-[#babfc4] hover:bg-[#3b4249] hover:text-white transition-colors group border-l-[3px] border-transparent hover:border-[#0091d3]"
+                        title="Próximamente">
+                        <i
+                            class="fa-solid fa-users w-5 text-center mr-3 text-[#6c7682] group-hover:text-white transition-colors"></i>
+                        <span class="text-sm font-medium tracking-wide">Estudiantes</span>
+                    </a>
+
+                    <a href="/reports" class="flex items-center px-5 py-3 transition-colors group border-l-[3px]
+                       {% if '/reports' in request.url.path %}
+                            bg-[#3b4249] text-white border-[#0091d3] shadow-inner
+                       {% else %}
+                            text-[#babfc4] border-transparent hover:bg-[#3b4249] hover:text-white hover:border-[#0091d3]
+                       {% endif %}">
+                        <i
+                            class="fa-solid fa-chart-column w-5 text-center mr-3 transition-colors
+                           {% if '/reports' in request.url.path %} text-[#0091d3] {% else %} text-[#6c7682] group-hover:text-white {% endif %}"></i>
+                        <span class="text-sm font-medium tracking-wide">Informes</span>
+                    </a>
+
+                    {% if user.role == 'Admin Global' or user.role == 'Coordinador' %}
+                    <a href="/admin/setup"
+                        class="flex items-center px-5 py-3 text-[#babfc4] hover:bg-[#3b4249] hover:text-white transition-colors group border-l-[3px] border-transparent hover:border-[#0091d3]">
+                        <i
+                            class="fa-solid fa-gears w-5 text-center mr-3 text-[#6c7682] group-hover:text-white transition-colors"></i>
+                        <span class="text-sm font-medium tracking-wide">Configuración</span>
+                    </a>
+                    {% endif %}
+                </nav>
+            </div>
+
+            <!-- Footer Sidebar -->
+            <div class="p-4 bg-[#252a32] border-t border-[#3b4249]">
+                <button
+                    class="w-full flex items-center justify-center gap-2 px-4 py-2 border border-[#4b5563] rounded-sm text-[#babfc4] hover:text-white hover:border-white transition-colors text-xs font-bold uppercase">
+                    <i class="fa-regular fa-comment-dots"></i> Enviar Comentarios
+                </button>
             </div>
         </aside>
         {% endif %}
 
-        <!-- Main Content -->
-        <main class="flex-1 flex flex-col relative overflow-hidden bg-[#f1f5f9]">
-            {% block content %}{% endblock %}
-        </main>
+        <!-- Main Content Wrapper -->
+        <div class="flex-1 flex flex-col relative overflow-hidden bg-[#f4f5f7]">
+
+            <!-- Global Top Bar (White, Minimal) -->
+            {% if user %}
+            <header
+                class="h-[60px] bg-white border-b border-slate-200 flex items-center justify-between px-6 z-10 shrink-0">
+                <!-- Breadcrumb or Search -->
+                <div class="flex items-center text-sm">
+                    <span class="text-slate-400 font-medium mr-2">Inicio</span>
+                    <i class="fa-solid fa-chevron-right text-[10px] text-slate-300 mr-2"></i>
+                    <span class="text-[#0060ac] font-bold">Informes</span>
+                </div>
+
+                <!-- Right Actions -->
+                <div class="flex items-center space-x-5">
+                    <div class="relative">
+                        <i
+                            class="fa-regular fa-bell text-slate-500 hover:text-[#0060ac] text-lg cursor-pointer transition-colors"></i>
+                        <span
+                            class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+                    </div>
+                    <div class="h-8 w-px bg-slate-200"></div>
+                    <div class="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity">
+                        <div class="text-right leading-tight">
+                            <p class="text-sm font-bold text-slate-700">{{ user.name }}</p>
+                            <p class="text-[10px] uppercase text-slate-400 font-medium">{{ user.role }}</p>
+                        </div>
+                        <div
+                            class="w-9 h-9 bg-slate-100 rounded-full flex items-center justify-center text-[#0060ac] font-bold border border-slate-200">
+                            {{ user.name[:2].upper() }}
+                        </div>
+                    </div>
+                    <a href="/auth/logout" class="text-slate-400 hover:text-red-500 transition-colors"
+                        title="Cerrar Sesión">
+                        <i class="fa-solid fa-power-off text-lg"></i>
+                    </a>
+                </div>
+            </header>
+            {% endif %}
+
+            <!-- Main Scrollable Area -->
+            <main class="flex-1 overflow-hidden relative">
+                {% block content %}{% endblock %}
+            </main>
+        </div>
     </div>
 
     <!-- Scripts -->

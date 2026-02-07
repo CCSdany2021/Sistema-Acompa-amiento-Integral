@@ -34,6 +34,17 @@ class Student(StudentBase):
     class Config:
         from_attributes = True
 
+class StudentReportSummary(BaseModel):
+    id: int
+    purpose: EduPurposeEnum
+    status: ReportStatus
+    
+    class Config:
+        from_attributes = True
+
+class StudentWithReports(Student):
+    active_reports: List[StudentReportSummary] = []
+
 class ObservationBase(BaseModel):
     title: str
     content: str
@@ -42,6 +53,20 @@ class ObservationCreate(ObservationBase):
     date_log: Optional[datetime] = None
 
 class Observation(ObservationBase):
+    id: int
+    report_id: int
+    created_by_id: int
+    date_log: datetime
+    class Config:
+        from_attributes = True
+
+class RecommendationBase(BaseModel):
+    content: str
+
+class RecommendationCreate(RecommendationBase):
+    date_log: Optional[datetime] = None
+
+class Recommendation(RecommendationBase):
     id: int
     report_id: int
     created_by_id: int
@@ -69,6 +94,7 @@ class Report(ReportBase):
     assigned_to: Optional[UserBase] = None
     
     observations: List[Observation] = []
+    recommendations: List[Recommendation] = []
     
     class Config:
         from_attributes = True

@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="p-8 max-w-7xl mx-auto space-y-8">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold text-brand-dark mb-2">Configuración Académica</h1>
+            <p class="text-slate-500">Gestiona las Secciones y Cursos del colegio.</p>
+        </div>
+        <button onclick="document.getElementById('modal-new-section').showModal()"
+            class="bg-brand-blue hover:bg-brand-navy text-white px-4 py-2 rounded-lg shadow-lg transition-all flex items-center">
+            <i class="fa-solid fa-plus mr-2"></i> Nueva Sección
+        </button>
+    </div>
+
+    <!-- Sections Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for section in sections %}
+        <div
+            class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-shadow">
+            <!-- Section Header -->
+            <div class="bg-slate-50 p-4 border-b border-slate-100 flex justify-between items-center group">
+                <h3 class="font-bold text-brand-dark text-lg">{{ section.name }}</h3>
+                <button onclick="deleteSection({{ section.id }})"
+                    class="text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                    title="Eliminar Sección">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </div>
+
+            <!-- Courses List -->
+            <div class="p-4">
+                <ul class="space-y-2 mb-4">
+                    {% if section.courses %}
+                    {% for course in section.courses %}
+                    <li
+                        class="flex justify-between items-center text-sm p-2 bg-slate-50 rounded border border-slate-100 group">
+                        <span class="font-medium text-slate-700">{{ course.name }}</span>
+                        <button onclick="deleteCourse({{ course.id }})"
+                            class="text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </li>
+                    {% endfor %}
+                    {% else %}
+                    <li class="text-sm text-slate-400 italic text-center py-2">Sin cursos asignados</li>
+                    {% endif %}
+                </ul>
+
+                <!-- Add Course Form -->
+                <form onsubmit="createCourse(event, {{ section.id }})"
+                    class="flex gap-2 mt-4 pt-4 border-t border-slate-100">
+                    <input type="text" name="course_name" placeholder="Nuevo Curso (ej: 10B)" required
+                        class="flex-1 bg-slate-50 border border-slate-200 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-brand-blue">
+                    <button type="submit"
+                        class="bg-brand-light text-brand-dark hover:bg-brand-blue hover:text-white px-3 py-1.5 rounded transition-colors text-sm font-medium">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Modal: New Section -->
+<dialog id="modal-new-section" class="backdrop:bg-black/50 rounded-xl shadow-2xl p-0 w-full max-w-md">
+    <div class="bg-white p-6">
+        <h3 class="text-xl font-bold text-brand-dark mb-4">Crear Nueva Sección</h3>
+        <form onsubmit="createSection(event)">
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-slate-700 mb-1">Nombre de la Sección</label>
+                <input type="text" id="new_section_name" placeholder="Ej: Bachillerato, Primaria..." required
+                    class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-brand-blue focus:outline-none">
+            </div>
+            <div class="flex justify-end gap-3">
+                <button type="button" onclick="document.getElementById('modal-new-section').close()"
+                    class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg">Cancelar</button>
+                <button type="submit"
+                    class="px-4 py-2 bg-brand-blue text-white rounded-lg hover:bg-brand-navy shadow-lg font-medium">Crear</button>
+            </div>
+        </form>
+    </div>
+</dialog>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/admin_import.js"></script>
+<script>
+    async function createSection(e) {
+        e.preventDefault();
+        const name = document.getElementById('new_section_name').value;
+
+        try {
+            const res = await fetch('/admin/sections', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name })
+            });
+
+            if (res.ok) {
+                window.location.reload();
+            } else {
+                alert('Error al crear sección: ' + (await res.json()).detail);
+            }
+        } catch (err) {
+            alert('Error de conexión');
+        }
+    }
+
+    async function createCourse(e, sectionId) {
+        e.preventDefault();
+        const input = e.target.querySelector('input[name="course_name"]');
+        const name = input.value;
+
+        try {
+            const res = await fetch('/admin/courses', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, section_id: sectionId })
+            });
+
+            if (res.ok) {
+                window.location.reload();
+            } else {
+                alert('Error al crear curso: ' + (await res.json()).detail);
+            }
+        } catch (err) {
+            alert('Error de conexión');
+        }
+    }
+
+    async function deleteSection(id) {
+        if (!confirm('¿Estás seguro? Se eliminarán todos los cursos de esta sección.')) return;
+
+        try {
+            const res = await fetch(`/admin/sections/${id}`, { method: 'DELETE' });
+            if (res.ok) window.location.reload();
+        } catch (err) { alert('Error de conexión'); }
+    }
+
+    async function deleteCourse(id) {
+        if (!confirm('¿Eliminar este curso?')) return;
+
+        try {
+            const res = await fetch(`/admin/courses/${id}`, { method: 'DELETE' });
+            if (res.ok) window.location.reload();
+        } catch (err) { alert('Error de conexión'); }
+    }
+</script>
+{% endblock %}
