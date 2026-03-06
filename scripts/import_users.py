@@ -11,24 +11,24 @@ from src import models, database
 from src.database import SessionLocal
 
 CSV_DATA = """
-"ID","Rol","Email","Nombre","FinEducativo","Puesto","Seccion"
-"1","Admin espiritual","cap@calasanzsuba.edu.co","Cap","Espiritual","Cap","Sección Jardín Tercero"
-"3","Admin global","mrodriguez@calasanzsuba.edu.co","Mireya Rodriguez Olarte",,"Mireya Rodríguez Olarte","Sección Cuarto Séptimo"
-"8","Admin global","mmonroy@calasanzsuba.edu.co","María Angelica  Monroy",,"María Angelica  Monroy","Docente de Pastoral"
-"41","Admin global","ngarzon@calasanzsuba.edu.co","Natalia Garzón",,"Natalia Garzón","Sección Octavo Undécimo"
-"42","Admin global","ccastro@calasanzsuba.edu.co","Claudia Patricia Castro",,"Claudia Patricia Castro","Coordinadora Academica"
-"43","Admin global","dhiguera@calasanzsuba.edu.co","Diana Higuera Guerrero",,"Diana Higuera Guerrero","Rectora"
-"44","Admin de sección","mpedraza@calasanzsuba.edu.co","María Fernanda Pedraza",,"María Fernanda Pedraza","Sección Jardín Tercero"
-"45","Admin de sección","itang@calasanzsuba.edu.co","Paola Tang","Psicoafectivo","Paola Tang","Sección Preescolar"
-"46","Admin restringido","ncabrera@calasanzsuba.edu.co","Nancy Cabrera ",,"Nancy Cabrera ","Sección de Primaria 3-5"
-"47","Admin restringido","Rarango@calasanzsuba.edu.co","Alejandro Arango",,"Alejandro Arango",
-"48","Admin de sección","jgomez@calasanzsuba.edu.co","John Jairo Gómez",,"John Jairo Gómez","Sección de Primaria 3-5"
-"49","Admin espiritual","mgordillo@calasanzsuba.edu.co","Mateo Gordillo","Espiritual","Mateo Gordillo",
-"50","Admin espiritual","pmonsalve@calasanzsuba.edu.co","Paulo Monsalve","Espiritual","Paulo Monsalve",
-"53","Admin restringido","royola@calasanzsuba.edu.co","Rodrigo Oyola",,"Rodrigo Oyola",
-"55","Admin de sección","aardila@calasanzsuba.edu.co","Alejandra Ardila ","Psicoafectivo","Alejandra Ardila ","Sección de Bachillerato 6-8"
-"56","Admin global","pvasquez@calasanzsuba.edu.co","Paola Andrea Vasquez Caballero",,"Coordinadora de calidad",
-"57","Admin de sección ","yalejo@calasanzsuba.edu.co","Yury Alejo",,"Yury Alejo","Sección Octavo Undécimo"
+"ID","Activo","SeccionNuevo","RolNuevo","Email","FinesEducativos","Puesto"
+"1","Verdadero","Sección Jardín Tercero","Admin global","cap@calasanzsuba.edu.co","[""Psicoafectivo"",""Académico"",""Espiritual"",""Convivencia""]","Cap"
+"3","Verdadero",,"Admin global","mrodriguez@calasanzsuba.edu.co",,"Mireya Rodríguez Olarte"
+"8","Verdadero","Sección Octavo Undécimo","Admin de sección","mmonroy@calasanzsuba.edu.co","[""Espiritual"",""Académico""]","María Angelica  Monroy"
+"41","Verdadero","Sección Octavo Undécimo","Admin de sección","ngarzon@calasanzsuba.edu.co","[""Académico"",""Convivencia"",""Psicoafectivo""]","Natalia Garzón"
+"42","Verdadero",,"Admin global","ccastro@calasanzsuba.edu.co","[""Académico"",""Convivencia"",""Psicoafectivo"",""Espiritual""]","Claudia Patricia Castro"
+"43","Verdadero",,"Admin global","dhiguera@calasanzsuba.edu.co","[""Académico"",""Convivencia"",""Psicoafectivo"",""Espiritual""]","Diana Higuera Guerrero"
+"44","Verdadero","Sección Jardín Tercero","Admin de sección","mpedraza@calasanzsuba.edu.co","[""Psicoafectivo"",""Académico"",""Espiritual"",""Convivencia""]","María Fernanda Pedraza"
+"45","Verdadero","Sección Jardín Tercero","Admin de sección","itang@calasanzsuba.edu.co","[""Psicoafectivo"",""Académico"",""Espiritual"",""Convivencia""]","Paola Tang"
+"46","Verdadero","Sección Jardín Tercero","Admin de sección","ncabrera@calasanzsuba.edu.co",,"Nancy Cabrera"
+"47","Verdadero",,"Admin restringido","Rarango@calasanzsuba.edu.co",,"Alejandro Arango"
+"48","Verdadero","Sección Jardín Tercero","Admin de sección","jgomez@calasanzsuba.edu.co",,"John Jairo Gómez"
+"49","Verdadero",,"Admin espiritual","mgordillo@calasanzsuba.edu.co",,"Mateo Gordillo"
+"50","Verdadero",,"Admin espiritual","pmonsalve@calasanzsuba.edu.co",,"Paulo Monsalve"
+"53","Verdadero",,"Admin restringido","royola@calasanzsuba.edu.co",,"Rodrigo Oyola"
+"55","Verdadero","Sección Octavo Undécimo","Admin de sección","aardila@calasanzsuba.edu.co","[""Psicoafectivo""]","Alejandra Ardila"
+"56","Verdadero",,"Admin global","pvasquez@calasanzsuba.edu.co",,"Paola Andrea Vasquez Caballero"
+"57","Verdadero","Sección Octavo Undécimo","Admin de sección","yalejo@calasanzsuba.edu.co",,"Yury Alejo"
 """
 
 def import_users():
@@ -43,11 +43,11 @@ def import_users():
         updated = 0
         
         for index, row in df.iterrows():
-            email = row['Email'].strip()
-            full_name = row['Nombre'].strip().title()
-            rol_csv = row['Rol'].strip().lower()
-            seccion_csv = str(row['Seccion']).strip()
-            fin_csv = str(row['FinEducativo']).strip()
+            email = str(row['Email']).strip()
+            full_name = str(row['Puesto']).strip().title()
+            rol_csv = str(row['RolNuevo']).strip().lower()
+            seccion_csv = str(row['SeccionNuevo']).strip().lower()
+            fin_csv = str(row['FinesEducativos']).strip()
             
             # Map Roles
             role = models.RoleEnum.DOCENTE
@@ -58,34 +58,30 @@ def import_users():
             
             # Map Section
             section = None
-            if "jardín" in seccion_csv.lower() or "preescolar" in seccion_csv.lower():
+            if "jardín" in seccion_csv or "jardin" in seccion_csv or "preescolar" in seccion_csv:
                 section = models.SectionEnum.PREESCOLAR_PRIMARIA
-            elif "cuarto" in seccion_csv.lower() or "primaria" in seccion_csv.lower(): 
-                 # "Sección de Primaria 3-5" maps to PREESCOLAR_PRIMARIA (grades 0-3) or MEDIA_BASICA (4-7)
-                 # Re-evaluating: 3 is low, 5 is high. Let's start with PREESCOLAR_PRIMARIA as default for 'primaria' unless specified high.
-                 # Actually, given current Enums, MEDIA_BASKICA covers 4-7. 
-                 # Let's map "Sección Cuarto Séptimo" -> MEDIA_BASKICA
-                 section = models.SectionEnum.MEDIA_BASKICA
-            elif "octavo" in seccion_csv.lower() or "bachillerato" in seccion_csv.lower():
+            elif "cuarto" in seccion_csv or "séptimo" in seccion_csv or "septimo" in seccion_csv:
+                section = models.SectionEnum.MEDIA_BASKICA
+            elif "octavo" in seccion_csv or "undécimo" in seccion_csv or "undecimo" in seccion_csv or "bachillerato" in seccion_csv:
                 section = models.SectionEnum.BACHILLERATO
             
-            # Force exact matches from CSV
-            if "jardín tercero" in seccion_csv.lower():
-                section = models.SectionEnum.PREESCOLAR_PRIMARIA
-            if "cuarto séptimo" in seccion_csv.lower():
-                section = models.SectionEnum.MEDIA_BASKICA
-                
-            # Map Purpose
+            # Map Purpose (If multiple, we take the first one or logic based on role)
             purpose = None
             if fin_csv and fin_csv != "nan":
-                if "espiritual" in fin_csv.lower():
-                    purpose = models.EduPurposeEnum.ESPIRITUAL
-                elif "psicoafectivo" in fin_csv.lower():
-                    purpose = models.EduPurposeEnum.PSICOAFECTIVO
-                elif "convivencia" in fin_csv.lower():
-                    purpose = models.EduPurposeEnum.CONVIVENCIA
-                elif "academico" in fin_csv.lower():
-                    purpose = models.EduPurposeEnum.ACADEMICO
+                # Clean clean brackets and quotes if it's a list string
+                fin_csv = fin_csv.replace("[", "").replace("]", "").replace('"', '').replace("'", "")
+                fines = [f.strip() for f in fin_csv.split(',')]
+                
+                if fines:
+                    first_fine = fines[0].lower()
+                    if "espiritual" in first_fine:
+                        purpose = models.EduPurposeEnum.ESPIRITUAL
+                    elif "psicoafectivo" in first_fine:
+                        purpose = models.EduPurposeEnum.PSICOAFECTIVO
+                    elif "convivencia" in first_fine:
+                        purpose = models.EduPurposeEnum.CONVIVENCIA
+                    elif "académico" in first_fine or "academico" in first_fine:
+                        purpose = models.EduPurposeEnum.ACADEMICO
 
             # Check existence
             user = db.query(models.User).filter(models.User.email == email).first()
@@ -111,6 +107,8 @@ def import_users():
         print(f"Success! Created {count} users. Updated {updated} users.")
         
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         print(f"Error: {e}")
         db.rollback()
     finally:

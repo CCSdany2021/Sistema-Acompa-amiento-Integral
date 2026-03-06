@@ -28,8 +28,8 @@ def create_data():
     
     # Create Admin User (Mock)
     admin = models.User(
-        email="admin@calasanz.edu.co",
-        full_name="Admin Global",
+        email="cap@calasanz.edu.co",
+        full_name="Cuenta Administradora",
         role=models.RoleEnum.ADMIN_GLOBAL
     )
     db.add(admin)

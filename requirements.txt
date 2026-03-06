@@ -10,3 +10,6 @@ python-multipart
 jinja2
 python-dotenv
 itsdangerous
+email-validator
+pandas
+openpyxl

@@ -14,18 +14,54 @@ def read_students(
     db: Session = Depends(database.get_db),
     current_user: dict = Depends(auth.get_current_user)
 ):
-    # Logic: Teachers/Coordinators should only see their section
-    # This logic is partly in CRUD, strictly enforcing here if needed
+    try:
+        # 1. Sync from External API if course or section is provided
+        from src.external_api import get_external_students, map_external_section
+        
+        if course:
+            # Fetch from Master DB
+            ext_response = get_external_students(course=course)
+            # The API returns a dict: {'count': X, 'results': [...]} 
+            # based on the user's manual and the error found
+            ext_students = ext_response.get('results', []) if isinstance(ext_response, dict) else ext_response
+            
+            for ext in ext_students:
+                # Map external fields to internal structure
+                student_data = {
+                    "full_name": ext.get("nombre_completo", "Sin Nombre"),
+                    "code": ext.get("codigo_estudiante"),
+                    "course": ext.get("curso"),
+                    "section": map_external_section(ext.get("seccion", ""))
+                }
+                if student_data["code"]:
+                    crud.get_or_create_student_by_code(db, student_data)
+    except Exception as e:
+        # Print for logs but don't crash if external sync fails
+        import traceback
+        traceback.print_exc()
+        print(f"Sync error: {e}")
+
+    # 2. Now query from our local DB (which is now synced)
     students = crud.get_students(db, skip=skip, limit=limit, section=section, course=course)
     
-    # Populate active_reports manually or via optimized query
-    # For now, simplistic iteration (ignoring N+1 for small batch sizes)
     result = []
     for s in students:
-        s_dict = s.__dict__.copy() # Careful with SQLAlchemy objects
-        # Filter active reports
-        active = [r for r in s.reports if r.status in [models.ReportStatus.PROGRAMADO, models.ReportStatus.SEGUIMIENTO]]
-        s_dict['active_reports'] = active
+        s_dict = {
+            "id": s.id,
+            "full_name": s.full_name,
+            "code": s.code,
+            "email": s.email,
+            "section": s.section,
+            "course": s.course,
+            "active_reports": [
+                {
+                    "id": r.id,
+                    "purpose": r.purpose,
+                    "status": r.status,
+                    "created_at": r.created_at
+                } for r in s.reports if r.status in [models.ReportStatus.PROGRAMADO, models.ReportStatus.SEGUIMIENTO]
+            ]
+        }
         result.append(s_dict)
         
     return result

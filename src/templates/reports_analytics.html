@@ -1,55 +1,67 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="h-full flex flex-col bg-slate-50 overflow-hidden">
-    <!-- Header / Filters (Visual Placeholder for now) -->
-    <div class="bg-white border-b border-slate-200 px-6 py-4 shrink-0 flex items-center justify-between">
-        <div>
-            <h1 class="text-2xl font-bold text-slate-800">Tablero de Control</h1>
-            <p class="text-xs text-slate-500 uppercase tracking-wider">Estadísticas de Acompañamiento Integral</p>
+<div class="h-full flex flex-col bg-gray-50 overflow-hidden rounded-2xl shadow-sm border border-gray-200">
+    <!-- Header / Filters -->
+    <div class="bg-white border-b border-gray-100 px-8 py-5 shrink-0 flex items-center justify-between z-10">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-inst-goldLight text-inst-gold rounded-xl flex justify-center items-center shadow-sm">
+                <i class="bi bi-bar-chart-fill text-2xl"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl font-black text-inst-dark tracking-tight">Tablero de Control</h1>
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Estadísticas de Acompañamiento Integral</p>
+            </div>
         </div>
-        <div class="flex gap-2">
+        <div class="flex gap-3">
             <!-- Filter Placeholders -->
             <select
-                class="text-xs border-slate-300 rounded-sm bg-slate-50 text-slate-600 px-3 py-1.5 focus:outline-none focus:border-blue-500">
+                class="text-xs font-bold uppercase tracking-wider border-2 border-gray-100 rounded-lg bg-gray-50 text-gray-600 px-4 py-2 hover:bg-gray-100 focus:outline-none focus:border-inst-blue transition-colors cursor-pointer">
                 <option>Todo el Periodo</option>
             </select>
             <select
-                class="text-xs border-slate-300 rounded-sm bg-slate-50 text-slate-600 px-3 py-1.5 focus:outline-none focus:border-blue-500">
+                class="text-xs font-bold uppercase tracking-wider border-2 border-gray-100 rounded-lg bg-gray-50 text-gray-600 px-4 py-2 hover:bg-gray-100 focus:outline-none focus:border-inst-blue transition-colors cursor-pointer">
                 <option>Todas las Secciones</option>
             </select>
             <button onclick="loadAnalyticsData()"
-                class="px-3 py-1.5 bg-blue-600 text-white rounded-sm text-xs font-bold hover:bg-blue-700 transition-colors">
-                <i class="fa-solid fa-sync mr-1"></i> Actualizar
+                class="px-5 py-2.5 bg-inst-blue text-white rounded-lg text-xs font-black uppercase tracking-wider hover:bg-blue-600 shadow-sm transition-colors flex items-center gap-2">
+                <i class="bi bi-arrow-clockwise text-sm font-bold"></i> Actualizar
             </button>
         </div>
     </div>
 
     <!-- Main Dashboard Grid -->
-    <div class="flex-1 overflow-y-auto p-6 grid grid-cols-12 gap-6 pb-20">
+    <div class="flex-1 overflow-y-auto p-8 grid grid-cols-12 gap-8 custom-scrollbar bg-gray-50 pb-20 relative">
 
         <!-- Left Column (KPIs & Course Chart) -->
         <div class="col-span-12 lg:col-span-3 flex flex-col gap-6">
             <!-- KPI: Total Reports -->
             <div
-                class="bg-white border border-slate-200 rounded-lg p-6 shadow-sm flex flex-col items-center justify-center h-32 relative overflow-hidden">
-                <div class="absolute top-0 left-0 w-1 h-full bg-blue-600"></div>
-                <span class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-1">Total Reportes</span>
-                <span class="text-5xl font-extrabold text-slate-800" id="kpi-total-reports">--</span>
+                class="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm flex flex-col items-center justify-center h-32 relative overflow-hidden group hover:shadow-md transition-shadow">
+                <div class="absolute top-0 left-0 w-1.5 h-full bg-inst-blue"></div>
+                <div class="absolute -right-4 -bottom-4 opacity-5 group-hover:scale-110 transition-transform">
+                    <i class="bi bi-file-earmark-text-fill text-8xl text-inst-blue"></i>
+                </div>
+                <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 z-10">Total Reportes</span>
+                <span class="text-5xl font-black text-inst-dark z-10" id="kpi-total-reports">--</span>
             </div>
 
             <!-- KPI: Total Reported Students -->
             <div
-                class="bg-white border border-slate-200 rounded-lg p-6 shadow-sm flex flex-col items-center justify-center h-32 relative overflow-hidden">
-                <div class="absolute top-0 left-0 w-1 h-full bg-brand-navy"></div>
-                <span class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-1">Alumnos Reportados</span>
-                <span class="text-5xl font-extrabold text-brand-navy" id="kpi-total-students">--</span>
+                class="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm flex flex-col items-center justify-center h-32 relative overflow-hidden group hover:shadow-md transition-shadow">
+                <div class="absolute top-0 left-0 w-1.5 h-full bg-inst-gold"></div>
+                <div class="absolute -right-4 -bottom-4 opacity-5 group-hover:scale-110 transition-transform">
+                    <i class="bi bi-people-fill text-8xl text-inst-gold"></i>
+                </div>
+                <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 z-10">Alumnos Reportados</span>
+                <span class="text-5xl font-black text-inst-dark z-10" id="kpi-total-students">--</span>
             </div>
 
             <!-- Chart: Reports by Course -->
-            <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm flex-1 min-h-[400px]">
-                <h3 class="text-xs font-bold text-slate-700 uppercase mb-4 border-b border-slate-100 pb-2">Recuento por
-                    Curso</h3>
+            <div class="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm flex-1 min-h-[400px]">
+                <h3 class="text-xs font-black text-inst-dark uppercase tracking-wider mb-4 border-b border-gray-50 pb-3 flex items-center">
+                    <i class="bi bi-bar-chart-steps text-inst-gold mr-2 text-lg"></i> Recuento por Curso
+                </h3>
                 <div class="h-[90%] w-full relative">
                     <canvas id="chartCourses"></canvas>
                 </div>
@@ -59,19 +71,21 @@
         <!-- Middle Column (Status & Pie Chart) -->
         <div class="col-span-12 lg:col-span-3 flex flex-col gap-6">
             <!-- Chart: Reports by Status (Bar) -->
-            <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm h-64">
-                <h3 class="text-xs font-bold text-slate-700 uppercase mb-4 border-b border-slate-100 pb-2">Recuento por
-                    Estado</h3>
+            <div class="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm h-64">
+                <h3 class="text-xs font-black text-inst-dark uppercase tracking-wider mb-4 border-b border-gray-50 pb-3 flex items-center">
+                    <i class="bi bi-ui-radios text-inst-gold mr-2 text-lg"></i> Recuento por Estado
+                </h3>
                 <div class="h-[80%] w-full relative">
                     <canvas id="chartStatus"></canvas>
                 </div>
             </div>
 
             <!-- Chart: Status Percentage (Pie) -->
-            <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm flex-1 min-h-[300px]">
-                <h3 class="text-xs font-bold text-slate-700 uppercase mb-4 border-b border-slate-100 pb-2">Porcentaje
-                    Estado</h3>
-                <div class="h-[85%] w-full relative flex justify-center">
+            <div class="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm flex-1 min-h-[300px] flex flex-col">
+                <h3 class="text-xs font-black text-inst-dark uppercase tracking-wider mb-4 border-b border-gray-50 pb-3 flex items-center">
+                    <i class="bi bi-pie-chart-fill text-inst-gold mr-2 text-lg"></i> Porcentaje Estado
+                </h3>
+                <div class="flex-1 w-full relative flex justify-center items-center pb-4">
                     <canvas id="chartStatusPie"></canvas>
                 </div>
             </div>
@@ -80,8 +94,9 @@
         <!-- Right Column (Purpose & Detailed Table) -->
         <div class="col-span-12 lg:col-span-6 flex flex-col gap-6">
             <!-- Chart: Reports by Purpose (Horizontal Bar) -->
-            <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm h-64">
-                <h3 class="text-xs font-bold text-slate-700 uppercase mb-4 border-b border-slate-100 pb-2">Fin Educativo
+            <div class="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm h-64">
+                <h3 class="text-xs font-black text-inst-dark uppercase tracking-wider mb-4 border-b border-gray-50 pb-3 flex items-center">
+                    <i class="bi bi-bookmark-star-fill text-inst-gold mr-2 text-lg"></i> Fin Educativo
                 </h3>
                 <div class="h-[80%] w-full relative">
                     <canvas id="chartPurpose"></canvas>
@@ -90,21 +105,23 @@
 
             <!-- Detailed Table -->
             <div
-                class="bg-white border border-slate-200 rounded-lg shadow-sm flex-1 overflow-hidden flex flex-col min-h-[400px]">
-                <div class="px-4 py-3 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-                    <h3 class="text-xs font-bold text-slate-700 uppercase">Alumnos con más reportes</h3>
-                    <button class="text-xs text-blue-600 hover:text-blue-800 font-bold">Ver todos</button>
+                class="bg-white border border-gray-100 rounded-2xl shadow-sm flex-1 overflow-hidden flex flex-col min-h-[400px]">
+                <div class="px-5 py-4 border-b border-gray-100 bg-white flex justify-between items-center z-10">
+                    <h3 class="text-xs font-black text-inst-dark uppercase tracking-wider flex items-center">
+                        <i class="bi bi-trophy-fill text-inst-gold mr-2 text-lg"></i> Alumnos con más reportes
+                    </h3>
+                    <button class="text-[10px] bg-gray-50 hover:bg-gray-100 text-gray-500 hover:text-inst-dark px-3 py-1.5 rounded-lg border border-gray-200 font-bold uppercase tracking-widest transition-colors">Ver todos</button>
                 </div>
                 <div class="overflow-y-auto flex-1 custom-scrollbar">
-                    <table class="w-full text-left text-xs">
-                        <thead class="bg-slate-100 text-slate-500 font-bold sticky top-0 z-10">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-gray-50 text-gray-400 font-bold sticky top-0 z-10 text-xs uppercase tracking-wider">
                             <tr>
-                                <th class="px-4 py-2">Estudiante</th>
-                                <th class="px-4 py-2">Curso</th>
-                                <th class="px-4 py-2 text-right">Cant.</th>
+                                <th class="px-5 py-3 font-black">Estudiante</th>
+                                <th class="px-5 py-3 font-black">Curso</th>
+                                <th class="px-5 py-3 font-black text-center">Cant.</th>
                             </tr>
                         </thead>
-                        <tbody id="ranking-table-body" class="divide-y divide-slate-100">
+                        <tbody id="ranking-table-body" class="divide-y divide-gray-100 text-gray-700">
                             <!-- JS Injection -->
                         </tbody>
                     </table>

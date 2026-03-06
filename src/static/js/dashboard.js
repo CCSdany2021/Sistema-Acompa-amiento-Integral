@@ -1,11 +1,11 @@
+let currentCourseId = null;
+
 document.addEventListener('DOMContentLoaded', () => {
     // Load Stats & Recent Reports
     loadDashboardData();
 
     // Load Users for Assignment
     loadUsers();
-    
-    // Import Excel Listener removed (moved to admin_import.js)
 });
 
 async function loadUsers() {
@@ -14,16 +14,16 @@ async function loadUsers() {
         const users = await response.json();
         const select = document.getElementById('assigned_to');
         
+        // Clear existing except default
+        while (select && select.options.length > 1) {
+            select.remove(1);
+        }
+
         users.forEach(user => {
             const option = document.createElement('option');
             option.value = user.id;
-            // Format: "Name (Role - Section)" or just Name
-            let label = user.full_name;
-            if (user.role && user.role !== 'Docente') {
-                label += ` (${user.role})`;
-            }
-            option.textContent = label;
-            select.appendChild(option);
+            option.textContent = user.full_name;
+            if(select) select.appendChild(option);
         });
     } catch (error) {
         console.error("Error loading users:", error);
@@ -126,6 +126,7 @@ async function loadDashboardData() {
 
 
 async function loadStudents(courseId) {
+    currentCourseId = courseId;
     const emptyState = document.getElementById('empty-state');
     const mainContent = document.getElementById('main-content');
     const contentArea = document.querySelector('#content-area'); 
@@ -156,7 +157,7 @@ function renderStudentGrid(students) {
 
     if (students.length > 0) {
         courseTitle.textContent = `Curso ${students[0].course}`;
-        courseSubtitle.textContent = `${students.length} Estudiantes registrados`;
+        courseSubtitle.textContent = `${students.length} Estudiantes matriculados 2026`;
     }
 
     if (students.length === 0) {
@@ -171,57 +172,59 @@ function renderStudentGrid(students) {
     <table class="w-full text-left border-collapse">
         <thead>
             <tr>
-                <th class="sticky top-0 bg-slate-100 z-10 px-6 py-3 text-xs font-extra-bold text-slate-700 uppercase border-b border-slate-300 shadow-sm">Estudiante</th>
-                <th class="sticky top-0 bg-slate-100 z-10 px-6 py-3 text-xs font-extra-bold text-slate-700 uppercase border-b border-slate-300 shadow-sm">Fines Reportados</th> <!-- New Column -->
-                <th class="sticky top-0 bg-slate-100 z-10 px-6 py-3 text-xs font-extra-bold text-slate-700 uppercase border-b border-slate-300 shadow-sm text-right">Acción</th>
+                <th class="sticky top-0 bg-[#023059] z-10 px-6 py-4 text-xs font-black text-white uppercase tracking-widest border-b border-gray-100 shadow-sm rounded-tl-xl text-center">Nombres</th>
+                <th class="sticky top-0 bg-[#3b82f6] z-10 px-6 py-4 text-xs font-black text-white uppercase tracking-widest border-b border-gray-100 shadow-sm text-center">Curso</th>
+                <th class="sticky top-0 bg-[#3b82f6] z-10 px-6 py-4 text-xs font-black text-white uppercase tracking-widest border-b border-gray-100 shadow-sm text-center w-1/3">Reporte Fines Educativos</th>
+                <th class="sticky top-0 bg-[#3b82f6] z-10 px-6 py-4 text-xs font-black text-white uppercase tracking-widest border-b border-gray-100 shadow-sm text-center">Nuevo Reporte</th>
+                <th class="sticky top-0 bg-[#3b82f6] z-10 px-6 py-4 text-xs font-black text-white uppercase tracking-widest border-b border-gray-100 shadow-sm rounded-tr-xl text-center">Editar Reporte</th>
             </tr>
         </thead>
-        <tbody class="divide-y divide-slate-100">`;
+        <tbody class="bg-white">`;
         
     students.forEach(student => {
         const initials = getInitials(student.full_name);
         html += `
-        <tr class="hover:bg-blue-50 transition-colors group border-b border-slate-100">
-            <td class="px-6 py-3">
+        <tr class="hover:bg-gray-50 transition-colors group border-b border-gray-100">
+            <td class="px-6 py-4">
                 <div class="flex items-center">
-                    <div class="relative w-10 h-10 mr-3 flex-shrink-0">
-                         <div class="w-full h-full rounded-full bg-slate-100 text-slate-600 flex items-center justify-center text-xs font-bold border border-slate-200">
-                            ${initials}
-                         </div>
-                    </div>
                     <div>
-                        <p class="text-sm font-bold text-slate-800">${student.full_name}</p>
+                        <p class="text-[11px] font-black text-gray-700 uppercase tracking-wide leading-tight">${student.full_name.split(' ').slice(0, 2).join(' ')} <br/><span class="font-medium text-gray-500">${student.full_name.split(' ').slice(2).join(' ')}</span></p>
+                        <p class="text-[9px] font-bold text-inst-blue mt-1 uppercase tracking-tighter">CÓDIGO: ${student.code || '---'}</p>
                     </div>
                 </div>
             </td>
-            <td class="px-6 py-3">
-                <div class="flex flex-wrap gap-2">
+            <td class="px-6 py-4 text-center">
+                <span class="text-xs font-black text-gray-800">${student.course || document.querySelector('#course-title').textContent.replace('Curso ', '')}</span>
+            </td>
+            <td class="px-6 py-4">
+                <div class="flex flex-row flex-wrap gap-2 items-center justify-center">
                     ${renderBadges(student.active_reports)}
                 </div>
             </td>
-            <td class="px-6 py-3">
-                <div class="flex items-center justify-end gap-2">
+            <td class="px-6 py-4 text-center">
                 <!-- Nuevo Reporte Button -->
-                <button class="open-report-btn bg-brand-blue text-white hover:bg-blue-700 px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-md hover:shadow-lg flex items-center"
+                <button class="open-report-btn bg-green-600 text-white hover:bg-green-700 px-5 py-2.5 rounded-full text-[10px] font-black uppercase tracking-wider transition-all shadow-sm hover:shadow flex items-center justify-center mx-auto"
                     data-id="${student.id}" 
                     data-name="${student.full_name.replace(/"/g, '&quot;')}" 
+                    data-code="${student.code}"
+                    data-course="${student.course || document.querySelector('#course-title').textContent.replace('Curso ', '')}"
                     title="Crear Nuevo Reporte">
-                    <i class="fa-solid fa-plus mr-2"></i> Nuevo reporte
+                    <i class="bi bi-unlock-fill mr-1.5 text-xs"></i> Nuevo reporte
                 </button>
-                
+            </td>
+            <td class="px-6 py-4 text-center">
                 <!-- Editar Reporte Button (Only enabled if active reports exist) -->
                 ${student.active_reports.length > 0 ? 
-                `<button class="edit-report-btn bg-brand-gold text-brand-navy hover:bg-yellow-400 px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-md hover:shadow-lg flex items-center"
+                `<button class="edit-report-btn text-gray-400 hover:text-inst-blue px-3 py-2 rounded-lg text-lg transition-all flex items-center justify-center mx-auto"
                     data-id="${student.id}" 
                     data-report-id="${student.active_reports[0].id}" 
                     title="Editar Reporte Existente">
-                    <i class="fa-solid fa-pen mr-2"></i> Editar reporte
+                    <i class="bi bi-pencil-square"></i>
                 </button>` : 
-                 `<button class="opacity-40 cursor-not-allowed bg-slate-200 text-slate-400 px-4 py-2 rounded-lg text-xs font-bold flex items-center" disabled>
-                    <i class="fa-solid fa-pen mr-2"></i> Editar reporte
+                 `<button class="opacity-30 cursor-not-allowed text-gray-300 px-3 py-2 rounded-lg text-lg flex items-center justify-center mx-auto" disabled>
+                    <i class="bi bi-pencil-square"></i>
                  </button>`
                 }
-                </div>
             </td>
         </tr>
         `;
@@ -232,7 +235,7 @@ function renderStudentGrid(students) {
     // Add Listeners
     document.querySelectorAll('.open-report-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-             openReportModal(btn.dataset.id, btn.dataset.name);
+             openReportModal(btn.dataset.id, btn.dataset.name, btn.dataset.code, btn.dataset.course);
         });
     });
 
@@ -251,41 +254,51 @@ function renderBadges(reports) {
     if (!reports || reports.length === 0) return '<span class="text-xs text-slate-300 italic">Sin reportes</span>';
     
     return reports.map(r => {
-        let colorClass = 'bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200';
+        let colorClass = 'bg-gray-100 text-gray-700 border-gray-300';
         if (r.purpose === 'Espiritual') colorClass = 'bg-purple-100 text-purple-800 border-purple-300 hover:bg-purple-200';
-        if (r.purpose === 'Académico') colorClass = 'bg-blue-100 text-blue-800 border-blue-300 hover:bg-blue-200';
+        if (r.purpose === 'Académico') colorClass = 'bg-[#f8b4b4] text-[#842029] border-[#f5c2c7] hover:bg-[#f5c2c7]';
         if (r.purpose === 'Convivencia') colorClass = 'bg-orange-100 text-orange-800 border-orange-300 hover:bg-orange-200';
-        if (r.purpose === 'Psicoafectivo') colorClass = 'bg-rose-100 text-rose-800 border-rose-300 hover:bg-rose-200';
+        if (r.purpose === 'Psicoafectivo') colorClass = 'bg-blue-100 text-blue-800 border-blue-300 hover:bg-blue-200';
         
-        return `<a href="/reports/${r.id}" class="px-2.5 py-1 rounded-md text-[11px] font-bold border ${colorClass} uppercase tracking-wide shadow-sm transition-colors text-center block mb-1 no-underline" title="Ir a reporte ${r.purpose}">
-            ${r.purpose} - ${r.status}
+        return `<a href="/reports/${r.id}" class="px-3 py-1.5 rounded-full text-[9px] font-black border ${colorClass} uppercase tracking-wider shadow-sm transition-all hover:shadow flex items-center justify-center no-underline whitespace-nowrap" title="Ir a reporte ${r.purpose}">
+            ${r.purpose}
         </a>`;
     }).join('');
 }
 
 // Modal Logic
-const modal = document.getElementById('report-modal');
-const modalContent = modal.querySelector('.modal-content');
+const reportModal = document.getElementById('report-modal');
+const reportModalContent = reportModal ? reportModal.querySelector('.modal-content') : null;
 const reportForm = document.getElementById('report-form');
 
-function openReportModal(studentId, studentName) {
-    document.getElementById('student_id').value = studentId;
-    document.getElementById('student_name_display').value = studentName;
+function openReportModal(studentId, studentName, studentCode, studentCourse) {
+    if(!reportModal) return;
     
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
+    // Debug logging
+    console.log("Opening Modal for Student:", { id: studentId, name: studentName, code: studentCode, course: studentCourse });
+
+    document.getElementById('student_id').value = studentId || '';
+    document.getElementById('student_name_display').value = studentName || '';
+    document.getElementById('student_code_display').value = studentCode || 'N/A';
+    document.getElementById('student_course_display').value = studentCourse || 'N/A';
+    
+    reportModal.classList.remove('hidden');
+    reportModal.classList.add('flex');
     setTimeout(() => {
-        modalContent.classList.remove('scale-95', 'opacity-0');
-        modalContent.classList.add('scale-100', 'opacity-100');
+        if(reportModalContent) {
+            reportModalContent.classList.remove('scale-95', 'opacity-0');
+            reportModalContent.classList.add('scale-100', 'opacity-100');
+        }
     }, 10);
 }
 
 function closeReportModal() {
-    modalContent.classList.remove('scale-100', 'opacity-100');
-    modalContent.classList.add('scale-95', 'opacity-0');
+    if(!reportModal || !reportModalContent) return;
+    reportModalContent.classList.remove('scale-100', 'opacity-100');
+    reportModalContent.classList.add('scale-95', 'opacity-0');
     setTimeout(() => {
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
+        reportModal.classList.add('hidden');
+        reportModal.classList.remove('flex');
         reportForm.reset();
     }, 300);
 }
@@ -315,7 +328,10 @@ reportForm.addEventListener('submit', async (e) => {
         if (response.ok) {
             alert('Reporte creado exitosamente');
             closeReportModal();
-            loadDashboardData(); // Refresh data immediately
+            loadDashboardData(); // Refresh sidebar stats
+            if (currentCourseId) {
+                loadStudents(currentCourseId); // Refresh student grid to show new badge
+            }
         } else {
             const error = await response.json();
             
@@ -334,7 +350,9 @@ reportForm.addEventListener('submit', async (e) => {
 
 // Duplicate Modal Logic
 function showDuplicateModal(details) {
-    const modal = document.getElementById('duplicate-report-modal');
+    const dupModal = document.getElementById('duplicate-report-modal');
+    if(!dupModal) return;
+
     // Populate details
     document.getElementById('dup-message').textContent = details.message || "Este estudiante ya posee un proceso activo.";
     document.getElementById('dup-creator').textContent = details.created_by || "Desconocido";
@@ -349,39 +367,23 @@ function showDuplicateModal(details) {
 
     // Setup View Button
     const viewBtn = document.getElementById('dup-view-btn');
-    viewBtn.onclick = () => window.location.href = `/reports/${details.report_id}`;
+    if(viewBtn) viewBtn.onclick = () => window.location.href = `/reports/${details.report_id}`;
 
     // Show Modal
-    modal.classList.remove('hidden');
+    dupModal.classList.remove('hidden');
 }
 
 function closeDuplicateModal() {
-    document.getElementById('duplicate-report-modal').classList.add('hidden');
+    const dupModal = document.getElementById('duplicate-report-modal');
+    if(dupModal) dupModal.classList.add('hidden');
 }
 
-async function loadUsers() {
-    try {
-        const response = await fetch('/api/users');
-        const users = await response.json();
-        const select = document.getElementById('assigned_to');
-        
-        // Clear existing except default
-        while (select.options.length > 1) {
-            select.remove(1);
-        }
-
-        users.forEach(user => {
-            const option = document.createElement('option');
-            option.value = user.id;
-            // Format: "Name (Role - Section)" or just Name
-            let label = user.full_name;
-            if (user.role && user.role !== 'Docente') {
-                label += ` (${user.role})`;
-            }
-            option.textContent = label;
-            select.appendChild(option);
-        });
-    } catch (error) {
-        console.error("Error loading users:", error);
+// Global Refresh Helper
+function refreshCurrentData() {
+    loadDashboardData();
+    if (currentCourseId) {
+        loadStudents(currentCourseId);
     }
 }
+
+

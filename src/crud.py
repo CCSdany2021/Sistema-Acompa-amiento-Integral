@@ -37,6 +37,43 @@ def create_student(db: Session, student: schemas.StudentBase):
     db.refresh(db_student)
     return db_student
 
+def get_or_create_student_by_code(db: Session, student_data: dict):
+    """
+    Checks if a student exists by code. If not, creates it.
+    Updates name/course/section if they changed.
+    """
+    db_student = db.query(models.Student).filter(models.Student.code == str(student_data['code'])).first()
+    
+    if not db_student:
+        db_student = models.Student(
+            full_name=student_data['full_name'],
+            code=str(student_data['code']),
+            course=student_data.get('course'),
+            section=student_data.get('section')
+        )
+        db.add(db_student)
+        db.commit()
+        db.refresh(db_student)
+    else:
+        # Update existing info to stay in sync with master
+        changed = False
+        if db_student.full_name != student_data['full_name']:
+            db_student.full_name = student_data['full_name']
+            changed = True
+        if db_student.course != student_data.get('course'):
+            db_student.course = student_data.get('course')
+            changed = True
+        if db_student.section != student_data.get('section'):
+            db_student.section = student_data.get('section')
+            changed = True
+        
+        if changed:
+            db.add(db_student)
+            db.commit()
+            db.refresh(db_student)
+            
+    return db_student
+
 # --- Report ---
 def get_active_report(db: Session, student_id: int, purpose: models.EduPurposeEnum):
     return db.query(models.Report).filter(
