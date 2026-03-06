@@ -38,6 +38,7 @@ class StudentReportSummary(BaseModel):
     id: int
     purpose: EduPurposeEnum
     status: ReportStatus
+    created_at: Optional[datetime] = None
     
     class Config:
         from_attributes = True

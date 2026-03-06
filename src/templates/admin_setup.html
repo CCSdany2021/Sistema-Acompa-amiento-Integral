@@ -6,12 +6,12 @@
     <!-- Header -->
     <div class="flex items-center justify-between">
         <div>
-            <h1 class="text-3xl font-bold text-brand-dark mb-2">Configuración Académica</h1>
-            <p class="text-slate-500">Gestiona las Secciones y Cursos del colegio.</p>
+            <h1 class="text-3xl font-black text-inst-dark mb-2 tracking-tight">Configuración Académica</h1>
+            <p class="text-gray-500 font-medium">Gestiona las Secciones y Cursos del colegio.</p>
         </div>
         <button onclick="document.getElementById('modal-new-section').showModal()"
-            class="bg-brand-blue hover:bg-brand-navy text-white px-4 py-2 rounded-lg shadow-lg transition-all flex items-center">
-            <i class="fa-solid fa-plus mr-2"></i> Nueva Sección
+            class="bg-inst-blue hover:bg-blue-600 text-white px-5 py-2.5 rounded-xl shadow-md transition-all flex items-center font-bold text-sm tracking-wide uppercase">
+            <i class="bi bi-plus-lg mr-2 font-black"></i> Nueva Sección
         </button>
     </div>
 
@@ -19,44 +19,55 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {% for section in sections %}
         <div
-            class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-shadow">
+            class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow flex flex-col">
             <!-- Section Header -->
-            <div class="bg-slate-50 p-4 border-b border-slate-100 flex justify-between items-center group">
-                <h3 class="font-bold text-brand-dark text-lg">{{ section.name }}</h3>
+            <div class="bg-gray-50 p-5 border-b border-gray-100 flex justify-between items-center group">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-inst-goldLight text-inst-gold flex items-center justify-center">
+                        <i class="bi bi-folder-fill"></i>
+                    </div>
+                    <h3 class="font-black text-inst-dark text-lg">{{ section.name }}</h3>
+                </div>
                 <button onclick="deleteSection({{ section.id }})"
-                    class="text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                    class="text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity bg-white hover:bg-red-50 w-8 h-8 rounded-full flex items-center justify-center shadow-sm border border-gray-200"
                     title="Eliminar Sección">
-                    <i class="fa-solid fa-trash"></i>
+                    <i class="bi bi-trash3-fill"></i>
                 </button>
             </div>
 
             <!-- Courses List -->
-            <div class="p-4">
-                <ul class="space-y-2 mb-4">
+            <div class="p-5 flex-1 flex flex-col">
+                <ul class="space-y-2 mb-6 flex-1">
                     {% if section.courses %}
                     {% for course in section.courses %}
                     <li
-                        class="flex justify-between items-center text-sm p-2 bg-slate-50 rounded border border-slate-100 group">
-                        <span class="font-medium text-slate-700">{{ course.name }}</span>
+                        class="flex justify-between items-center text-sm p-3 bg-white hover:bg-gray-50 rounded-xl border border-gray-100 shadow-sm group transition-colors">
+                        <div class="flex items-center gap-2">
+                            <span class="w-1.5 h-1.5 rounded-full bg-inst-blue block"></span>
+                            <span class="font-bold text-gray-700">{{ course.name }}</span>
+                        </div>
                         <button onclick="deleteCourse({{ course.id }})"
-                            class="text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <i class="fa-solid fa-xmark"></i>
+                            class="text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity flex items-center">
+                            <i class="bi bi-x-lg text-xs font-bold w-6 h-6 rounded-full hover:bg-red-50 border border-transparent hover:border-red-100 flex items-center justify-center"></i>
                         </button>
                     </li>
                     {% endfor %}
                     {% else %}
-                    <li class="text-sm text-slate-400 italic text-center py-2">Sin cursos asignados</li>
+                    <li class="text-sm font-bold text-gray-400 uppercase tracking-wider text-center py-6 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+                        <i class="bi bi-inbox-fill text-2xl mb-2 block text-gray-300"></i>
+                        Sin cursos asignados
+                    </li>
                     {% endif %}
                 </ul>
 
                 <!-- Add Course Form -->
                 <form onsubmit="createCourse(event, {{ section.id }})"
-                    class="flex gap-2 mt-4 pt-4 border-t border-slate-100">
+                    class="flex gap-2 pt-4 border-t border-gray-100 mt-auto">
                     <input type="text" name="course_name" placeholder="Nuevo Curso (ej: 10B)" required
-                        class="flex-1 bg-slate-50 border border-slate-200 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-brand-blue">
+                        class="flex-1 bg-gray-50 border-2 border-gray-100 rounded-lg px-4 py-2 text-sm font-medium text-gray-700 focus:outline-none focus:border-inst-blue focus:bg-white transition-colors placeholder-gray-400">
                     <button type="submit"
-                        class="bg-brand-light text-brand-dark hover:bg-brand-blue hover:text-white px-3 py-1.5 rounded transition-colors text-sm font-medium">
-                        <i class="fa-solid fa-plus"></i>
+                        class="bg-inst-goldLight text-inst-gold hover:bg-inst-gold hover:text-white px-4 py-2 rounded-lg transition-colors text-sm font-black shadow-sm flex justify-center items-center">
+                        <i class="bi bi-plus-lg"></i>
                     </button>
                 </form>
             </div>
@@ -66,20 +77,30 @@
 </div>
 
 <!-- Modal: New Section -->
-<dialog id="modal-new-section" class="backdrop:bg-black/50 rounded-xl shadow-2xl p-0 w-full max-w-md">
-    <div class="bg-white p-6">
-        <h3 class="text-xl font-bold text-brand-dark mb-4">Crear Nueva Sección</h3>
-        <form onsubmit="createSection(event)">
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-slate-700 mb-1">Nombre de la Sección</label>
+<dialog id="modal-new-section" class="backdrop:bg-inst-dark/60 rounded-2xl shadow-2xl p-0 w-full max-w-md border border-gray-200 overflow-hidden">
+    <div class="bg-white">
+        <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center">
+            <h3 class="text-xl font-black text-inst-dark tracking-tight">Crear Nueva Sección</h3>
+            <button type="button" onclick="document.getElementById('modal-new-section').close()"
+                class="text-gray-400 hover:text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-full w-8 h-8 flex justify-center items-center transition-colors">
+                <i class="bi bi-x-lg text-sm font-bold"></i>
+            </button>
+        </div>
+        <form onsubmit="createSection(event)" class="p-6">
+            <div class="mb-6">
+                <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Nombre de la Sección</label>
                 <input type="text" id="new_section_name" placeholder="Ej: Bachillerato, Primaria..." required
-                    class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-brand-blue focus:outline-none">
+                    class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-gray-700 font-medium focus:border-inst-blue focus:ring-0 focus:outline-none transition-colors">
             </div>
-            <div class="flex justify-end gap-3">
+            <div class="flex justify-end gap-3 pt-2">
                 <button type="button" onclick="document.getElementById('modal-new-section').close()"
-                    class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg">Cancelar</button>
+                    class="px-5 py-2.5 text-gray-600 bg-gray-100 hover:bg-gray-200 font-bold uppercase tracking-wider text-xs rounded-xl transition-colors">
+                    Cancelar
+                </button>
                 <button type="submit"
-                    class="px-4 py-2 bg-brand-blue text-white rounded-lg hover:bg-brand-navy shadow-lg font-medium">Crear</button>
+                    class="px-6 py-2.5 bg-inst-blue text-white rounded-xl hover:bg-blue-600 shadow border border-transparent font-black uppercase tracking-wider text-xs transition-colors flex items-center">
+                    <i class="bi bi-check-lg mr-2 text-sm"></i> Crear Sección
+                </button>
             </div>
         </form>
     </div>
