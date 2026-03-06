@@ -26,12 +26,24 @@ def dashboard(
     # For now just render.
     # Get nav sections for sidebar
     nav_sections = db.query(models.Section).all()
+    
+    # Dashboard Statistics
+    total_students = db.query(models.Student).count()
+    active_reports = db.query(models.Report).filter(
+        models.Report.status.in_([models.ReportStatus.PROGRAMADO, models.ReportStatus.SEGUIMIENTO])
+    ).count()
+    
+    # Fetch recent reports
+    recent_reports = db.query(models.Report).order_by(models.Report.created_at.desc()).limit(5).all()
 
     return templates.TemplateResponse("dashboard.html", {
         "request": request, 
         "user": current_user,
         "section": db_user.assigned_section if db_user else None,
-        "nav_sections": nav_sections
+        "nav_sections": nav_sections,
+        "total_students": total_students,
+        "active_reports": active_reports,
+        "recent_reports": recent_reports
     })
 
 @router.get("/reports")

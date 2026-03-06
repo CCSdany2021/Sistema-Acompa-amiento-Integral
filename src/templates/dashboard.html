@@ -2,32 +2,105 @@
 
 {% block content %}
 <div class="p-0 h-full overflow-y-auto bg-white">
-    <!-- Empty State / Clean Dashboard -->
-    <div id="empty-state" class="flex flex-col items-center justify-center min-h-[calc(100vh-8rem)] p-8">
-
-        <div class="text-center max-w-lg mx-auto bg-white p-10 rounded-2xl border border-gray-100 shadow-sm">
-            <div
-                class="w-20 h-20 bg-inst-goldLight text-inst-gold rounded-full flex items-center justify-center mx-auto mb-6">
-                <i class="bi bi-stack text-4xl"></i>
+    <!-- Initial Dashboard State -->
+    <div id="empty-state" class="p-8">
+        <h2 class="text-2xl font-black text-inst-dark mb-6">Resumen del Sistema</h2>
+        
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <!-- Stat 1 -->
+            <div class="bg-white p-6 border border-gray-200 shadow-sm flex items-center transition-all hover:shadow-md">
+                <div class="w-14 h-14 bg-blue-50 text-inst-blue flex items-center justify-center mr-4">
+                    <i class="bi bi-people-fill text-2xl"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Total Estudiantes</p>
+                    <p class="text-3xl font-black text-inst-dark">{{ total_students }}</p>
+                </div>
             </div>
-
-            <h2 class="text-2xl font-black text-inst-dark mb-3">Panel de Control</h2>
-            <p class="text-gray-500 mb-8 leading-relaxed font-medium">
-                Selecciona una sección y un curso del menú lateral para ver la lista de estudiantes y gestionar sus
-                reportes de acompañamiento.
-            </p>
-
-            {% if error %}
-            <div class="bg-red-50 text-red-600 px-4 py-3 rounded-xl mb-6 border border-red-100 flex items-center">
-                <i class="bi bi-exclamation-triangle-fill mr-2"></i> {{ error }}
+            <!-- Stat 2 -->
+            <div class="bg-white p-6 border border-gray-200 shadow-sm flex items-center transition-all hover:shadow-md">
+                <div class="w-14 h-14 bg-yellow-50 text-yellow-600 flex items-center justify-center mr-4">
+                    <i class="bi bi-journal-text text-2xl"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Reportes Activos</p>
+                    <p class="text-3xl font-black text-inst-dark">{{ active_reports }}</p>
+                </div>
             </div>
-            {% endif %}
-
-            <div class="flex justify-center gap-4">
-                <button onclick="document.getElementById('sidebar-nav').scrollIntoView({ behavior: 'smooth' })"
-                    class="bg-inst-blue text-white px-6 py-2.5 rounded-xl hover:bg-blue-600 transition-all font-bold text-sm shadow hover:shadow-md uppercase tracking-wide flex items-center">
-                    <i class="bi bi-arrow-left mr-2 font-bold text-lg"></i> Ir al Menú
+            <!-- Stat 3: Action -->
+            <div class="bg-white p-6 border border-gray-200 shadow-sm flex flex-col justify-center items-start">
+               <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Acceso Rápido</p>
+               <button onclick="
+                   const sidebar = document.querySelector('aside');
+                   if (sidebar) {
+                       sidebar.classList.add('ring-4', 'ring-inst-blue', 'scale-[1.02]');
+                       setTimeout(() => sidebar.classList.remove('ring-4', 'ring-inst-blue', 'scale-[1.02]'), 400);
+                   }"
+                    class="bg-inst-blue text-white px-4 py-3 hover:bg-blue-600 transition-all font-bold text-sm shadow-sm uppercase tracking-wide flex items-center w-full justify-center">
+                    <i class="bi bi-arrow-left mr-2 font-bold"></i> Explorar Cursos
                 </button>
+            </div>
+        </div>
+
+        {% if error %}
+        <div class="bg-red-50 text-red-600 px-4 py-3 mb-6 border border-red-200 flex items-center">
+            <i class="bi bi-exclamation-triangle-fill mr-2"></i> {{ error }}
+        </div>
+        {% endif %}
+
+        <!-- Recent Activity Table -->
+        <div class="bg-white border border-gray-200 shadow-sm rounded-none">
+            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
+                <h3 class="font-black text-inst-dark uppercase tracking-wide text-sm"><i class="bi bi-clock-history mr-2 text-inst-blue"></i> Actividad Reciente</h3>
+                <a href="/reports" class="text-xs font-bold text-inst-blue hover:underline uppercase tracking-widest">Ver Todo <i class="bi bi-arrow-right ml-1"></i></a>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-white border-b border-gray-200 text-xs text-gray-500 uppercase tracking-widest">
+                            <th class="px-6 py-4 font-bold">Estudiante</th>
+                            <th class="px-6 py-4 font-bold">Curso</th>
+                            <th class="px-6 py-4 font-bold">Fin Educativo</th>
+                            <th class="px-6 py-4 font-bold">Fecha</th>
+                            <th class="px-6 py-4 font-bold text-right">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-sm font-medium text-gray-700 divide-y divide-gray-100">
+                        {% for report in recent_reports %}
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="px-6 py-4">
+                                <div class="font-black text-inst-dark">{{ report.student.full_name }}</div>
+                                <div class="text-xs text-gray-400 mt-1"><i class="bi bi-person-badge mr-1"></i>{{ report.student.code }}</div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="bg-gray-100 text-gray-700 font-bold px-2 py-1 text-xs border border-gray-200">{{ report.student.course }}</span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="px-2 py-1 text-[10px] font-black uppercase tracking-wider border border-gray-200 {% if report.purpose == 'Convivencia' %}bg-orange-50 text-orange-700 border-orange-200{% elif report.purpose == 'Académico' %}bg-blue-50 text-blue-700 border-blue-200{% elif report.purpose == 'Psicoafectivo' %}bg-purple-50 text-purple-700 border-purple-200{% else %}bg-green-50 text-green-700 border-green-200{% endif %}">
+                                    {{ report.purpose }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-xs text-gray-500 font-bold">
+                                {{ report.created_at.strftime('%Y-%m-%d') if report.created_at else 'N/A' }}
+                                <div class="text-[10px] text-gray-400 font-medium">{{ report.created_at.strftime('%H:%M') if report.created_at else '' }}</div>
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <a href="/reports/{{ report.id }}" class="inline-flex items-center justify-center w-8 h-8 bg-gray-50 text-inst-blue border border-gray-200 hover:bg-inst-blue hover:text-white transition-colors" title="Ver Reporte">
+                                    <i class="bi bi-eye-fill"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="px-6 py-12 text-center text-gray-400 font-medium">
+                                <i class="bi bi-inbox text-4xl block mb-3 text-gray-300"></i>
+                                No hay reportes recientes registrados en el sistema.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>

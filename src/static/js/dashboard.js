@@ -172,11 +172,11 @@ function renderStudentGrid(students) {
     <table class="w-full text-left border-collapse">
         <thead>
             <tr>
-                <th class="sticky top-0 bg-[#023059] z-10 px-6 py-4 text-xs font-black text-white uppercase tracking-widest border-b border-gray-100 shadow-sm rounded-tl-xl text-center">Nombres</th>
+                <th class="sticky top-0 bg-[#023059] z-10 px-6 py-4 text-xs font-black text-white uppercase tracking-widest border-b border-gray-100 shadow-sm rounded-none text-center">Nombres</th>
                 <th class="sticky top-0 bg-[#3b82f6] z-10 px-6 py-4 text-xs font-black text-white uppercase tracking-widest border-b border-gray-100 shadow-sm text-center">Curso</th>
                 <th class="sticky top-0 bg-[#3b82f6] z-10 px-6 py-4 text-xs font-black text-white uppercase tracking-widest border-b border-gray-100 shadow-sm text-center w-1/3">Reporte Fines Educativos</th>
                 <th class="sticky top-0 bg-[#3b82f6] z-10 px-6 py-4 text-xs font-black text-white uppercase tracking-widest border-b border-gray-100 shadow-sm text-center">Nuevo Reporte</th>
-                <th class="sticky top-0 bg-[#3b82f6] z-10 px-6 py-4 text-xs font-black text-white uppercase tracking-widest border-b border-gray-100 shadow-sm rounded-tr-xl text-center">Editar Reporte</th>
+                <th class="sticky top-0 bg-[#3b82f6] z-10 px-6 py-4 text-xs font-black text-white uppercase tracking-widest border-b border-gray-100 shadow-sm rounded-none text-center">Editar Reporte</th>
             </tr>
         </thead>
         <tbody class="bg-white">`;
@@ -203,7 +203,7 @@ function renderStudentGrid(students) {
             </td>
             <td class="px-6 py-4 text-center">
                 <!-- Nuevo Reporte Button -->
-                <button class="open-report-btn bg-green-600 text-white hover:bg-green-700 px-5 py-2.5 rounded-full text-[10px] font-black uppercase tracking-wider transition-all shadow-sm hover:shadow flex items-center justify-center mx-auto"
+                <button class="open-report-btn bg-green-600 text-white hover:bg-green-700 px-5 py-2.5 rounded-none text-[10px] font-black uppercase tracking-wider transition-all shadow-sm hover:shadow flex items-center justify-center mx-auto"
                     data-id="${student.id}" 
                     data-name="${student.full_name.replace(/"/g, '&quot;')}" 
                     data-code="${student.code}"
@@ -215,13 +215,13 @@ function renderStudentGrid(students) {
             <td class="px-6 py-4 text-center">
                 <!-- Editar Reporte Button (Only enabled if active reports exist) -->
                 ${student.active_reports.length > 0 ? 
-                `<button class="edit-report-btn text-gray-400 hover:text-inst-blue px-3 py-2 rounded-lg text-lg transition-all flex items-center justify-center mx-auto"
+                `<button class="edit-report-btn text-gray-400 hover:text-inst-blue px-3 py-2 rounded-none text-lg transition-all flex items-center justify-center mx-auto"
                     data-id="${student.id}" 
                     data-report-id="${student.active_reports[0].id}" 
                     title="Editar Reporte Existente">
                     <i class="bi bi-pencil-square"></i>
                 </button>` : 
-                 `<button class="opacity-30 cursor-not-allowed text-gray-300 px-3 py-2 rounded-lg text-lg flex items-center justify-center mx-auto" disabled>
+                 `<button class="opacity-30 cursor-not-allowed text-gray-300 px-3 py-2 rounded-none text-lg flex items-center justify-center mx-auto" disabled>
                     <i class="bi bi-pencil-square"></i>
                  </button>`
                 }
@@ -260,7 +260,7 @@ function renderBadges(reports) {
         if (r.purpose === 'Convivencia') colorClass = 'bg-orange-100 text-orange-800 border-orange-300 hover:bg-orange-200';
         if (r.purpose === 'Psicoafectivo') colorClass = 'bg-blue-100 text-blue-800 border-blue-300 hover:bg-blue-200';
         
-        return `<a href="/reports/${r.id}" class="px-3 py-1.5 rounded-full text-[9px] font-black border ${colorClass} uppercase tracking-wider shadow-sm transition-all hover:shadow flex items-center justify-center no-underline whitespace-nowrap" title="Ir a reporte ${r.purpose}">
+        return `<a href="/reports/${r.id}" class="px-3 py-1.5 rounded-none text-[9px] font-black border ${colorClass} uppercase tracking-wider shadow-sm transition-all hover:shadow flex items-center justify-center no-underline whitespace-nowrap" title="Ir a reporte ${r.purpose}">
             ${r.purpose}
         </a>`;
     }).join('');
