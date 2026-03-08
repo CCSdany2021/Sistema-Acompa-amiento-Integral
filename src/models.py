@@ -79,6 +79,10 @@ class Student(Base):
     def active_reports(self):
         return [r for r in self.reports if r.status in [ReportStatus.PROGRAMADO, ReportStatus.SEGUIMIENTO]]
 
+    @property
+    def closed_reports(self):
+        return [r for r in self.reports if r.status == ReportStatus.ATENDIDO]
+
 class Report(Base):
     __tablename__ = "reports"
 
@@ -98,6 +102,7 @@ class Report(Base):
     
     objective = Column(Text)
     academic_period = Column(String)
+    is_accomplished = Column(Boolean, nullable=True) # "Cumplió con el acompañamiento"
     
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     closed_at = Column(DateTime(timezone=True), nullable=True)

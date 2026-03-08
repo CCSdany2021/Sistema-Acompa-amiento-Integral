@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="h-full flex flex-col bg-gray-50 overflow-hidden rounded-2xl shadow-sm border border-gray-200">
+    <!-- Header / Filters (HubSpot Style) -->
+    <div class="bg-white border-b border-gray-200 px-6 py-4 shrink-0 flex flex-col gap-4 z-10">
+
+        <!-- Top Row: Search and Actions -->
+        <div class="flex flex-wrap justify-between items-center gap-4">
+
+            <!-- Search Bar -->
+            <div class="relative w-80">
+                <i class="bi bi-search absolute left-3 top-2 text-gray-400 text-sm"></i>
+                <input type="text" id="filter-name" placeholder="Buscar reportes..."
+                    class="text-sm text-gray-800 rounded-md border border-gray-300 pl-9 pr-4 py-1.5 focus:outline-none focus:border-inst-blue focus:ring-1 focus:ring-inst-blue w-full shadow-sm">
+            </div>
+
+            <!-- Quick Actions Options Area (Reserved for future use) -->
+            <div class="flex items-center gap-2">
+                <!-- Removed non-functional HubSpot replica buttons to avoid confusion. -->
+            </div>
+        </div>
+
+        <!-- Bottom Row: Filter Dropdowns -->
+        <div class="flex flex-wrap items-center gap-3">
+
+            <div class="relative group">
+                <select id="filter-purpose"
+                    class="appearance-none bg-white border-none text-gray-800 text-xs font-bold px-2 py-1 pr-6 hover:bg-gray-50 focus:outline-none cursor-pointer">
+                    <option value="">Fin educativo (Todos)</option>
+                    <option value="Académico">Académico</option>
+                    <option value="Convivencia">Convivencia</option>
+                    <option value="Espiritual">Espiritual</option>
+                    <option value="Psicoafectivo">Psicoafectivo</option>
+                </select>
+                <i
+                    class="bi bi-caret-down-fill text-[9px] text-gray-500 absolute right-1 top-2.5 pointer-events-none"></i>
+            </div>
+
+            <div class="w-px h-4 bg-gray-300"></div>
+
+            <div class="relative group">
+                <select id="filter-status"
+                    class="appearance-none bg-white border-none text-gray-800 text-xs font-bold px-2 py-1 pr-6 hover:bg-gray-50 focus:outline-none cursor-pointer">
+                    <option value="">Estado del reporte (Todos)</option>
+                    <option value="PROGRAMADO">Programado</option>
+                    <option value="SEGUIMIENTO">Seguimiento</option>
+                    <option value="ATENDIDO">Atendido</option>
+                </select>
+                <i
+                    class="bi bi-caret-down-fill text-[9px] text-gray-500 absolute right-1 top-2.5 pointer-events-none"></i>
+            </div>
+
+            <div class="w-px h-4 bg-gray-300"></div>
+
+            <div class="relative group">
+                <select id="filter-section"
+                    class="appearance-none bg-white border-none text-gray-800 text-xs font-bold px-2 py-1 pr-6 hover:bg-gray-50 focus:outline-none cursor-pointer">
+                    <option value="">Sección (Todas)</option>
+                    <option value="Jardín a Tercero">Jardín a Tercero</option>
+                    <option value="Cuarto a Séptimo">Cuarto a Séptimo</option>
+                    <option value="Octavo a Undécimo">Octavo a Undécimo</option>
+                </select>
+                <i
+                    class="bi bi-caret-down-fill text-[9px] text-gray-500 absolute right-1 top-2.5 pointer-events-none"></i>
+            </div>
+
+            <div class="w-px h-4 bg-gray-300"></div>
+
+            <div class="relative group">
+                <select id="filter-course"
+                    class="appearance-none bg-white border-none text-gray-800 text-xs font-bold px-2 py-1 pr-6 hover:bg-gray-50 focus:outline-none cursor-pointer">
+                    <option value="">Curso (Todos)</option>
+                    <!-- Injected Options -->
+                </select>
+                <i
+                    class="bi bi-caret-down-fill text-[9px] text-gray-500 absolute right-1 top-2.5 pointer-events-none"></i>
+            </div>
+
+            <div class="w-px h-4 bg-gray-300"></div>
+
+            <div class="relative group">
+                <select id="filter-period"
+                    class="appearance-none bg-white border-none text-gray-800 text-xs font-bold px-2 py-1 pr-6 hover:bg-gray-50 focus:outline-none cursor-pointer">
+                    <option value="">Periodo (Todos)</option>
+                    <!-- Injected Options -->
+                </select>
+                <i
+                    class="bi bi-caret-down-fill text-[9px] text-gray-500 absolute right-1 top-2.5 pointer-events-none"></i>
+            </div>
+
+            <div class="w-px h-4 bg-gray-300"></div>
+
+            <button class="text-inst-blue text-xs font-bold hover:underline flex items-center gap-1.5 ml-2">
+                <i class="bi bi-filter-right"></i> Filtros avanzados
+            </button>
+
+        </div>
+    </div>
+
+    <!-- Main Table Area -->
+    <div class="flex-1 overflow-auto bg-white border-t border-gray-200">
+        <table class="w-full text-left text-xs whitespace-nowrap" id="reports-table">
+            <thead class="bg-[#f5f8fa] border-b border-gray-200 sticky top-0 z-20">
+                <tr class="text-[11px] font-semibold text-gray-700 capitalize">
+                    <th class="px-4 py-3 border-r border-gray-200 w-10 text-center">
+                        <input type="checkbox"
+                            class="rounded border-gray-300 text-inst-blue focus:ring-inst-blue w-3.5 h-3.5 cursor-pointer"
+                            disabled>
+                    </th>
+                    <th
+                        class="px-4 py-3 border-r border-gray-200 hover:bg-gray-100 cursor-pointer group whitespace-nowrap">
+                        Nombre estudiante <i
+                            class="bi bi-arrow-down-up opacity-0 group-hover:opacity-100 text-[10px] ml-1"></i></th>
+                    <th
+                        class="px-4 py-3 border-r border-gray-200 hover:bg-gray-100 cursor-pointer group whitespace-nowrap">
+                        Curso <i class="bi bi-arrow-down-up opacity-0 group-hover:opacity-100 text-[10px] ml-1"></i>
+                    </th>
+                    <th
+                        class="px-4 py-3 border-r border-gray-200 hover:bg-gray-100 cursor-pointer group whitespace-nowrap">
+                        Grado <i class="bi bi-arrow-down-up opacity-0 group-hover:opacity-100 text-[10px] ml-1"></i>
+                    </th>
+                    <th
+                        class="px-4 py-3 border-r border-gray-200 hover:bg-gray-100 cursor-pointer group whitespace-nowrap">
+                        Sección <i class="bi bi-arrow-down-up opacity-0 group-hover:opacity-100 text-[10px] ml-1"></i>
+                    </th>
+                    <th
+                        class="px-4 py-3 border-r border-gray-200 hover:bg-gray-100 cursor-pointer group whitespace-nowrap">
+                        Quien remite <i
+                            class="bi bi-arrow-down-up opacity-0 group-hover:opacity-100 text-[10px] ml-1"></i></th>
+                    <th
+                        class="px-4 py-3 border-r border-gray-200 hover:bg-gray-100 cursor-pointer group whitespace-nowrap">
+                        Quien atiende <i
+                            class="bi bi-arrow-down-up opacity-0 group-hover:opacity-100 text-[10px] ml-1"></i></th>
+                    <th
+                        class="px-4 py-3 border-r border-gray-200 hover:bg-gray-100 cursor-pointer group whitespace-nowrap">
+                        Estado <i class="bi bi-arrow-down-up opacity-0 group-hover:opacity-100 text-[10px] ml-1"></i>
+                    </th>
+                    <th
+                        class="px-4 py-3 border-r border-gray-200 hover:bg-gray-100 cursor-pointer group whitespace-nowrap">
+                        Fin educativo <i
+                            class="bi bi-arrow-down-up opacity-0 group-hover:opacity-100 text-[10px] ml-1"></i></th>
+                    <th
+                        class="px-4 py-3 border-r border-gray-200 hover:bg-gray-100 cursor-pointer group whitespace-nowrap">
+                        Periodo académico <i
+                            class="bi bi-arrow-down-up opacity-0 group-hover:opacity-100 text-[10px] ml-1"></i></th>
+                    <th class="px-4 py-3 text-center whitespace-nowrap">Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="table-body" class="divide-y divide-gray-200 bg-white">
+                <!-- JS Inject -->
+            </tbody>
+        </table>
+
+        <!-- Loading State -->
+        <div id="loading" class="flex justify-center items-center h-32 hidden">
+            <i class="bi bi-arrow-repeat animate-spin text-3xl text-inst-blue"></i>
+        </div>
+
+        <!-- Empty State -->
+        <div id="empty-state" class="flex flex-col justify-center items-center h-48 hidden text-gray-400">
+            <i class="bi bi-inbox text-5xl mb-2"></i>
+            <p class="font-bold">No se encontraron reportes</p>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Dialog: Mini-Detail View -->
+<div id="student-modal"
+    class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm w-full h-full flex justify-center items-center px-4 py-6">
+    <div class="bg-[#f5f8fa] rounded-2xl shadow-2xl w-full max-w-[1200px] flex flex-col relative max-h-[92vh] overflow-hidden border border-slate-200"
+        x-data="{ activeReportId: null, activeTab: 'objective', themeBorder: 'border-inst-blue', themeText: 'text-inst-blue' }"
+        @open-modal.window="activeReportId = $event.detail.firstId; activeTab = 'objective'"
+        @update-theme.window="themeBorder = $event.detail.indicator.replace('bg-', 'border-'); themeText = $event.detail.text">
+
+        <!-- Header -->
+        <div class="h-14 bg-white border-b border-slate-200 flex items-center px-6 justify-between shrink-0">
+            <h2 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                <i class="bi bi-person-badge" :class="themeText"></i> REPORTE DIGITAL DEL ESTUDIANTE
+            </h2>
+            <button onclick="document.getElementById('student-modal').classList.add('hidden')"
+                class="text-slate-400 hover:text-red-500 transition-colors">
+                <i class="bi bi-x-lg text-lg"></i>
+            </button>
+        </div>
+
+        <div class="flex-1 overflow-hidden flex flex-col lg:flex-row">
+            <!-- Sidebar: Info & Report Selection (Like Detail Page) -->
+            <div class="w-full lg:w-[300px] shrink-0 border-r border-slate-200 bg-white overflow-y-auto p-4 space-y-5">
+                <!-- Info Estudiante -->
+                <div id="modal-student-info">
+                    <!-- Injected via JS -->
+                </div>
+
+                <!-- Selector de Reportes (Fines Educativos) -->
+                <div class="space-y-2">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Fines de
+                        Acompañamiento</p>
+                    <div id="modal-report-selector" class="space-y-1">
+                        <!-- Injected via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Area (Like Detail Page tabs) -->
+            <div class="flex-1 flex flex-col bg-[#f5f8fa] overflow-hidden">
+                <!-- Tabs Navigation -->
+                <div class="bg-white border-b border-slate-200 shrink-0 flex items-center px-6 z-10 space-x-2">
+                    <button @click="activeTab = 'objective'"
+                        :class="activeTab === 'objective' ? themeBorder + ' ' + themeText + ' font-bold' : 'border-transparent text-slate-500'"
+                        class="py-4 px-4 text-[11px] uppercase tracking-wider transition-all border-b-2 font-black focus:outline-none">
+                        Objetivo
+                    </button>
+                    <button @click="activeTab = 'observations'"
+                        :class="activeTab === 'observations' ? themeBorder + ' ' + themeText + ' font-bold' : 'border-transparent text-slate-500'"
+                        class="py-4 px-4 text-[11px] uppercase tracking-wider transition-all border-b-2 font-black focus:outline-none">
+                        Observaciones
+                    </button>
+                    <button @click="activeTab = 'recommendations'"
+                        :class="activeTab === 'recommendations' ? themeBorder + ' ' + themeText + ' font-bold' : 'border-transparent text-slate-500'"
+                        class="py-4 px-4 text-[11px] uppercase tracking-wider transition-all border-b-2 font-black focus:outline-none">
+                        Recomendaciones
+                    </button>
+                </div>
+
+                <!-- Tab Content -->
+                <div id="modal-content-area" class="flex-1 overflow-y-auto p-6">
+                    <!-- Injected via JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Analytics Logic -->
+<script src="/static/js/reports_list.js"></script>
+{% endblock %}

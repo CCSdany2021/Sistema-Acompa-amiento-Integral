@@ -99,15 +99,19 @@ def create_report(
     db: Session = Depends(database.get_db),
     current_user: dict = Depends(auth.get_current_user)
 ):
-    # Check for existing active report first
-    existing = crud.get_active_report(db, report.student_id, report.purpose)
+    # Check for ANY existing report of this type (Unique constraint per student/purpose)
+    existing = db.query(models.Report).filter(
+        models.Report.student_id == report.student_id,
+        models.Report.purpose == report.purpose
+    ).first()
+    
     if existing:
-        # Get creator name safely
         creator_name = existing.created_by.full_name if existing.created_by else "Desconocido"
+        status_text = "activo" if existing.status != models.ReportStatus.ATENDIDO else "ya atendido/cerrado"
         raise HTTPException(
             status_code=409, 
             detail={
-                "message": f"El estudiante ya tiene un reporte activo para {report.purpose.value}.",
+                "message": f"El estudiante ya cuenta con un reporte {status_text} para el fin educativo {report.purpose.value}.",
                 "report_id": existing.id,
                 "created_by": creator_name,
                 "created_at": existing.created_at.isoformat()
@@ -137,16 +141,50 @@ def create_recommendation(
 ):
     return crud.create_recommendation(db, recommendation, report_id, current_user['id'])
 
-@router.get("/stats/analytics")
-def get_analytics(
+
+@router.post("/reports/{report_id}/close", response_model=schemas.Report)
+def close_report_endpoint(
+    report_id: int, 
+    close_data: schemas.ReportClose, 
     db: Session = Depends(database.get_db),
     current_user: dict = Depends(auth.get_current_user)
 ):
-    # Determine permissions?
-    # For now, let all logged-in users see stats, or restrict to Admin/Coord?
-    # User didn't specify, but usually "Informes" is for Admins/Chords.
-    # Teachers might only see their stats?
-    # For this iteration, global stats (or we can filter inside CRUD if needed).
-    # Since crud.get_analytics_data is global, we'll strip it for now.
-    
-    return crud.get_analytics_data(db)
+    report = crud.close_report(db, report_id, close_data)
+    if not report:
+        raise HTTPException(status_code=404, detail="Report not found")
+    return report
+
+@router.get("/filters/periods", response_model=List[str])
+def get_periods_endpoint(db: Session = Depends(database.get_db)):
+    """Return distinct academic periods for filter dropdowns."""
+    return crud.get_periods(db)
+
+@router.get("/filters/sections", response_model=List[str])
+def get_sections_endpoint(db: Session = Depends(database.get_db)):
+    """Return distinct sections for filter dropdowns."""
+    return crud.get_sections(db)
+
+@router.get("/filters/courses", response_model=List[str])
+def get_courses_endpoint(db: Session = Depends(database.get_db)):
+    """Return distinct courses for filter dropdowns."""
+    return crud.get_courses(db)
+
+@router.get("/stats/analytics")
+def get_analytics(
+    db: Session = Depends(database.get_db),
+    current_user: dict = Depends(auth.get_current_user),
+    period: str = None,
+    section: str = None,
+    course: str = None,
+    status: str = None,
+    educator_id: int = None
+):
+    """Return analytics data, optionally filtered by period, section, course, status or educator."""
+    return crud.get_analytics_data(
+        db, 
+        period=period, 
+        section=section, 
+        course=course, 
+        status=status, 
+        educator_id=educator_id
+    )

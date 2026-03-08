@@ -1,4 +1,5 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
+from sqlalchemy import func
 from src import models, schemas
 from src.models import ReportStatus
 from datetime import datetime
@@ -9,10 +10,6 @@ def get_user_by_email(db: Session, email: str):
 
 def get_staff_users(db: Session):
     # Return users who can be assigned (Coordinators, Admins, etc.)
-    # Or just all users for now? 
-    # Let's filter out students if we had them in same table (we don't).
-    # Maybe exclude normal teachers if they don't receive referrals?
-    # User asked for "integrantes que acompañan", so we return all imported users.
     return db.query(models.User).all()
 
 # --- Student ---
@@ -24,11 +21,22 @@ def get_students(db: Session, skip: int = 0, limit: int = 100, section: models.S
         query = query.filter(models.Student.course == course)
     return query.offset(skip).limit(limit).all()
 
+
+def get_periods(db: Session):
+    """Return list of distinct academic periods from reports."""
+    periods = db.query(models.Report.academic_period).distinct().all()
+    return [p[0] for p in periods if p[0] is not None]
+
+def get_sections(db: Session):
+    """Return list of distinct sections from students."""
+    sections = db.query(models.Student.section).distinct().all()
+    return [s[0] for s in sections if s[0] is not None]
+
 def get_courses(db: Session, section: models.SectionEnum = None):
     query = db.query(models.Student.course).distinct()
     if section:
         query = query.filter(models.Student.section == section)
-    return [c[0] for c in query.all()]
+    return [c[0] for c in query.all() if c[0] is not None]
 
 def create_student(db: Session, student: schemas.StudentBase):
     db_student = models.Student(**student.dict())
@@ -102,13 +110,26 @@ def get_reports(db: Session, user_role: models.RoleEnum, user: dict, skip: int =
     
     # Admin sees all (no filter)
     
+    # Add eager loading for serialization
+    query = query.options(
+        joinedload(models.Report.student),
+        joinedload(models.Report.assigned_to),
+        joinedload(models.Report.created_by),
+        joinedload(models.Report.observations).joinedload(models.Observation.created_by),
+        joinedload(models.Report.recommendations).joinedload(models.Recommendation.created_by)
+    )
+    
     return query.order_by(models.Report.created_at.desc()).offset(skip).limit(limit).all()
 
 def create_report(db: Session, report: schemas.ReportCreate, user_id: int):
-    # Constraint Check
-    existing = get_active_report(db, report.student_id, report.purpose)
+    # Strict Constraint Check: Only 1 report per purpose per student (Ever)
+    existing = db.query(models.Report).filter(
+        models.Report.student_id == report.student_id, 
+        models.Report.purpose == report.purpose
+    ).first()
+    
     if existing:
-        raise ValueError(f"Student already has an active report for {report.purpose.value}. Add an observation instead.")
+        raise ValueError(f"El estudiante ya cuenta con un reporte de tipo {report.purpose.value}. No se pueden duplicar reportes del mismo fin educativo.")
     
     db_report = models.Report(
         student_id=report.student_id,
@@ -116,8 +137,8 @@ def create_report(db: Session, report: schemas.ReportCreate, user_id: int):
         objective=report.objective,
         academic_period=report.academic_period,
         created_by_id=user_id,
-        assigned_to_id=report.assigned_to_id,  # Can be None
-        status=ReportStatus.PROGRAMADO
+        assigned_to_id=report.assigned_to_id, 
+        status=models.ReportStatus.PROGRAMADO
     )
     db.add(db_report)
     db.commit()
@@ -149,7 +170,6 @@ def create_observation(db: Session, observation: schemas.ObservationCreate, repo
         db.add(report)
         
     db.commit()
-    db.commit()
     db.refresh(db_obs)
     return db_obs
 
@@ -168,52 +188,97 @@ def create_recommendation(db: Session, recommendation: schemas.RecommendationCre
     db.refresh(db_rec)
     return db_rec
 
-def get_analytics_data(db: Session):
-    from sqlalchemy import func
+def close_report(db: Session, report_id: int, close_data: schemas.ReportClose):
+    db_report = db.query(models.Report).filter(models.Report.id == report_id).first()
+    if not db_report:
+        return None
     
-    # 1. Total Reports
-    total_reports = db.query(func.count(models.Report.id)).scalar()
+    db_report.status = models.ReportStatus.ATENDIDO
+    db_report.closed_at = func.now()
+    db_report.is_accomplished = close_data.is_accomplished
     
-    # 2. Total Students with Reports
-    total_students_distinct = db.query(func.count(func.distinct(models.Report.student_id))).scalar()
+    db.add(db_report)
+    db.commit()
+    db.refresh(db_report)
+    return db_report
+
+def get_analytics_data(db: Session, period: str = None, section: str = None, course: str = None, status: str = None, educator_id: int = None):
+    # Base query for reports
+    query = db.query(models.Report).join(models.Student)
     
-    # 3. By Status
-    # Result: [('PROGRAMADO', 5), ('ATENDIDO', 10)...]
-    status_counts = db.query(models.Report.status, func.count(models.Report.id))\
-                      .group_by(models.Report.status).all()
-                      
-    # 4. By Purpose
-    purpose_counts = db.query(models.Report.purpose, func.count(models.Report.id))\
-                       .group_by(models.Report.purpose).all()
+    # Apply Filters
+    if period:
+        query = query.filter(models.Report.academic_period == period)
+    if section:
+        query = query.filter(models.Student.section == section)
+    if course:
+        query = query.filter(models.Student.course == course)
+    if status:
+        query = query.filter(models.Report.status == status)
+    if educator_id:
+        query = query.filter(models.Report.assigned_to_id == educator_id)
+
+    # 1. KPIs
+    total_reports = query.count()
+    total_students = query.with_entities(func.count(func.distinct(models.Report.student_id))).scalar() or 0
+    
+    # 2. Status Distribution
+    status_counts = query.with_entities(models.Report.status, func.count(models.Report.id))\
+                       .group_by(models.Report.status).all()
                        
-    # 5. By Course
-    # Join Report -> Student to get Course
-    course_counts = db.query(models.Student.course, func.count(models.Report.id))\
-                      .join(models.Report, models.Report.student_id == models.Student.id)\
-                      .group_by(models.Student.course).all()
-                      
-    # 6. Detailed List (Student Name, Course, Active Reports Count, Total Reports Count)
-    # This might be heavy if many students. Limit to top 50 or so? 
-    # Or just return all for now (assuming school size < 2000 students and not all have reports)
-    # Let's get top 100 students by report count
+    # 3. Purpose Distribution
+    purpose_counts = query.with_entities(models.Report.purpose, func.count(models.Report.id))\
+                        .group_by(models.Report.purpose).all()
+                       
+    # 4. Course Distribution (Top 10)
+    course_counts = query.with_entities(models.Student.course, func.count(models.Report.id))\
+                       .group_by(models.Student.course)\
+                       .order_by(func.count(models.Report.id).desc()).limit(10).all()
+                       
+    # 5. Student vs Educator Ranking (Matrix Data)
+    # We'll get the distribution of assignments for the top 15 students
+    top_students_ids = query.with_entities(models.Report.student_id)\
+                            .group_by(models.Report.student_id)\
+                            .order_by(func.count(models.Report.id).desc()).limit(15).all()
+    top_ids = [s[0] for s in top_students_ids]
     
-    student_stats = db.query(
-        models.Student.full_name,
-        models.Student.course,
-        func.count(models.Report.id).label('total_reports')
-    ).join(models.Report, models.Report.student_id == models.Student.id)\
-     .group_by(models.Student.id)\
-     .order_by(func.count(models.Report.id).desc())\
-     .limit(100).all()
-     
+    matrix_data = []
+    if top_ids:
+        matrix_query = db.query(
+            models.Student.full_name,
+            models.User.full_name.label('educator'),
+            func.count(models.Report.id)
+        ).join(models.Report, models.Report.student_id == models.Student.id)\
+         .outerjoin(models.User, models.Report.assigned_to_id == models.User.id)\
+         .filter(models.Student.id.in_(top_ids))\
+         .group_by(models.Student.id, models.User.id).with_entities(models.Student.id, models.Student.full_name, models.Student.code, models.User.id, models.User.full_name, func.count(models.Report.id)).all()
+         
+        for s_id, s_name, s_code, e_id, e_name, count in matrix_query:
+            # For each pair, get status and purpose breakdown
+            details = db.query(models.Report.status, models.Report.purpose)\
+                        .filter(models.Report.student_id == s_id, models.Report.assigned_to_id == e_id).all()
+            
+            statuses = {}
+            purposes = []
+            for d_status, d_purpose in details:
+                statuses[d_status] = statuses.get(d_status, 0) + 1
+                if d_purpose and d_purpose not in purposes:
+                    purposes.append(d_purpose)
+
+            matrix_data.append({
+                "student": s_name,
+                "student_code": s_code,
+                "educator": e_name or "Sin Asignar",
+                "count": count,
+                "statuses": statuses,
+                "purposes": purposes
+            })
+
     return {
         "total_reports": total_reports,
-        "total_students": total_students_distinct,
+        "total_students": total_students,
         "by_status": {s.value: c for s, c in status_counts},
         "by_purpose": {p.value: c for p, c in purpose_counts},
-        "by_course": {c: count for c, count in course_counts},
-        "student_ranking": [
-            {"name": name, "course": course, "count": count} 
-            for name, course, count in student_stats
-        ]
+        "by_course": {c: count for c, count in course_counts if c},
+        "matrix": matrix_data
     }

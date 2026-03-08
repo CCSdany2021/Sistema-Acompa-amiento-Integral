@@ -20,6 +20,7 @@ app.add_middleware(
 
 # Mount Static Files
 app.mount("/static", StaticFiles(directory="src/static"), name="static")
+app.mount("/archivos", StaticFiles(directory="archivos"), name="archivos")
 
 # Include Routers
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
@@ -31,4 +32,4 @@ app.include_router(import_data.router)
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("src.main:app", host="127.0.0.1", port=8001, reload=True)
+    uvicorn.run("src.main:app", host="0.0.0.0", port=8005, reload=True)

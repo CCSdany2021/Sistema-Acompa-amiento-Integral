@@ -56,8 +56,9 @@ class ObservationCreate(ObservationBase):
 class Observation(ObservationBase):
     id: int
     report_id: int
-    created_by_id: int
+    created_by_id: Optional[int] = None
     date_log: datetime
+    created_by: Optional[UserBase] = None
     class Config:
         from_attributes = True
 
@@ -70,8 +71,9 @@ class RecommendationCreate(RecommendationBase):
 class Recommendation(RecommendationBase):
     id: int
     report_id: int
-    created_by_id: int
+    created_by_id: Optional[int] = None
     date_log: datetime
+    created_by: Optional[UserBase] = None
     class Config:
         from_attributes = True
 
@@ -84,15 +86,20 @@ class ReportBase(BaseModel):
 class ReportCreate(ReportBase):
     student_id: int
 
+class ReportClose(BaseModel):
+    is_accomplished: bool
+
 class Report(ReportBase):
     id: int
     status: ReportStatus
-    created_by_id: int
+    created_by_id: Optional[int] = None
     created_at: datetime
     closed_at: Optional[datetime]
+    is_accomplished: Optional[bool] = None
     
     student: Optional[Student] = None
     assigned_to: Optional[UserBase] = None
+    created_by: Optional[UserBase] = None
     
     observations: List[Observation] = []
     recommendations: List[Recommendation] = []

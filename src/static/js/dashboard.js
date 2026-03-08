@@ -30,6 +30,23 @@ async function loadUsers() {
     }
 }
 
+function getGradeName(course) {
+    if (!course) return '---';
+    const c = course.toString().toUpperCase();
+    if (c.startsWith('TR')) return 'Transición';
+    if (c.length === 3) {
+        const grade = c[0];
+        const grades = { '1': 'Primero', '2': 'Segundo', '3': 'Tercero', '4': 'Cuarto', '5': 'Quinto', '6': 'Sexto', '7': 'Séptimo', '8': 'Octavo', '9': 'Noveno' };
+        return grades[grade] || course;
+    }
+    if (c.length === 4) {
+        const grade = c.substring(0, 2);
+        if (grade === '10') return 'Décimo';
+        if (grade === '11') return 'Undécimo';
+    }
+    return course;
+}
+
 async function loadDashboardData() {
     try {
         const response = await fetch('/api/reports?limit=10');
@@ -61,54 +78,77 @@ async function loadDashboardData() {
         }
         
         // Update Stats
-        const statElements = document.querySelectorAll('h3.text-3xl.font-bold');
-        if (statElements.length >= 4) {
-             const activeReports = reports.filter(r => r.status === 'PROGRAMADO' || r.status === 'SEGUIMIENTO');
-             const attendedReports = reports.filter(r => r.status === 'ATENDIDO');
-             
-             statElements[0].textContent = reports.length;
-             statElements[1].textContent = activeReports.length;
-             statElements[2].textContent = attendedReports.length;
-             statElements[3].textContent = reports.filter(r => r.status === 'PROGRAMADO').length; 
-        }
+        // Update Stats using specific IDs
+        const statTotal = document.getElementById('stat-total');
+        const statActive = document.getElementById('stat-active');
+        const statPending = document.getElementById('stat-pending');
+
+        if (statTotal) statTotal.textContent = reports.length;
+        if (statActive) statActive.textContent = reports.filter(r => r.status === 'SEGUIMIENTO').length;
+        if (statPending) statPending.textContent = reports.filter(r => r.status === 'PROGRAMADO').length;
 
         if (recentArea && reports.length > 0) {
-            let html = '<div class="divide-y divide-slate-50">';
+            let html = `
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-slate-50 border-b border-slate-100 text-[10px] text-slate-400 font-semibold">
+                        <th class="px-8 py-4">Estudiante</th>
+                        <th class="px-8 py-4">Curso</th>
+                        <th class="px-8 py-4">Fin Educativo / Estado</th>
+                        <th class="px-8 py-4 text-right">Acción</th>
+                    </tr>
+                </thead>
+                <tbody class="text-sm font-medium text-gray-700 divide-y divide-gray-50 bg-white">`;
         
-        reports.forEach(r => {
-            const studentName = r.student ? r.student.full_name : 'Desconocido';
-            const assignedName = r.assigned_to ? r.assigned_to.full_name.split(' ')[0] : 'Sin asignar'; // Short name
-            const date = new Date(r.created_at).toLocaleDateString();
-            
-            // Status Badge Color
-            let statusColor = 'bg-slate-100 text-slate-600';
-            if (r.status === 'PROGRAMADO') statusColor = 'bg-emerald-100 text-emerald-700';
-            if (r.status === 'SEGUIMIENTO') statusColor = 'bg-blue-100 text-blue-700';
-            if (r.status === 'ATENDIDO') statusColor = 'bg-slate-200 text-slate-700';
+            reports.forEach(r => {
+                const studentName = r.student ? r.student.full_name : 'Desconocido';
+                const studentId = r.student ? r.student.code : '---';
+                const rawCourse = r.student ? r.student.course : '---';
+                const courseName = getGradeName(rawCourse);
+                
+                let purposeColor = 'bg-slate-50 text-slate-700';
+                if (r.purpose === 'Convivencia') purposeColor = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+                else if (r.purpose === 'Académico') purposeColor = 'bg-blue-50 text-blue-700 border-blue-200';
+                else if (r.purpose === 'Psicoafectivo') purposeColor = 'bg-rose-50 text-rose-700 border-red-200';
+                else if (r.purpose === 'Espiritual') purposeColor = 'bg-purple-50 text-purple-700 border-purple-200';
 
-            // Generate HTML for Report Item
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = `
-            <div onclick="window.location.href='/reports/${r.id}'" class="p-4 hover:bg-slate-50 transition-colors cursor-pointer group border-b border-slate-50">
-                <div class="flex justify-between items-start mb-1">
-                    <h4 class="text-sm font-semibold text-slate-800 line-clamp-1 group-hover:text-blue-600 transition-colors">${studentName}</h4>
-                    <span class="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded ${statusColor}">${r.status}</span>
-                </div>
-                <p class="text-xs text-slate-500 mb-2 line-clamp-2">${r.objective}</p>
-                <div class="flex items-center justify-between text-xs text-slate-400">
-                    <div class="flex items-center" title="Encargado">
-                        <i class="fa-solid fa-user-circle mr-1.5"></i>
-                        <span>${assignedName}</span>
-                    </div>
-                    <span>${date}</span>
-                </div>
-            </div>`;
-            html += tempDiv.innerHTML;
-        });
+                let statusBadge = '';
+                if (r.status === 'PROGRAMADO') {
+                    statusBadge = `<span class="flex items-center gap-1.5 text-[10px] font-bold text-amber-700 bg-amber-100 px-2.5 py-1.5 rounded shadow-sm border border-amber-200 uppercase">PROGRAMADO</span>`;
+                } else if (r.status === 'SEGUIMIENTO') {
+                    statusBadge = `<span class="flex items-center gap-1.5 text-[10px] font-bold text-blue-700 bg-blue-100 px-2.5 py-1.5 rounded shadow-sm border border-blue-200 uppercase">SEGUIMIENTO</span>`;
+                } else if (r.status === 'ATENDIDO') {
+                    statusBadge = `<span class="flex items-center gap-1.5 text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2.5 py-1.5 rounded shadow-sm border border-emerald-200 uppercase">ATENDIDO</span>`;
+                }
 
-        html += '</div>';
-        recentArea.innerHTML = html;
-        } // Close if (recentArea && reports.length > 0)
+                html += `
+                <tr class="hover:bg-slate-50 transition-colors">
+                    <td class="px-8 py-5">
+                        <div class="font-bold text-slate-800 text-[11px]">${studentName}</div>
+                        <div class="text-[9px] text-slate-400 font-bold uppercase tracking-tight">Id: ${studentId}</div>
+                    </td>
+                    <td class="px-8 py-5">
+                        <span class="text-slate-600 font-bold px-2 py-1 text-[10px] border border-slate-200 bg-slate-50 rounded italic">${courseName}</span>
+                    </td>
+                    <td class="px-8 py-5">
+                        <div class="flex items-center gap-3">
+                            <span class="px-3 py-1.5 text-[10px] font-black border uppercase ${purposeColor}">
+                                ${r.purpose}
+                            </span>
+                            ${statusBadge}
+                        </div>
+                    </td>
+                    <td class="px-8 py-5 text-right">
+                        <a href="/reports/${r.id}" class="inline-flex items-center justify-center w-8 h-8 bg-inst-blue text-white rounded-full hover:bg-inst-navy transition-all shadow-sm">
+                            <i class="bi bi-eye-fill"></i>
+                        </a>
+                    </td>
+                </tr>`;
+            });
+
+            html += '</tbody></table>';
+            recentArea.innerHTML = html;
+        } 
 
     } catch (error) {
         console.error("Error loading dashboard data:", error);
@@ -157,79 +197,93 @@ function renderStudentGrid(students) {
 
     if (students.length > 0) {
         courseTitle.textContent = `Curso ${students[0].course}`;
-        courseSubtitle.textContent = `${students.length} Estudiantes matriculados 2026`;
+        courseSubtitle.textContent = `${students.length} Estudiantes - ${getGradeName(students[0].course)}`;
     }
 
     if (students.length === 0) {
         contentArea.innerHTML = `
             <div class="flex flex-col items-center justify-center h-64 text-slate-400">
-                <p>No hay estudiantes en este curso.</p>
+                <i class="fa-solid fa-users-slash text-5xl mb-4 opacity-20"></i>
+                <p class="font-bold text-xs">No hay estudiantes en este curso.</p>
             </div>`;
         return;
     }
 
     let html = `
-    <table class="w-full text-left border-collapse">
-        <thead>
-            <tr>
-                <th class="sticky top-0 bg-[#023059] z-10 px-6 py-4 text-xs font-black text-white uppercase tracking-widest border-b border-gray-100 shadow-sm rounded-none text-center">Nombres</th>
-                <th class="sticky top-0 bg-[#3b82f6] z-10 px-6 py-4 text-xs font-black text-white uppercase tracking-widest border-b border-gray-100 shadow-sm text-center">Curso</th>
-                <th class="sticky top-0 bg-[#3b82f6] z-10 px-6 py-4 text-xs font-black text-white uppercase tracking-widest border-b border-gray-100 shadow-sm text-center w-1/3">Reporte Fines Educativos</th>
-                <th class="sticky top-0 bg-[#3b82f6] z-10 px-6 py-4 text-xs font-black text-white uppercase tracking-widest border-b border-gray-100 shadow-sm text-center">Nuevo Reporte</th>
-                <th class="sticky top-0 bg-[#3b82f6] z-10 px-6 py-4 text-xs font-black text-white uppercase tracking-widest border-b border-gray-100 shadow-sm rounded-none text-center">Editar Reporte</th>
-            </tr>
-        </thead>
-        <tbody class="bg-white">`;
+    <div class="overflow-x-auto bg-white border border-slate-200 rounded-xl shadow-sm">
+        <table class="w-full text-left text-sm whitespace-nowrap">
+            <thead>
+                <tr class="bg-slate-50 text-slate-600 border-b border-slate-200">
+                    <th class="px-4 py-3 w-10 border-b border-slate-200">
+                        <input type="checkbox" class="rounded border-slate-300 text-inst-blue focus:ring-inst-blue w-4 h-4 cursor-pointer" disabled title="Selección global">
+                    </th>
+                    <th class="sticky top-0 bg-slate-50 z-10 px-4 py-3 text-[11px] font-semibold text-slate-600 border-b border-slate-200">Estudiante</th>
+                    <th class="sticky top-0 bg-slate-50 z-10 px-4 py-3 text-[11px] font-semibold text-slate-600 border-b border-slate-200">Código</th>
+                    <th class="sticky top-0 bg-slate-50 z-10 px-4 py-3 text-[11px] font-semibold text-slate-600 border-b border-slate-200">Curso</th>
+                    <th class="sticky top-0 bg-slate-50 z-10 px-4 py-3 text-[11px] font-semibold text-slate-600 border-b border-slate-200">Grado</th>
+                    <th class="sticky top-0 bg-slate-50 z-10 px-4 py-3 text-[11px] font-semibold text-slate-600 border-b border-slate-200">Trazabilidad por Fines Educativos</th>
+                    <th class="sticky top-0 bg-slate-50 z-10 px-4 py-3 text-[11px] font-semibold text-slate-600 border-b border-slate-200 text-right">Gestión</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 bg-white">`;
         
     students.forEach(student => {
-        const initials = getInitials(student.full_name);
+        const hasPending = student.active_reports.some(r => r.status === 'PROGRAMADO');
+        const statusBadge = hasPending ? 
+            `<span class="ml-2 px-1.5 py-0.5 bg-red-50 text-red-600 border border-red-200 text-[10px] font-medium rounded-sm">
+                Pendiente Atencion
+            </span>` : '';
+
         html += `
-        <tr class="hover:bg-gray-50 transition-colors group border-b border-gray-100">
-            <td class="px-6 py-4">
-                <div class="flex items-center">
-                    <div>
-                        <p class="text-[11px] font-black text-gray-700 uppercase tracking-wide leading-tight">${student.full_name.split(' ').slice(0, 2).join(' ')} <br/><span class="font-medium text-gray-500">${student.full_name.split(' ').slice(2).join(' ')}</span></p>
-                        <p class="text-[9px] font-bold text-inst-blue mt-1 uppercase tracking-tighter">CÓDIGO: ${student.code || '---'}</p>
+        <tr class="hover:bg-slate-50 transition-colors group">
+            <td class="px-4 py-3">
+                <input type="checkbox" class="rounded border-slate-300 text-inst-blue focus:ring-inst-blue w-4 h-4 cursor-pointer" disabled>
+            </td>
+            <td class="px-4 py-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-bold text-[10px] border border-slate-200 group-hover:bg-inst-blue/5 group-hover:text-inst-blue transition-colors relative overflow-hidden shrink-0">
+                        <img src="/archivos/img_pruebas/ARIAS%20URQUIJO%20SERGIO%20ALEJANDRO.jpg" class="w-full h-full object-cover absolute inset-0 z-10" onerror="this.style.display='none'">
+                        <span class="relative z-0">${getInitials(student.full_name)}</span>
+                    </div>
+                    <div class="flex items-center">
+                        <button class="open-report-btn text-sm font-semibold text-inst-blue hover:text-inst-dark hover:underline focus:outline-none"
+                            data-id="${student.id}" 
+                            data-name="${student.full_name.replace(/"/g, '&quot;')}" 
+                            data-code="${student.code}"
+                            data-course="${student.course || '---'}">
+                            ${student.full_name}
+                        </button>
+                        ${statusBadge}
                     </div>
                 </div>
             </td>
-            <td class="px-6 py-4 text-center">
-                <span class="text-xs font-black text-gray-800">${student.course || document.querySelector('#course-title').textContent.replace('Curso ', '')}</span>
+            <td class="px-4 py-3 text-slate-600 font-medium text-xs">
+                ${student.code || '--'}
             </td>
-            <td class="px-6 py-4">
-                <div class="flex flex-row flex-wrap gap-2 items-center justify-center">
+            <td class="px-4 py-3 text-slate-700 font-bold text-xs">
+                ${student.course || '--'}
+            </td>
+            <td class="px-4 py-3 text-slate-600 font-medium text-xs">
+                ${getGradeName(student.course)}
+            </td>
+            <td class="px-4 py-3">
+                <div class="flex flex-row gap-2 items-center">
                     ${renderBadges(student.active_reports)}
                 </div>
             </td>
-            <td class="px-6 py-4 text-center">
-                <!-- Nuevo Reporte Button -->
-                <button class="open-report-btn bg-green-600 text-white hover:bg-green-700 px-5 py-2.5 rounded-none text-[10px] font-black uppercase tracking-wider transition-all shadow-sm hover:shadow flex items-center justify-center mx-auto"
+            <td class="px-4 py-3 text-right">
+                <button class="open-report-btn px-4 py-1.5 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 hover:border-slate-400 transition-colors rounded text-xs font-semibold shadow-sm focus:outline-none"
                     data-id="${student.id}" 
                     data-name="${student.full_name.replace(/"/g, '&quot;')}" 
                     data-code="${student.code}"
-                    data-course="${student.course || document.querySelector('#course-title').textContent.replace('Curso ', '')}"
-                    title="Crear Nuevo Reporte">
-                    <i class="bi bi-unlock-fill mr-1.5 text-xs"></i> Nuevo reporte
+                    data-course="${student.course || '---'}">
+                    Generar Reporte <span class="text-slate-400 font-normal ml-1">&rarr;</span>
                 </button>
-            </td>
-            <td class="px-6 py-4 text-center">
-                <!-- Editar Reporte Button (Only enabled if active reports exist) -->
-                ${student.active_reports.length > 0 ? 
-                `<button class="edit-report-btn text-gray-400 hover:text-inst-blue px-3 py-2 rounded-none text-lg transition-all flex items-center justify-center mx-auto"
-                    data-id="${student.id}" 
-                    data-report-id="${student.active_reports[0].id}" 
-                    title="Editar Reporte Existente">
-                    <i class="bi bi-pencil-square"></i>
-                </button>` : 
-                 `<button class="opacity-30 cursor-not-allowed text-gray-300 px-3 py-2 rounded-none text-lg flex items-center justify-center mx-auto" disabled>
-                    <i class="bi bi-pencil-square"></i>
-                 </button>`
-                }
             </td>
         </tr>
         `;
     });
-    html += '</tbody></table>';
+    html += '</tbody></table></div>';
     contentArea.innerHTML = html;
 
     // Add Listeners
@@ -238,33 +292,58 @@ function renderStudentGrid(students) {
              openReportModal(btn.dataset.id, btn.dataset.name, btn.dataset.code, btn.dataset.course);
         });
     });
-
-    document.querySelectorAll('.edit-report-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-             window.location.href = `/reports/${btn.dataset.reportId}`;
-        });
-    });
 }
+
 
 function getInitials(name) {
     return name.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
 }
 
 function renderBadges(reports) {
-    if (!reports || reports.length === 0) return '<span class="text-xs text-slate-300 italic">Sin reportes</span>';
+    if (!reports || reports.length === 0) return '<span class="text-[9px] font-bold text-slate-300 italic">Sin procesos activos</span>';
     
     return reports.map(r => {
-        let colorClass = 'bg-gray-100 text-gray-700 border-gray-300';
-        if (r.purpose === 'Espiritual') colorClass = 'bg-purple-100 text-purple-800 border-purple-300 hover:bg-purple-200';
-        if (r.purpose === 'Académico') colorClass = 'bg-[#f8b4b4] text-[#842029] border-[#f5c2c7] hover:bg-[#f5c2c7]';
-        if (r.purpose === 'Convivencia') colorClass = 'bg-orange-100 text-orange-800 border-orange-300 hover:bg-orange-200';
-        if (r.purpose === 'Psicoafectivo') colorClass = 'bg-blue-100 text-blue-800 border-blue-300 hover:bg-blue-200';
+        let colorTheme = 'bg-slate-50 text-slate-600 border-slate-200';
+        let icon = 'fa-circle-dot';
+        let statusTag = '';
         
-        return `<a href="/reports/${r.id}" class="px-3 py-1.5 rounded-none text-[9px] font-black border ${colorClass} uppercase tracking-wider shadow-sm transition-all hover:shadow flex items-center justify-center no-underline whitespace-nowrap" title="Ir a reporte ${r.purpose}">
-            ${r.purpose}
+        // Normalizar el texto para la comparación
+        const purpose = (r.purpose || '').toString().trim();
+        const pLower = purpose.toLowerCase();
+
+        // Purpose Colors - Prioridad total al fin educativo
+        if (pLower.includes('espiritual')) { 
+            colorTheme = 'bg-purple-100 text-purple-800 border-purple-200'; 
+            icon = 'fa-dove'; 
+        } else if (pLower.includes('acad') || pLower.includes('academico')) { 
+            colorTheme = 'bg-blue-100 text-blue-800 border-blue-200'; 
+            icon = 'fa-book-open'; 
+        } else if (pLower.includes('convivencia')) { 
+            colorTheme = 'bg-emerald-100 text-emerald-800 border-emerald-200'; 
+            icon = 'fa-handshake'; 
+        } else if (pLower.includes('psicoafectivo')) { 
+            colorTheme = 'bg-rose-100 text-rose-800 border-red-200'; 
+            icon = 'fa-heart'; 
+        }
+        
+        // Status Indicators - Etiquetas pequeñas
+        if (r.status === 'PROGRAMADO') {
+            statusTag = `<span class="ml-1.5 px-2 py-0.5 bg-red-600 text-white rounded-full text-[8px] font-black uppercase tracking-tighter">PROGRAMADO</span>`;
+        } else if (r.status === 'SEGUIMIENTO') {
+            statusTag = `<span class="ml-1.5 px-2 py-0.5 bg-amber-500 text-white rounded-full text-[8px] font-black uppercase tracking-tighter">SEGUIMIENTO</span>`;
+        } else if (r.status === 'ATENDIDO') {
+            statusTag = `<span class="ml-1.5 px-2 py-0.5 bg-emerald-600 text-white rounded-full text-[8px] font-black uppercase tracking-tighter">CERRADO</span>`;
+        }
+
+        return `
+        <a href="/reports/${r.id}" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border-2 ${colorTheme} transition-all hover:scale-105 hover:shadow-lg no-underline group/badge">
+            <i class="fa-solid ${icon} text-[11px] ${r.status === 'PROGRAMADO' ? 'text-red-600 animate-pulse' : 'opacity-90'}"></i>
+            <span class="font-black text-[10px] uppercase tracking-wide italic">${purpose}</span>
+            ${statusTag}
         </a>`;
     }).join('');
 }
+
 
 // Modal Logic
 const reportModal = document.getElementById('report-modal');
