@@ -1,393 +1,407 @@
 {% extends "base.html" %}
 
-{% block content %}
-<div class="h-full flex flex-col bg-[#f5f8fa] overflow-hidden font-sans border-t border-gray-200"
-    x-data="{ activeTab: 'objective' }">
-
-    <!-- Top Nav / Breadcrumb area like HubSpot -->
-    <div class="h-12 bg-white border-b border-gray-200 flex items-center px-4 justify-between shrink-0">
-        <div class="flex items-center gap-4">
-            <a href="/dashboard"
-                class="text-xs font-semibold text-gray-600 hover:text-inst-blue flex items-center gap-2">
-                <i class="bi bi-chevron-left"></i> Reportes
-            </a>
-            <span class="text-gray-300">|</span>
-            <span class="px-3 py-1 text-[11px] font-bold flex items-center gap-2 border rounded-full transition-all shadow-sm
-                {% if report.purpose.value == 'Convivencia' %} bg-emerald-50 text-emerald-700 border-emerald-100
-                {% elif report.purpose.value == 'Académico' %} bg-blue-50 text-blue-700 border-blue-100
-                {% elif report.purpose.value == 'Psicoafectivo' %} bg-rose-50 text-rose-700 border-rose-100
-                {% elif report.purpose.value == 'Espiritual' %} bg-purple-50 text-purple-700 border-purple-100
-                {% else %} bg-gray-50 text-gray-700 border-gray-100
-                {% endif %}">
-                <i class="bi bi-circle-fill text-[8px] animate-pulse"></i> {{ report.purpose.value }}
-            </span>
+{% block header_left %}
+    <a href="/reports" class="text-[#2F4DAA]/60 hover:text-[#2F4DAA] flex items-center gap-2 transition-colors mr-6 group">
+        <div class="w-8 h-8 rounded-none bg-[#2F4DAA]/5 flex items-center justify-center border border-[#2F4DAA]/10 group-hover:bg-[#2F4DAA]/10">
+            <i class="bi bi-arrow-left"></i>
         </div>
-        {% if report.status.value != 'ATENDIDO' %}
-        <div class="relative" x-data="{ open: false }">
-            <button @click="open = !open" @click.away="open = false"
-                class="text-xs font-semibold text-gray-600 hover:bg-gray-50 px-3 py-1.5 rounded border border-gray-200 transition-colors flex items-center">
-                Acciones <i class="bi bi-chevron-down ml-1 text-[10px] transition-transform"
-                    :class="open ? 'rotate-180' : ''"></i>
-            </button>
-            <div x-show="open" x-cloak x-transition
-                class="absolute right-0 mt-2 w-52 bg-white border border-gray-100 rounded-lg shadow-xl z-50 py-1 overflow-hidden">
-                <a href="#" @click.prevent="open=false; openObsModal()"
-                    class="block px-4 py-2.5 text-xs font-semibold text-gray-600 hover:bg-inst-blue/5 hover:text-inst-blue flex items-center gap-2 transition-colors"><i
-                        class="bi bi-chat-left-text"></i> Agregar Observación</a>
-                <a href="#" @click.prevent="open=false; openRecModal()"
-                    class="block px-4 py-2.5 text-xs font-semibold text-gray-600 hover:bg-emerald-50 hover:text-emerald-600 flex items-center gap-2 transition-colors"><i
-                        class="bi bi-bookmark-check"></i> Agregar Recomendación</a>
-                <div class="border-t border-gray-50 my-1"></div>
-                <a href="#" @click.prevent="open=false; openCloseCaseModal()"
-                    class="block px-4 py-2.5 text-xs font-semibold text-red-500 hover:bg-red-50 flex items-center gap-2 transition-colors"><i
-                        class="bi bi-slash-circle"></i> Cerrar Caso</a>
-            </div>
+        <span class="text-[10px] font-black uppercase tracking-widest hidden md:inline">Volver</span>
+    </a>
+    <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-[#2F4DAA] rounded-none flex items-center justify-center shadow-lg border border-white/10">
+            <i class="bi bi-person-badge-fill text-white text-xl"></i>
         </div>
-        {% else %}
-        <div class="flex items-center gap-2">
-            <span
-                class="px-3 py-1 bg-emerald-100 text-emerald-700 text-[10px] font-black uppercase rounded shadow-sm border border-emerald-200 flex items-center gap-1.5">
-                <i class="bi bi-check-all text-sm"></i> CASO CERRADO
-            </span>
-            {% if report.is_accomplished %}
-            <span
-                class="px-3 py-1 bg-blue-100 text-blue-700 text-[10px] font-black uppercase rounded shadow-sm border border-blue-200 flex items-center gap-1.5">
-                <i class="bi bi-award"></i> CUMPLIÓ
-            </span>
-            {% else %}
-            <span
-                class="px-3 py-1 bg-red-100 text-red-700 text-[10px] font-black uppercase rounded shadow-sm border border-red-200 flex items-center gap-1.5">
-                <i class="bi bi-exclamation-octagon"></i> NO CUMPLIÓ
-            </span>
-            {% endif %}
-        </div>
-        {% endif %}
+        <h1 class="text-xs font-black text-[#2F4DAA] uppercase tracking-widest leading-none">Seguimiento <span class="text-[#2F4DAA]/30 ml-2">/ SAI</span></h1>
     </div>
+{% endblock %}
+
+{% block header_actions %}
+    {% if report.status.value != 'ATENDIDO' %}
+    <div class="relative" x-data="{ open: false }">
+        <button @click="open = !open" @click.away="open = false"
+            class="bg-blue-600 text-white text-[10px] font-black px-8 py-3 rounded-none shadow-xl hover:bg-blue-700 transition-all flex items-center gap-4 uppercase tracking-[0.2em]">
+            ACCIONES <i class="bi bi-chevron-down text-[10px]"></i>
+        </button>
+        <div x-show="open" x-cloak x-transition
+            class="absolute right-0 mt-3 w-80 bg-white border border-slate-200 rounded-[5px] shadow-2xl z-[100] py-0 overflow-hidden text-left">
+            <a href="#" @click.prevent="$dispatch('set-mode', { mode: 'add-observation', tab: 'observations' })"
+                class="block px-6 py-5 text-[10px] font-black text-slate-700 hover:bg-blue-50 transition-all flex items-center gap-4 uppercase tracking-widest border-b border-slate-100">
+                <i class="bi bi-pencil-square text-xl text-blue-600"></i> Nueva Observación
+            </a>
+            <a href="#" @click.prevent="$dispatch('set-mode', { mode: 'add-recommendation', tab: 'recommendations' })"
+                class="block px-6 py-5 text-[10px] font-black text-slate-700 hover:bg-emerald-50 transition-all flex items-center gap-4 uppercase tracking-widest border-b border-slate-100">
+                <i class="bi bi-bookmark-check-fill text-xl text-emerald-500"></i> Nueva Recomendación
+            </a>
+            <a href="#" @click.prevent="openCloseCaseModal()"
+                class="block px-6 py-5 text-[10px] font-black text-red-600 hover:bg-red-50 transition-all flex items-center gap-4 uppercase tracking-widest">
+                <i class="bi bi-trash3-fill text-xl opacity-60"></i> Finalizar Caso
+            </a>
+        </div>
+    </div>
+    {% else %}
+    <div class="px-6 py-2 bg-slate-200/50 text-[#2F4DAA]/60 text-[10px] font-black border border-slate-300 uppercase tracking-widest rounded-none">
+        CASO CERRADO
+    </div>
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+    {% set themes = {
+        'Convivencia': { 'accent': 'bg-emerald-600', 'text': 'text-emerald-700', 'bg': 'bg-emerald-50', 'border': 'border-emerald-200', 'highlight': 'border-emerald-500', 'lightText': 'text-emerald-500', 'tabBorder': 'border-emerald-600' },
+        'Académico': { 'accent': 'bg-blue-600', 'text': 'text-blue-700', 'bg': 'bg-blue-50', 'border': 'border-blue-200', 'highlight': 'border-blue-500', 'lightText': 'text-blue-500', 'tabBorder': 'border-blue-600' },
+        'Psicoafectivo': { 'accent': 'bg-rose-600', 'text': 'text-rose-700', 'bg': 'bg-rose-50', 'border': 'border-rose-200', 'highlight': 'border-rose-500', 'lightText': 'text-rose-500', 'tabBorder': 'border-rose-600' },
+        'Espiritual': { 'accent': 'bg-purple-600', 'text': 'text-purple-700', 'bg': 'bg-purple-50', 'border': 'border-purple-200', 'highlight': 'border-purple-500', 'lightText': 'text-purple-500', 'tabBorder': 'border-purple-600' }
+    } %}
+    {% set theme = themes[report.purpose.value] | default(themes['Convivencia']) %}
+
+<div class="h-full flex flex-col bg-[#f5f8fa] overflow-hidden font-sans border-t border-gray-200"
+    x-data="{ activeTab: 'objective', mode: 'view' }"
+    @set-mode.window="mode = $event.detail.mode; activeTab = $event.detail.tab">
 
     <!-- Main Workspace Grid -->
     <div class="flex-1 overflow-hidden flex flex-col lg:flex-row">
 
         <!-- ======================= LEFT SIDEBAR ======================= -->
-        <div
-            class="w-full lg:w-[320px] shrink-0 border-r border-gray-200 bg-[#f5f8fa] overflow-y-auto custom-scrollbar p-4 space-y-4">
+        <div class="w-full lg:w-[360px] shrink-0 border-r border-slate-100 bg-slate-50/30 overflow-y-auto custom-scrollbar p-6 space-y-8 z-20">
+            
+            <!-- Student Profile Summary -->
+            <div class="bg-white rounded-[10px] p-8 border border-slate-200 shadow-sm relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-1 bg-[#153459]/10"></div>
+                <div class="flex flex-col items-center text-center space-y-4">
+                    <div class="w-24 h-24 rounded-[5px] bg-slate-50 flex items-center justify-center border border-slate-100 overflow-hidden shadow-inner p-1">
+                        <img src="/archivos/img_pruebas/{{ report.student.full_name | replace(' ', '%20') | upper }}.jpg"
+                            class="w-full h-full object-cover"
+                            onerror="this.src='https://ui-avatars.com/api/?name={{ report.student.full_name | replace(' ', '+') }}&background=f1f5f9&color=153459&bold=true'">
+                    </div>
+                    <div class="space-y-1">
+                        <h3 class="text-base font-black text-[#153459] leading-tight uppercase tracking-tight">{{ report.student.full_name }}</h3>
+                        <span class="inline-block px-3 py-1 bg-blue-50 text-blue-700 text-[10px] font-black uppercase tracking-widest border border-blue-100 rounded-[3px]">{{ report.student.course }}</span>
+                    </div>
+                </div>
 
-            <!-- Acerca del Estudiante Card -->
-            <div class="bg-white rounded-lg border border-gray-200 shadow-sm" x-data="{ expanded: true }">
-                <button @click="expanded = !expanded"
-                    class="w-full px-4 py-3 flex items-center gap-2 text-xs font-semibold text-gray-700 bg-gray-50 hover:bg-gray-100 border-b border-gray-200 transition-colors rounded-t-lg">
-                    <i class="bi" :class="expanded ? 'bi-chevron-down' : 'bi-chevron-right'"></i> Acerca de este
-                    estudiante
-                </button>
-                <div x-show="expanded" class="p-4 space-y-3">
-                    <div class="flex items-center gap-3 mb-2">
-                        <div
-                            class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center border border-slate-200 shrink-0 relative overflow-hidden">
-                            <img src="/archivos/img_pruebas/ARIAS%20URQUIJO%20SERGIO%20ALEJANDRO.jpg"
-                                class="w-full h-full object-cover absolute inset-0 z-10"
-                                onerror="this.style.display='none'">
-                            <span class="text-slate-400 font-bold text-xs relative z-0">{{ report.student.full_name[:2]
-                                | upper }}</span>
-                        </div>
-                        <div class="flex flex-col">
-                            <span class="text-[11px] text-gray-500 font-medium">Nombre completo</span>
-                            <span class="text-[11px] text-inst-blue font-semibold hover:underline cursor-pointer">{{
-                                report.student.full_name }}</span>
-                        </div>
+                <div class="mt-8 space-y-3">
+                    <div class="flex items-center justify-between p-4 bg-slate-50/50 border border-slate-100 rounded-[5px] group hover:bg-white hover:border-blue-200 transition-all">
+                        <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Código Interno</span>
+                        <span class="text-xs font-black text-[#153459]">{{ report.student.code }}</span>
                     </div>
-                    <div class="text-[11px] grid gap-0.5">
-                        <span class="text-gray-500 font-medium">Código Institucional</span>
-                        <span class="text-gray-800 font-semibold">{{ report.student.code }}</span>
-                    </div>
-                    <div class="text-[11px] grid gap-0.5">
-                        <span class="text-gray-500 font-medium">Curso Actual</span>
-                        <span class="text-gray-800 font-semibold">{{ report.student.course }}</span>
+                    <div class="flex items-center justify-between p-4 bg-slate-50/50 border border-slate-100 rounded-[5px] group hover:bg-white hover:border-blue-200 transition-all">
+                        <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Sección / Área</span>
+                        <span class="text-xs font-black text-[#153459]">{{ (report.student.section or '---') | replace('SectionEnum.', '') | replace('_', ' ') }}</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Other Active Reports Card -->
-            <div class="bg-white rounded-lg border border-gray-200 shadow-sm" x-data="{ expanded: true }">
-                <button @click="expanded = !expanded"
-                    class="w-full px-4 py-3 flex items-center gap-2 text-xs font-semibold text-gray-700 bg-gray-50 hover:bg-gray-100 border-b border-gray-200 transition-colors rounded-t-lg">
-                    <i class="bi" :class="expanded ? 'bi-chevron-down' : 'bi-chevron-right'"></i> Reportes Abiertos ({{
-                    report.student.active_reports|length }})
-                </button>
-                <div x-show="expanded" class="p-2 space-y-1">
+            <!-- Pipeline / Active Reports -->
+            <div class="space-y-4">
+                <h4 class="px-2 text-[10px] font-black text-slate-400 uppercase tracking-[3px]">Procesos Vigentes</h4>
+                <div class="space-y-3">
                     {% for r in report.student.active_reports %}
                     <a href="/reports/{{ r.id }}"
-                        class="flex justify-between items-center px-2 py-1.5 rounded transition-colors text-[10px] font-medium 
-                        {% if r.id == report.id %} bg-inst-blue/5 text-inst-blue font-bold {% else %} text-gray-600 hover:bg-gray-50 {% endif %} border border-transparent {% if r.id == report.id %} border-inst-blue/20 {% endif %}">
-                        <div class="flex items-center gap-1.5 truncate">
-                            <i
-                                class="bi {% if r.id == report.id %}bi-check2-circle text-inst-blue{% else %}bi-circle text-gray-300{% endif %}"></i>
-                            <span class="truncate">{{ r.purpose.value }}</span>
+                        class="group flex items-center gap-0 bg-white border border-slate-200 rounded-[5px] transition-all hover:shadow-md
+                        {% if r.id == report.id %} border-blue-600/30 ring-4 ring-blue-500/5 shadow-sm {% endif %}">
+                        
+                        <div class="w-1 h-16 shrink-0 
+                            {% if r.purpose.value == 'Convivencia' %} bg-emerald-500
+                            {% elif r.purpose.value == 'Académico' %} bg-blue-500
+                            {% elif r.purpose.value == 'Psicoafectivo' %} bg-rose-500
+                            {% elif r.purpose.value == 'Espiritual' %} bg-purple-500
+                            {% else %} bg-slate-500
+                            {% endif %}"></div>
+                        
+                        <div class="flex-1 p-4 flex flex-col justify-center">
+                            <span class="block text-[10px] font-black uppercase tracking-widest mb-1.5
+                                {% if r.purpose.value == 'Convivencia' %} text-emerald-700
+                                {% elif r.purpose.value == 'Académico' %} text-blue-700
+                                {% elif r.purpose.value == 'Psicoafectivo' %} text-rose-700
+                                {% elif r.purpose.value == 'Espiritual' %} text-purple-700
+                                {% endif %}">{{ r.purpose.value }}</span>
+                            
+                            <div class="flex items-center gap-2">
+                                <span class="w-1.5 h-1.5 rounded-full animate-pulse
+                                    {% if r.status.value == 'PROGRAMADO' %} bg-amber-500
+                                    {% else %} bg-blue-500 {% endif %}"></span>
+                                <span class="text-[9px] font-black text-slate-400 uppercase tracking-tighter">{{ r.status.value }}</span>
+                            </div>
                         </div>
-                        <span
-                            class="shrink-0 text-[8px] px-1 py-0.5 rounded bg-gray-100 text-gray-500 border border-gray-200">{{
-                            r.status.value }}</span>
+                        <i class="bi bi-chevron-right text-xs pr-4 {% if r.id == report.id %} text-blue-600 {% else %} text-slate-200 group-hover:text-slate-400 {% endif %} transition-colors"></i>
                     </a>
                     {% endfor %}
                 </div>
             </div>
-
-            <!-- Closed Reports Card -->
+            
             {% if report.student.closed_reports|length > 0 %}
-            <div class="bg-white rounded-lg border border-gray-200 shadow-sm opacity-90" x-data="{ expanded: false }">
-                <button @click="expanded = !expanded"
-                    class="w-full px-4 py-3 flex items-center gap-2 text-xs font-semibold text-gray-500 bg-gray-50 hover:bg-gray-100 border-b border-gray-200 transition-colors rounded-t-lg">
-                    <i class="bi" :class="expanded ? 'bi-chevron-down' : 'bi-chevron-right'"></i> Reportes Cerrados ({{
-                    report.student.closed_reports|length }})
-                </button>
-                <div x-show="expanded" class="p-2 space-y-1">
+            <div class="pt-4 border-t border-slate-100">
+                <h4 class="px-2 text-[10px] font-black text-slate-300 uppercase tracking-[2px] mb-3">Historial</h4>
+                <div class="grid grid-cols-1 gap-2">
                     {% for r in report.student.closed_reports %}
-                    <a href="/reports/{{ r.id }}"
-                        class="flex justify-between items-center px-2 py-1.5 rounded transition-colors text-[10px] font-medium 
-                        {% if r.id == report.id %} bg-gray-100 text-gray-800 font-bold border-gray-300 {% else %} text-gray-500 hover:bg-gray-50 border-transparent {% endif %} border">
-                        <div class="flex items-center gap-1.5 truncate">
-                            <i class="bi bi-lock-fill text-gray-400"></i>
-                            <span class="truncate">{{ r.purpose.value }}</span>
-                        </div>
-                        <span
-                            class="shrink-0 text-[8px] px-1 py-0.5 rounded bg-white text-emerald-600 border border-emerald-100">CERRADO</span>
+                    <a href="/reports/{{ r.id }}" class="flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-50 bg-slate-50/50 hover:bg-slate-100 transition-all group">
+                        <i class="bi bi-lock-fill text-slate-300 group-hover:text-slate-500"></i>
+                        <span class="text-[10px] font-bold text-slate-400 group-hover:text-slate-600 truncate uppercase">{{ r.purpose.value }}</span>
                     </a>
                     {% endfor %}
                 </div>
             </div>
             {% endif %}
-
-            <!-- Timeline Area Header -->
-            <div class="h-14 bg-white border-b border-gray-200 px-6 flex items-center justify-between shrink-0 z-20">
-                <div class="flex items-center gap-6">
-                    <h2 class="text-[11px] font-black text-slate-400 uppercase tracking-[2px]">Actividad del Reporte
-                    </h2>
-                    <div class="flex items-center gap-2">
-                        {% set purpose_theme = {
-                        'Convivencia': 'bg-emerald-50 text-emerald-700 border-emerald-200',
-                        'Académico': 'bg-blue-50 text-blue-700 border-blue-200',
-                        'Psicoafectivo': 'bg-rose-50 text-rose-700 border-rose-200',
-                        'Espiritual': 'bg-purple-50 text-purple-700 border-purple-200'
-                        } %}
-                        <span
-                            class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border {{ purpose_theme.get(report.purpose.value, 'bg-slate-50 text-slate-700 border-slate-200') }}">
-                            {{ report.purpose.value }}
-                        </span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Reporte Info Card -->
-            <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
-                <div class="flex items-center gap-3 mb-4">
-                    <div class="bg-inst-blue/10 text-inst-blue p-2 rounded-lg">
-                        <i class="bi bi-file-earmark-text text-lg"></i>
-                    </div>
-                    <div>
-                        <h2 class="text-sm font-bold text-inst-dark leading-tight">{{ report.purpose.value }}</h2>
-                    </div>
-                </div>
-
-                <div class="space-y-2">
-                    <div class="text-[11px] flex flex-col gap-0.5">
-                        <span class="text-gray-500 font-medium">Fecha de creación:</span>
-                        <span class="text-gray-900 font-semibold">{{ report.created_at.strftime('%d de %b. %Y %H:%M')
-                            }}</span>
-                    </div>
-                    <div class="text-[11px] flex flex-col gap-0.5 mt-2">
-                        <span class="text-gray-500 font-medium">Pipeline:</span>
-                        <span class="text-gray-900 font-semibold">Trazabilidad Educativa</span>
-                    </div>
-                    <div class="text-[11px] flex flex-col gap-0.5 mt-2">
-                        <span class="text-gray-500 font-medium">Estado del reporte:</span>
-                        {% if report.status.value == 'ATENDIDO' %}
-                        <span
-                            class="text-emerald-600 font-black uppercase tracking-tighter shadow-sm bg-emerald-50 px-2 py-1 rounded-md border border-emerald-100 w-fit">
-                            FINALIZADO / CERRADO
-                        </span>
-                        {% else %}
-                        <span class="text-inst-gold font-bold">ABIERTO / SEGUIMIENTO</span>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-
         </div>
 
         <!-- ======================= MIDDLE COLUMN ======================= -->
-        <div class="flex-1 flex flex-col bg-[#f5f8fa] overflow-hidden">
+        <div class="flex-1 flex flex-col bg-[#f5f8fa] overflow-hidden relative">
 
-            <!-- Sticky Tabs Header -->
-            <div class="bg-white border-b border-gray-200 shrink-0 shadow-sm flex items-center px-4 z-10 space-x-2">
-                <button @click="activeTab = 'objective'"
-                    :class="activeTab === 'objective' ? 'border-inst-dark text-inst-dark font-semibold' : 'border-transparent text-gray-500 hover:text-gray-700 font-medium'"
-                    class="py-3 px-4 text-xs transition-all border-b-2 tracking-wide focus:outline-none">
-                    Objetivo
-                </button>
-                <button @click="activeTab = 'observations'"
-                    :class="activeTab === 'observations' ? 'border-inst-blue text-inst-blue font-bold shadow-[0_1px_0_0_theme(colors.inst.blue)]' : 'border-transparent text-gray-500 hover:text-gray-700 font-medium'"
-                    class="py-3 px-4 text-xs transition-all border-b-2 tracking-wide focus:outline-none">
-                    Observaciones
-                </button>
-                <button @click="activeTab = 'recommendations'"
-                    :class="activeTab === 'recommendations' ? 'border-emerald-600 text-emerald-600 font-bold shadow-[0_1px_0_0_theme(colors.emerald.600)]' : 'border-transparent text-gray-500 hover:text-gray-700 font-medium'"
-                    class="py-3 px-4 text-xs transition-all border-b-2 tracking-wide focus:outline-none">
-                    Recomendaciones
-                </button>
-            </div>
+            <!-- MODE: VIEW (Main Content) -->
+            <div x-show="mode === 'view'" class="h-full flex flex-col" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4">
+                <!-- Sticky Tabs Header - Industrial Style (Dynamic Colors) -->
+                <div class="bg-white border-b border-slate-200 shrink-0 shadow-sm flex items-center px-10 z-10 transition-colors duration-300">
+                    <button @click="activeTab = 'objective'"
+                        :class="activeTab === 'objective' ? '{{ theme.tabBorder }} text-[#153459] bg-slate-50/50' : 'border-transparent text-slate-400 hover:text-slate-600'"
+                        class="px-8 py-5 text-[10px] font-black transition-all uppercase tracking-[0.2em] border-b-4 outline-none">
+                        Objetivo del Reporte
+                    </button>
+                    <button @click="activeTab = 'observations'"
+                        :class="activeTab === 'observations' ? '{{ theme.tabBorder }} text-[#153459] bg-slate-50/50' : 'border-transparent text-slate-400 hover:text-slate-600'"
+                        class="px-8 py-5 text-[10px] font-black transition-all uppercase tracking-[0.2em] border-b-4 outline-none">
+                        Observaciones
+                    </button>
+                    <button @click="activeTab = 'recommendations'"
+                        :class="activeTab === 'recommendations' ? 'border-emerald-600 text-[#153459] bg-slate-50/50' : 'border-transparent text-slate-400 hover:text-slate-600'"
+                        class="px-8 py-5 text-[10px] font-black transition-all uppercase tracking-[0.2em] border-b-4 outline-none">
+                        Recomendaciones
+                    </button>
+                </div>
 
-            <!-- Scrollable Middle Content -->
-            <div class="flex-1 overflow-y-auto custom-scrollbar p-5 space-y-5">
+                <!-- Scrollable Content -->
+                <div class="flex-1 overflow-y-auto custom-scrollbar p-8 space-y-8">
+                    
+                    {% set theme = {
+                        'Convivencia': {'text': 'text-emerald-800', 'accent': 'bg-emerald-400', 'highlight': 'border-l-emerald-400', 'bg': 'bg-emerald-50', 'border': 'border-emerald-100'},
+                        'Académico': {'text': 'text-blue-800', 'accent': 'bg-blue-400', 'highlight': 'border-l-blue-400', 'bg': 'bg-blue-50', 'border': 'border-blue-100'},
+                        'Psicoafectivo': {'text': 'text-rose-800', 'accent': 'bg-rose-400', 'highlight': 'border-l-rose-400', 'bg': 'bg-rose-50', 'border': 'border-rose-100'},
+                        'Espiritual': {'text': 'text-purple-800', 'accent': 'bg-purple-400', 'highlight': 'border-l-purple-400', 'bg': 'bg-purple-50', 'border': 'border-purple-100'}
+                    }.get(report.purpose.value, {'text': 'text-slate-800', 'accent': 'bg-slate-400', 'highlight': 'border-l-slate-400', 'bg': 'bg-slate-50', 'border': 'border-slate-100'}) %}
 
-                <!-- Highlights Card -->
-                {% set theme = {
-                'Convivencia': {'border': 'border-l-emerald-500', 'headerBg': 'bg-emerald-50', 'headerText':
-                'text-emerald-900', 'headerBorder': 'border-emerald-100', 'icon': 'text-emerald-400'},
-                'Académico': {'border': 'border-l-blue-500', 'headerBg': 'bg-blue-50', 'headerText': 'text-blue-900',
-                'headerBorder': 'border-blue-100', 'icon': 'text-blue-400'},
-                'Psicoafectivo': {'border': 'border-l-rose-500', 'headerBg': 'bg-rose-50', 'headerText':
-                'text-rose-900', 'headerBorder': 'border-rose-100', 'icon': 'text-rose-400'},
-                'Espiritual': {'border': 'border-l-purple-500', 'headerBg': 'bg-purple-50', 'headerText':
-                'text-purple-900', 'headerBorder': 'border-purple-100', 'icon': 'text-purple-400'}
-                }.get(report.purpose.value, {'border': 'border-l-slate-500', 'headerBg': 'bg-slate-50', 'headerText':
-                'text-slate-900', 'headerBorder': 'border-slate-100', 'icon': 'text-slate-400'}) %}
-
-                <div class="bg-white rounded-lg border border-gray-200 border-l-4 {{ theme.border }} shadow-sm overflow-hidden"
-                    x-show="activeTab === 'objective'">
-                    <div
-                        class="flex justify-between items-center border-b {{ theme.headerBorder }} {{ theme.headerBg }} px-5 py-3">
-                        <h3 class="text-sm font-semibold {{ theme.headerText }} uppercase tracking-widest">OBJETIVO
-                            PRINCIPAL
-                            DEL ACOMPAÑAMIENTO</h3>
-                        <i class="bi bi-gear {{ theme.icon }} hover:opacity-80 cursor-pointer text-xs"></i>
+                    <!-- Tab: Objective -->
+                    <div x-show="activeTab === 'objective'" class="space-y-6" x-transition>
+                        <div class="bg-white rounded-[5px] border border-slate-200 shadow-sm overflow-hidden border-l-4 {{ theme.highlight }}">
+                            <div class="{{ theme.bg }} px-8 py-4 flex justify-between items-center {{ theme.text }} border-b {{ theme.border }}">
+                                <h4 class="text-[11px] font-black uppercase tracking-widest flex items-center gap-3">
+                                    <i class="bi bi-bullseye text-lg opacity-40"></i> Objetivo del reporte
+                                </h4>
+                                <span class="text-[9px] font-black uppercase px-3 py-1 bg-white/50 rounded-full border {{ theme.border }}">{{ report.purpose.value }}</span>
+                            </div>
+                            <div class="p-10">
+                                <p class="text-[20px] font-bold text-slate-700 leading-relaxed italic">"{{ report.objective }}"</p>
+                                <div class="mt-8 pt-6 border-t border-slate-50 flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 font-bold text-[10px] border border-slate-100">
+                                            {{ report.created_by.full_name[:2] | upper }}
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <span class="text-[9px] font-black text-slate-400 uppercase">Referencia</span>
+                                            <span class="text-xs font-black text-slate-800">{{ report.created_by.full_name }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <span class="text-[9px] font-black text-slate-400 uppercase block">Apertura</span>
+                                        <span class="text-xs font-black text-slate-800">{{ report.created_at.strftime('%d %B, %Y') if report.created_at else '' }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 p-5 pt-4">
-                        <div class="text-left col-span-2">
-                            <p class="text-xs font-semibold text-inst-dark leading-snug">{{ report.objective }}</p>
+                    <!-- Tab: Observations Timeline -->
+                    <div x-show="activeTab === 'observations'" class="space-y-6" x-cloak x-transition>
+                        <div class="flex justify-between items-center px-1">
+                            <h4 class="text-[11px] font-black text-slate-400 uppercase tracking-[2px]">Bitácora de Seguimiento</h4>
+                            <span class="text-[10px] font-black text-inst-blue bg-inst-blue/10 px-3 py-1.5 rounded-full">{{ report.observations|length }} Registros</span>
                         </div>
-                        <div class="text-left">
-                            <p class="text-[9px] font-bold text-gray-500 uppercase tracking-wider mb-1">Remitido Por</p>
-                            <p class="text-xs font-semibold text-gray-800">{{ report.created_by.full_name }}</p>
+                        <div class="grid gap-4">
+                            {% for obs in report.observations|sort(attribute='date_log', reverse=True) %}
+                            <div class="bg-white rounded-xl border border-slate-100 shadow-md shadow-slate-200/30 hover:shadow-lg transition-all overflow-hidden border-l-4 {{ theme.highlight }}">
+                                <div class="{{ theme.bg }} px-6 py-3 flex justify-between items-center {{ theme.text }} border-b {{ theme.border }}">
+                                    <div class="flex items-center gap-3">
+                                        <i class="bi bi-pencil-square opacity-60"></i>
+                                        <span class="text-[10px] font-black uppercase tracking-widest">REGISTRO DE SEGUIMIENTO</span>
+                                    </div>
+                                    <span class="text-[10px] font-black opacity-60 uppercase">{{ obs.date_log.strftime('%d %b, %Y') if obs.date_log else '' }}</span>
+                                </div>
+                                <div class="p-8">
+                                    <p class="text-sm text-slate-700 leading-relaxed font-bold">{{ obs.content }}</p>
+                                    <div class="mt-6 pt-4 border-t border-slate-50 flex justify-between items-center">
+                                        <div class="flex items-center gap-2">
+                                            <i class="bi bi-person-check text-slate-400"></i>
+                                            <span class="text-[10px] font-black text-slate-600 uppercase">{{ obs.created_by.full_name }}</span>
+                                        </div>
+                                        <span class="text-[10px] font-bold text-slate-300 uppercase tracking-tighter italic">Firma Digital SAI</span>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                            
+                            {% if not report.observations %}
+                            <div class="bg-white p-20 rounded-3xl border-2 border-dashed border-slate-200 text-center">
+                                <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                                    <i class="bi bi-journal-text text-3xl text-slate-200"></i>
+                                </div>
+                                <p class="text-xs text-slate-400 font-bold uppercase tracking-widest">No hay registros de seguimiento en este momento</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Tab: Recommendations -->
+                    <div x-show="activeTab === 'recommendations'" class="space-y-6" x-cloak x-transition>
+                        <div class="flex justify-between items-center px-1">
+                            <h4 class="text-[11px] font-black text-slate-400 uppercase tracking-[2px]">Plan de Fortalecimiento</h4>
+                            <span class="px-3 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase rounded-lg border border-emerald-100 shadow-sm">OFICIAL</span>
+                        </div>
+                        <div class="grid gap-4">
+                            {% for rec in report.recommendations|sort(attribute='date_log', reverse=True) %}
+                            <div class="bg-white rounded-xl border border-emerald-100 shadow-md shadow-emerald-500/10 overflow-hidden border-l-4 border-l-emerald-400">
+                                <div class="bg-emerald-50 px-6 py-3 flex justify-between items-center text-emerald-800 border-b border-emerald-100">
+                                    <div class="flex items-center gap-3">
+                                        <i class="bi bi-shield-check opacity-60"></i>
+                                        <span class="text-[10px] font-black uppercase tracking-widest">RECOMENDACIÓN TÉCNICA</span>
+                                    </div>
+                                    <span class="text-[10px] font-black opacity-60">{{ rec.date_log.strftime('%d %b, %Y') if rec.date_log else '' }}</span>
+                                </div>
+                                <div class="p-8">
+                                    <p class="text-sm text-slate-800 leading-relaxed font-bold">{{ rec.content }}</p>
+                                    <div class="mt-6 pt-4 border-t border-emerald-50 flex justify-end">
+                                        <div class="text-[10px] font-black text-emerald-700 tracking-tighter uppercase flex items-center gap-2">
+                                            <i class="bi bi-award-fill"></i> Validado por: {{ rec.created_by.full_name }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                            
+                            {% if not report.recommendations %}
+                            <div class="bg-white p-20 rounded-xl border-2 border-dashed border-slate-100 text-center">
+                                <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                                    <i class="bi bi-bookmark-check text-2xl text-slate-200"></i>
+                                </div>
+                                <p class="text-xs text-slate-400 font-bold uppercase tracking-widest">No hay recomendaciones técnicas aún</p>
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Timeline / Activities Card -->
-                <div class="bg-white rounded-lg border border-gray-200 shadow-sm"
-                    x-show="activeTab === 'observations' || activeTab === 'recommendations'" x-cloak>
-                    <div class="flex justify-between items-center border-b border-gray-100 p-4">
-                        <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest">Actividades Recientes
-                        </h3>
+            <!-- VIEW: ADD OBSERVATION (MODAL INDUSTRIAL) -->
+            <div x-show="mode === 'add-observation'" 
+                class="fixed inset-0 z-[100] flex items-center justify-center p-0 md:p-12 overflow-hidden bg-slate-900/80 backdrop-blur-md" 
+                x-cloak x-transition>
+                
+                <div class="bg-white w-full h-full md:h-auto md:max-h-[92vh] md:max-w-5xl flex flex-col rounded-none shadow-2xl relative animate-in zoom-in-95 duration-200">
+                    <!-- Modal Header -->
+                    <div class="bg-blue-600 px-10 py-5 flex items-center justify-between shrink-0">
+                        <div class="flex items-center gap-4">
+                            <i class="bi bi-pencil-square text-white text-xl"></i>
+                            <h3 class="text-sm font-black text-white uppercase tracking-[0.2em]">Nueva Entrada de Seguimiento</h3>
+                        </div>
+                        <button @click="mode = 'view'" class="text-white hover:rotate-90 transition-transform p-2">
+                            <i class="bi bi-x-lg text-lg"></i>
+                        </button>
                     </div>
 
-                    <div class="px-4 py-3 bg-[#f9fafb] border-b border-gray-100 flex gap-2">
-                        <span
-                            class="text-[11px] font-bold text-gray-700 bg-white border border-gray-200 shadow-sm px-4 py-1.5 rounded-full flex items-center gap-2 cursor-pointer hover:bg-gray-50 transition-colors">
-                            <i class="bi bi-funnel"></i> Filtro <i class="bi bi-chevron-down text-[9px]"></i>
-                        </span>
+                    <!-- Modal Body -->
+                    <div class="flex-1 overflow-y-auto p-12 custom-scrollbar bg-white">
+                        <form class="max-w-4xl mx-auto space-y-12">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                                <div class="space-y-4">
+                                    <label class="block text-[11px] font-black text-[#153459] uppercase tracking-widest leading-none ml-1">Fecha del Reporte</label>
+                                    <div class="relative">
+                                        <input type="date" id="obs_date_embedded" required
+                                            class="w-full bg-slate-50 border border-slate-200 rounded-md px-5 py-4 text-sm font-black text-slate-700 focus:border-blue-500 focus:bg-white transition-all outline-none">
+                                        <i class="bi bi-calendar-event absolute right-4 top-1/2 -translate-y-1/2 text-blue-600 opacity-30 text-lg pointer-events-none"></i>
+                                    </div>
+                                </div>
+                                <div class="space-y-4">
+                                    <label class="block text-[11px] font-black text-[#153459] uppercase tracking-widest leading-none ml-1">Contexto Educativo</label>
+                                    <div class="px-5 py-4 text-sm font-black text-blue-600 uppercase tracking-widest bg-slate-50 border border-slate-100 rounded-md italic">
+                                        {{ report.purpose.value }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="space-y-4">
+                                <label class="block text-[11px] font-black text-[#153459] uppercase tracking-widest leading-none ml-1">Detalle Técnico de la Observación</label>
+                                <textarea id="obs_content_embedded" rows="12" required
+                                    class="w-full bg-slate-50 border border-slate-200 rounded-md p-8 text-base font-bold text-slate-950 leading-relaxed focus:border-blue-600 focus:bg-white transition-all outline-none resize-none shadow-inner"
+                                    placeholder="Escriba aquí los hechos observados descriptivamente..."></textarea>
+                            </div>
+                        </form>
                     </div>
 
-                    <!-- TIMELINE OBSERVATIONS -->
-                    <div class="p-5 relative" x-show="activeTab === 'observations'">
-                        <div class="absolute top-0 bottom-0 left-8 w-px bg-gray-100 z-0"></div>
+                    <!-- Modal Footer -->
+                    <div class="p-8 bg-slate-50 border-t border-slate-100 flex justify-end items-center shrink-0">
+                        <button @click="mode = 'view'" class="px-10 py-4 text-slate-400 text-[10px] font-black uppercase tracking-widest hover:text-slate-600 transition-colors mr-10">
+                            Descartar
+                        </button>
+                        <button type="button" @click="submitObservationEmbedded()"
+                            class="px-12 py-4 bg-blue-600 text-white text-[11px] font-black uppercase tracking-[0.3em] rounded-none shadow-xl hover:bg-blue-700 transition-all flex items-center gap-3">
+                            <i class="bi bi-check2-circle text-lg"></i> Validar y Registrar
+                        </button>
+                    </div>
+                </div>
+            </div>
 
-                        <!-- Create Event Marker -->
-                        <div class="relative z-10 flex items-start gap-4 mb-6">
-                            <div
-                                class="w-6 h-6 rounded-full bg-white border border-gray-300 flex items-center justify-center text-gray-400 shrink-0 shadow-sm z-10">
-                                <i class="bi bi-reporte-detailed text-[10px]"></i>
-                            </div>
-                            <div
-                                class="flex-1 border border-gray-200 rounded bg-white shadow-sm overflow-hidden mt-0.5">
-                                <div class="px-4 pb-2 pt-3 flex items-center gap-2 text-xs font-semibold text-gray-800">
-                                    Creado
-                                </div>
-                                <div class="px-4 py-3 text-xs text-gray-600 bg-gray-50/50 border-t border-gray-100">
-                                    Se creó este objeto (reporte) el {{ report.created_at.strftime('%d de %b. %Y a la(s)
-                                    %H:%M') }}.
-                                </div>
-                            </div>
+            <!-- VIEW: ADD RECOMMENDATION (MODAL INDUSTRIAL - VERDE) -->
+            <div x-show="mode === 'add-recommendation'" 
+                class="fixed inset-0 z-[100] flex items-center justify-center p-0 md:p-12 overflow-hidden bg-slate-900/80 backdrop-blur-md" 
+                x-cloak x-transition>
+                
+                <div class="bg-white w-full h-full md:h-auto md:max-h-[92vh] md:max-w-5xl flex flex-col rounded-none shadow-2xl relative animate-in zoom-in-95 duration-200">
+                    <!-- Modal Header -->
+                    <div class="bg-emerald-600 px-10 py-5 flex items-center justify-between shrink-0">
+                        <div class="flex items-center gap-4">
+                            <i class="bi bi-shield-check text-white text-xl"></i>
+                            <h3 class="text-sm font-black text-white uppercase tracking-[0.2em]">Nueva Recomendación Técnica</h3>
                         </div>
-
-                        <!-- Observation Events -->
-                        {% for obs in report.observations|sort(attribute='date_log', reverse=True) %}
-                        <div class="relative z-10 flex items-start gap-4 mb-6 group">
-                            <div
-                                class="w-6 h-6 rounded-full bg-white border border-inst-blue flex items-center justify-center text-inst-blue shrink-0 shadow-sm z-10 ring-2 ring-white ring-offset-1">
-                                <i class="bi bi-chat-left-text-fill text-[9px]"></i>
-                            </div>
-                            <div
-                                class="flex-1 border border-gray-200 border-l-4 border-l-inst-blue rounded bg-white shadow-sm overflow-hidden mt-0.5 transition-colors">
-                                <div
-                                    class="px-4 py-2 border-b border-blue-100 bg-blue-50 flex justify-between items-center">
-                                    <div class="flex items-center gap-2">
-                                        <span class="text-xs font-bold text-blue-900">Observación Añadida</span>
-                                    </div>
-                                    <span class="text-[10px] font-semibold text-gray-400">{{ obs.date_log.strftime('%d
-                                        de %b. %Y') if obs.date_log else '' }}</span>
-                                </div>
-                                <div class="px-4 py-3">
-                                    <div
-                                        class="text-xs text-gray-700 leading-relaxed font-medium whitespace-pre-wrap mb-4">
-                                        {{ obs.content }}</div>
-                                    <div class="text-[10px] text-gray-400 border-t border-gray-100 pt-2 font-semibold">
-                                        De: <span class="text-inst-blue">{{ obs.created_by.full_name }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
+                        <button @click="mode = 'view'" class="text-white hover:rotate-90 transition-transform p-2">
+                            <i class="bi bi-x-lg text-lg"></i>
+                        </button>
                     </div>
 
-                    <!-- TIMELINE RECOMMENDATIONS -->
-                    <div class="p-5 relative" x-show="activeTab === 'recommendations'" x-cloak>
-                        <div class="absolute top-0 bottom-0 left-8 w-px bg-gray-100 z-0"></div>
-
-                        <!-- Create Event Marker -->
-                        <div class="relative z-10 flex items-start gap-4 mb-6">
-                            <div
-                                class="w-6 h-6 rounded-full bg-white border border-gray-300 flex items-center justify-center text-gray-400 shrink-0 shadow-sm z-10">
-                                <i class="bi bi-reporte-detailed text-[10px]"></i>
-                            </div>
-                            <div
-                                class="flex-1 border border-gray-200 rounded bg-white shadow-sm overflow-hidden mt-0.5">
-                                <div class="px-4 pb-2 pt-3 flex items-center gap-2 text-xs font-semibold text-gray-800">
-                                    Plan de Actividades Inicial
-                                </div>
-                                <div class="px-4 py-3 text-xs text-gray-600 bg-gray-50/50 border-t border-gray-100">
-                                    Inicio del proceso de plan / recomendaciones en {{ report.created_at.strftime('%d de
-                                    %b. %Y') }}.
-                                </div>
-                            </div>
-                        </div>
-
-                        {% for rec in report.recommendations|sort(attribute='date_log', reverse=True) %}
-                        <div class="relative z-10 flex items-start gap-4 mb-6 group">
-                            <div
-                                class="w-6 h-6 rounded-full bg-white border border-emerald-500 flex items-center justify-center text-emerald-500 shrink-0 shadow-sm z-10 ring-2 ring-white ring-offset-1">
-                                <i class="bi bi-bookmark-check-fill text-[9px]"></i>
-                            </div>
-                            <div
-                                class="flex-1 border border-gray-200 border-l-4 border-l-emerald-500 rounded bg-white shadow-sm overflow-hidden mt-0.5 transition-colors">
-                                <div
-                                    class="px-4 py-2 border-b border-emerald-100 bg-emerald-50 flex justify-between items-center">
-                                    <div class="flex items-center gap-2">
-                                        <span class="text-xs font-bold text-emerald-900">Recomendación Añadida</span>
+                    <!-- Modal Body -->
+                    <div class="flex-1 overflow-y-auto p-12 custom-scrollbar bg-white">
+                        <form class="max-w-4xl mx-auto space-y-12">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                                <div class="space-y-4">
+                                    <label class="block text-[11px] font-black text-emerald-900 uppercase tracking-widest leading-none ml-1">Fecha de Emisión</label>
+                                    <div class="relative">
+                                        <input type="date" id="rec_date_embedded" required
+                                            class="w-full bg-slate-50 border border-slate-200 rounded-md px-5 py-4 text-sm font-black text-slate-700 focus:border-emerald-500 focus:bg-white transition-all outline-none">
+                                        <i class="bi bi-calendar-check absolute right-4 top-1/2 -translate-y-1/2 text-emerald-600 opacity-30 text-lg pointer-events-none"></i>
                                     </div>
-                                    <span class="text-[10px] font-semibold text-gray-400">{{ rec.date_log.strftime('%d
-                                        de %b. %Y') if rec.date_log else '' }}</span>
                                 </div>
-                                <div class="px-4 py-3">
-                                    <div
-                                        class="text-xs text-gray-700 leading-relaxed font-medium whitespace-pre-wrap mb-4">
-                                        {{ rec.content }}</div>
-                                    <div
-                                        class="text-[10px] text-gray-400 border-t border-gray-100 pt-2 font-semibold flex justify-end">
-                                        Por: <span class="text-emerald-600 ml-1">{{ rec.created_by.full_name }}</span>
+                                <div class="space-y-4">
+                                    <label class="block text-[11px] font-black text-emerald-900 uppercase tracking-widest leading-none ml-1">Contexto Educativo</label>
+                                    <div class="px-5 py-4 text-sm font-black text-emerald-600 uppercase tracking-widest bg-slate-50 border border-slate-100 rounded-md italic">
+                                        {{ report.purpose.value }}
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        {% endfor %}
+
+                            <div class="space-y-4">
+                                <label class="block text-[11px] font-black text-emerald-900 uppercase tracking-widest leading-none ml-1">Acciones y Sugerencias de Mejora</label>
+                                <textarea id="rec_content_embedded" rows="12" required
+                                    class="w-full bg-slate-50 border border-slate-200 rounded-md p-8 text-base font-bold text-slate-950 leading-relaxed focus:border-emerald-600 focus:bg-white transition-all outline-none resize-none shadow-inner"
+                                    placeholder="Detalle aquí las recomendaciones específicas..."></textarea>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Modal Footer -->
+                    <div class="p-8 bg-slate-50 border-t border-slate-100 flex justify-end items-center shrink-0">
+                        <button @click="mode = 'view'" class="px-10 py-4 text-slate-400 text-[10px] font-black uppercase tracking-widest hover:text-slate-600 transition-colors mr-10">
+                            Descartar
+                        </button>
+                        <button type="button" @click="submitRecommendationEmbedded()"
+                            class="px-12 py-4 bg-emerald-600 text-white text-[11px] font-black uppercase tracking-[0.3em] rounded-none shadow-xl hover:bg-emerald-700 transition-all flex items-center gap-3">
+                            <i class="bi bi-cloud-arrow-up-fill text-lg"></i> Guardar Recomendación
+                        </button>
                     </div>
                 </div>
             </div>
@@ -395,19 +409,18 @@
     </div>
 </div>
 
-<!-- Modal: Editar Observación / Seguimiento -->
-
-<div id="observations-modal"
-    class="fixed inset-0 z-[60] hidden bg-inst-dark/60 backdrop-blur-sm flex justify-center items-center p-4 transition-opacity duration-300">
+<!-- Modal: Agregar Observación (Legacy Redesigned) -->
+<div id="close-case-modal"
+    class="fixed inset-0 z-[100] hidden bg-slate-900/60 backdrop-blur-sm flex justify-center items-center p-4 transition-opacity duration-300">
     <div
-        class="bg-white rounded-xl shadow-2xl w-full max-w-3xl transform transition-all scale-100 flex flex-col max-h-[90vh] modal-content overflow-hidden">
+        class="bg-white rounded-[5px] shadow-2xl w-full max-w-4xl transform transition-all scale-100 flex flex-col max-h-[90vh] modal-content overflow-hidden">
         <!-- Header -->
-        <div class="px-8 py-5 border-b border-gray-100 flex justify-between items-center bg-white rounded-xl z-20">
-            <h3 class="text-sm font-semibold text-inst-dark flex items-center">
-                <i class="bi bi-pencil-square mr-3 text-inst-gold text-lg"></i> Agregar Observación
+        <div class="px-8 py-5 border-b border-slate-100 flex justify-between items-center bg-white z-20">
+            <h3 class="text-sm font-black text-[#153459] flex items-center uppercase tracking-widest">
+                <i class="bi bi-pencil-square mr-3 text-blue-500 text-lg"></i> Agregar Observación
             </h3>
             <button onclick="closeObsModal()"
-                class="text-gray-400 hover:text-gray-600 transition-colors bg-gray-50 rounded-xl w-8 h-8 flex justify-center items-center">
+                class="text-slate-400 hover:text-slate-600 transition-colors w-8 h-8 flex justify-center items-center rounded-full hover:bg-slate-50">
                 <i class="bi bi-x-lg text-sm"></i>
             </button>
         </div>
@@ -453,14 +466,14 @@
         </div>
 
         <!-- Footer Actions -->
-        <div class="px-8 py-5 bg-white border-t border-gray-100 flex justify-end gap-3 rounded-xl z-20">
+        <div class="px-8 py-5 bg-slate-50 border-t border-slate-100 flex justify-end gap-3 z-20">
             <button type="button" onclick="closeObsModal()"
-                class="px-6 py-2.5 bg-gray-100 text-gray-600 hover:bg-gray-200 text-xs font-semibold rounded-xl transition-colors">
+                class="px-8 py-3 text-slate-400 hover:text-slate-600 text-[10px] font-black uppercase tracking-widest transition-colors">
                 Cancelar
             </button>
             <button type="button"
                 onclick="document.getElementById('observation-form').dispatchEvent(new Event('submit', {cancelable: true, bubbles: true}))"
-                class="px-6 py-2.5 bg-inst-blue text-white hover:bg-blue-600 text-xs font-semibold rounded-xl shadow transition-colors flex items-center">
+                class="px-10 py-3 bg-blue-600 text-white hover:bg-blue-700 text-xs font-black rounded-none shadow-xl transition-all flex items-center uppercase tracking-widest">
                 <i class="bi bi-save mr-2"></i> Guardar
             </button>
         </div>
@@ -702,7 +715,7 @@
                     </div>
                     <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
                         <label class="block text-[10px] font-semibold text-gray-400 mb-2">Fecha Reporte</label>
-                        <input type="text" value="{{ report.created_at.strftime('%d / %B / %Y') }}" readonly
+                        <input type="text" value="{{ report.created_at.strftime('%d / %B / %Y') if report.created_at else '' }}" readonly
                             class="w-full bg-transparent border-none p-0 text-inst-dark font-bold text-sm focus:ring-0">
                     </div>
 
@@ -772,23 +785,95 @@
 
 {% block scripts %}
 <script>
-    function openObsModal() {
-        const modal = document.getElementById('observations-modal');
-        modal.classList.remove('hidden');
-        if (!document.getElementById('obs_date').value) {
-            document.getElementById('obs_date').valueAsDate = new Date();
+    // Embedded Logic
+    async function submitObservationEmbedded() {
+        console.log("Iniciando guardado de observación...");
+        const reportId = "{{ report.id }}";
+        const dateEl = document.getElementById('obs_date_embedded');
+        const contentEl = document.getElementById('obs_content_embedded');
+        
+        if (!contentEl.value) {
+            alert('El contenido es obligatorio.');
+            return;
+        }
+
+        const payload = {
+            title: "Seguimiento",
+            content: contentEl.value,
+            date_log: dateEl.value ? new Date(dateEl.value).toISOString() : null
+        };
+
+        try {
+            const response = await fetch(`/api/reports/${reportId}/observations`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                console.log("Guardado exitoso!");
+                location.reload();
+            } else {
+                const error = await response.json();
+                alert('Error al guardar: ' + (error.detail || 'Error de servidor'));
+            }
+        } catch (err) {
+            alert('Error de red: ' + err);
         }
     }
 
-    function closeObsModal() {
-        document.getElementById('observations-modal').classList.add('hidden');
+    async function submitRecommendationEmbedded() {
+        console.log("Iniciando guardado de recomendación...");
+        const reportId = "{{ report.id }}";
+        const dateEl = document.getElementById('rec_date_embedded');
+        const contentEl = document.getElementById('rec_content_embedded');
+
+        if (!contentEl.value) {
+            alert('El contenido es obligatorio.');
+            return;
+        }
+
+        const payload = {
+            content: contentEl.value,
+            date_log: dateEl.value ? new Date(dateEl.value).toISOString() : null
+        };
+
+        try {
+            const response = await fetch(`/api/reports/${reportId}/recommendations`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                console.log("Guardado exitoso!");
+                location.reload();
+            } else {
+                const error = await response.json();
+                alert('Error al guardar: ' + (error.detail || 'Error de servidor'));
+            }
+        } catch (err) {
+            alert('Error de red: ' + err);
+        }
     }
+
+    // Initialize dates
+    document.addEventListener('DOMContentLoaded', () => {
+        const obsDate = document.getElementById('obs_date_embedded');
+        const recDate = document.getElementById('rec_date_embedded');
+        if (obsDate) obsDate.valueAsDate = new Date();
+        if (recDate) recDate.valueAsDate = new Date();
+    });
 
     function openCloseCaseModal() {
         document.getElementById('close-case-modal').classList.remove('hidden');
     }
 
     function closeCaseModal() {
+        document.getElementById('close-case-modal').classList.add('hidden');
+    }
+
+    function closeObsModal() {
         document.getElementById('close-case-modal').classList.add('hidden');
     }
 
@@ -813,95 +898,6 @@
         } catch (err) {
             alert('Error de red: ' + err);
         }
-    }
-
-    document.getElementById('observation-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-
-        const reportId = document.getElementById('report_id').value;
-        const dateLog = document.getElementById('obs_date').value;
-        const content = document.getElementById('obs_content').value;
-
-        const payload = {
-            title: "Seguimiento",
-            content: content,
-            date_log: dateLog ? new Date(dateLog).toISOString() : null
-        };
-
-        try {
-            const response = await fetch(`/api/reports/${reportId}/observations`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            if (response.ok) {
-                location.reload();
-            } else {
-                const error = await response.json();
-                alert('Error: ' + (error.detail || 'Desconocido'));
-            }
-        } catch (err) {
-            alert('Error de red: ' + err);
-        }
-    });
-
-    // Recommendations Logic
-    function openRecModal() {
-        const modal = document.getElementById('recommendations-modal');
-        modal.classList.remove('hidden');
-        if (!document.getElementById('rec_date').value) {
-            document.getElementById('rec_date').valueAsDate = new Date();
-        }
-    }
-
-    function closeRecModal() {
-        document.getElementById('recommendations-modal').classList.add('hidden');
-    }
-
-    document.getElementById('recommendations-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-
-        const reportId = document.getElementById('rec_report_id').value;
-        const dateLog = document.getElementById('rec_date').value;
-        const content = document.getElementById('rec_content').value;
-
-        const payload = {
-            content: content,
-            date_log: dateLog ? new Date(dateLog).toISOString() : null
-        };
-
-        try {
-            const response = await fetch(`/api/reports/${reportId}/recommendations`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            if (response.ok) {
-                alert('Recomendación guardada exitosamente.');
-                location.reload();
-            } else {
-                const error = await response.json();
-                alert('Error: ' + (error.detail || 'Desconocido'));
-            }
-        } catch (err) {
-            alert('Error de red: ' + err);
-        }
-    });
-    // View Modals Logic
-    function openViewObsModal() {
-        document.getElementById('view-observations-modal').classList.remove('hidden');
-    }
-    function closeViewObsModal() {
-        document.getElementById('view-observations-modal').classList.add('hidden');
-    }
-
-    function openViewRecModal() {
-        document.getElementById('view-recommendations-modal').classList.remove('hidden');
-    }
-    function closeViewRecModal() {
-        document.getElementById('view-recommendations-modal').classList.add('hidden');
     }
 </script>
 {% endblock %}

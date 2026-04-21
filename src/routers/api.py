@@ -99,19 +99,19 @@ def create_report(
     db: Session = Depends(database.get_db),
     current_user: dict = Depends(auth.get_current_user)
 ):
-    # Check for ANY existing report of this type (Unique constraint per student/purpose)
+    # Solo bloqueamos si existe un reporte VIGENTE (No cerrado)
     existing = db.query(models.Report).filter(
         models.Report.student_id == report.student_id,
-        models.Report.purpose == report.purpose
+        models.Report.purpose == report.purpose,
+        models.Report.status != models.ReportStatus.ATENDIDO
     ).first()
     
     if existing:
         creator_name = existing.created_by.full_name if existing.created_by else "Desconocido"
-        status_text = "activo" if existing.status != models.ReportStatus.ATENDIDO else "ya atendido/cerrado"
         raise HTTPException(
             status_code=409, 
             detail={
-                "message": f"El estudiante ya cuenta con un reporte {status_text} para el fin educativo {report.purpose.value}.",
+                "message": f"El estudiante ya cuenta con un proceso de {report.purpose.value} VIGENTE.",
                 "report_id": existing.id,
                 "created_by": creator_name,
                 "created_at": existing.created_at.isoformat()

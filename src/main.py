@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 from src import models, database, auth
@@ -9,6 +10,15 @@ from src.routers import api, ui, admin
 models.Base.metadata.create_all(bind=database.engine)
 
 app = FastAPI(title="Sistema de Acompañamiento Integral")
+
+# Configuración de CORS para permitir peticiones desde el frontend/satélites
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # En producción, usa una lista específica
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Add Session Middleware (Required for Authlib)
 app.add_middleware(
