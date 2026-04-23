@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SAI - Sistema de Acompañamiento Integral</title>
+    <title>Sistema de Acompañamiento Integral</title>
 
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
@@ -269,29 +269,38 @@
             {% if user %}
             <header
                 class="h-16 bg-[#D5DFF2] border-b border-[#2F4DAA]/10 flex items-center justify-between px-8 z-40 shrink-0 shadow-sm">
-                
+
                 <!-- Dynamic Left Content: Navigation & Titles -->
-                <div class="flex items-center gap-4">
-                    {% block header_left %}
-                    <div class="flex items-center text-[10px] font-black text-[#2F4DAA]/50 uppercase tracking-widest italic">
-                        <i class="bi bi-shield-check-fill mr-2 opacity-30"></i> Consola Maestria
-                    </div>
-                    {% endblock %}
-                </div>
+                {% block header_left %}
+<div class="flex items-center gap-3">
+    <!-- Icono opcional -->
+    <div class="flex items-center text-[25px] font-black text-[#2F4DAA]/50 uppercase tracking-widest italic">
+        <i class="bi bi-shield-check-fill mr-2 opacity-50"></i>
+    </div>
+    <!-- 👇 TÍTULO PRINCIPAL 👇 -->
+    <h1 class="text-lg font-bold text-[#2F4DAA] border-l border-[#2F4DAA]/30 pl-4">
+        Estado Global del Acompañamiento
+    </h1>
+</div>
+{% endblock %}
 
                 <!-- Main Actions Area (Fully Open) -->
                 <div class="flex items-center gap-4">
                     {% block header_actions %}{% endblock %}
-                    
+
                     <div class="h-10 w-px bg-[#2F4DAA]/10 mx-2"></div>
-                    
+
                     <!-- Notification & Minimal Logout -->
                     <div class="flex items-center gap-6">
                         <div class="relative cursor-pointer group">
-                            <i class="bi bi-bell text-[#2F4DAA]/60 group-hover:text-[#2F4DAA] text-xl transition-colors"></i>
-                            <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border-2 border-[#D5DFF2]"></span>
+                            <i
+                                class="bi bi-bell text-[#2F4DAA]/60 group-hover:text-[#2F4DAA] text-xl transition-colors"></i>
+                            <span
+                                class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border-2 border-[#D5DFF2]"></span>
                         </div>
-                        <a href="/auth/logout" class="w-10 h-10 bg-white/50 hover:bg-red-50 text-red-600 flex items-center justify-center border border-slate-200 transition-all shadow-sm" title="Salir">
+                        <a href="/auth/logout"
+                            class="w-10 h-10 bg-white/50 hover:bg-red-50 text-red-600 flex items-center justify-center border border-slate-200 transition-all shadow-sm"
+                            title="Salir">
                             <i class="bi bi-power text-xl"></i>
                         </a>
                     </div>
