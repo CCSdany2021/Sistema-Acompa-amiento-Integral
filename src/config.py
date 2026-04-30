@@ -11,9 +11,9 @@ class Settings(BaseSettings):
     MS_CLIENT_SECRET: str = ""
     MS_TENANT_ID: str = ""
 
-    # External Student API
+    # External Student API (Sistema Gestor Educativo)
     API_ESTUDIANTES_URL: str = "http://localhost:8000/api/v1/estudiantes/"
-    API_ESTUDIANTES_KEY: str = ""
+    API_ESTUDIANTES_KEY: str = "9eCn5gSX.x4Lmirq095PCBQIWPDqKtlsF494B2J98"
     
     class Config:
         env_file = ".env"
