@@ -2,9 +2,13 @@ from fastapi.templating import Jinja2Templates
 import os
 from pathlib import Path
 
-# Usar ruta absoluta para que funcione desde cualquier directorio
-BASE_DIR = Path(__file__).resolve().parent.parent
+# Ruta absoluta convertida a string
+BASE_DIR = str(Path(__file__).resolve().parent.parent)
 TEMPLATES_DIR = os.path.join(BASE_DIR, "src", "templates")
+
+# Validar que existe
+if not os.path.isdir(TEMPLATES_DIR):
+    raise RuntimeError(f"Templates directory not found: {TEMPLATES_DIR}")
 
 templates = Jinja2Templates(directory=TEMPLATES_DIR)
 

@@ -30,8 +30,8 @@ app.add_middleware(
     https_only=False
 )
 
-# Mount Static Files (usando rutas absolutas)
-BASE_DIR = Path(__file__).resolve().parent.parent
+# Mount Static Files (usando rutas absolutas como strings)
+BASE_DIR = str(Path(__file__).resolve().parent.parent)
 STATIC_DIR = os.path.join(BASE_DIR, "src", "static")
 ARCHIVOS_DIR = os.path.join(BASE_DIR, "archivos")
 
