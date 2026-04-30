@@ -1,11 +1,12 @@
 from fastapi.templating import Jinja2Templates
+import os
 from pathlib import Path
 
 # Usar ruta absoluta para que funcione desde cualquier directorio
 BASE_DIR = Path(__file__).resolve().parent.parent
-TEMPLATES_DIR = BASE_DIR / "src" / "templates"
+TEMPLATES_DIR = os.path.join(BASE_DIR, "src", "templates")
 
-templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
+templates = Jinja2Templates(directory=TEMPLATES_DIR)
 
 def get_grade_name(course):
     if not course: return '---'
