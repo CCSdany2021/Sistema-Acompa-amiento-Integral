@@ -5,6 +5,8 @@ from starlette.middleware.sessions import SessionMiddleware
 from src import models, database, auth
 from src.config import settings
 from src.routers import api, ui, admin
+from pathlib import Path
+import os
 
 # Create DB Tables
 models.Base.metadata.create_all(bind=database.engine)
@@ -28,9 +30,16 @@ app.add_middleware(
     https_only=False
 )
 
-# Mount Static Files
-app.mount("/static", StaticFiles(directory="src/static"), name="static")
-app.mount("/archivos", StaticFiles(directory="archivos"), name="archivos")
+# Mount Static Files (usando rutas absolutas)
+BASE_DIR = Path(__file__).resolve().parent.parent
+STATIC_DIR = BASE_DIR / "src" / "static"
+ARCHIVOS_DIR = BASE_DIR / "archivos"
+
+# Crear carpetas si no existen
+ARCHIVOS_DIR.mkdir(exist_ok=True)
+
+app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+app.mount("/archivos", StaticFiles(directory=str(ARCHIVOS_DIR)), name="archivos")
 
 # Include Routers
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
