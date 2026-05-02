@@ -31,47 +31,66 @@ CSV_DATA = """
 "57","Verdadero","Sección Octavo Undécimo","Admin de sección","yalejo@calasanzsuba.edu.co",,"Yury Alejo"
 """
 
+
 def import_users():
     print("Importing Users...")
     db = SessionLocal()
-    
+
     try:
         # Read CSV logic
         df = pd.read_csv(StringIO(CSV_DATA.strip()))
-        
+
         count = 0
         updated = 0
-        
+
         for index, row in df.iterrows():
-            email = str(row['Email']).strip()
-            full_name = str(row['Puesto']).strip().title()
-            rol_csv = str(row['RolNuevo']).strip().lower()
-            seccion_csv = str(row['SeccionNuevo']).strip().lower()
-            fin_csv = str(row['FinesEducativos']).strip()
-            
+            email = str(row["Email"]).strip()
+            full_name = str(row["Puesto"]).strip().title()
+            rol_csv = str(row["RolNuevo"]).strip().lower()
+            seccion_csv = str(row["SeccionNuevo"]).strip().lower()
+            fin_csv = str(row["FinesEducativos"]).strip()
+
             # Map Roles
             role = models.RoleEnum.DOCENTE
             if "global" in rol_csv:
                 role = models.RoleEnum.ADMIN_GLOBAL
             elif "sección" in rol_csv or "seccion" in rol_csv:
                 role = models.RoleEnum.COORDINADOR
-            
+
             # Map Section
             section = None
-            if "jardín" in seccion_csv or "jardin" in seccion_csv or "preescolar" in seccion_csv:
+            if (
+                "jardín" in seccion_csv
+                or "jardin" in seccion_csv
+                or "preescolar" in seccion_csv
+            ):
                 section = models.SectionEnum.PREESCOLAR_PRIMARIA
-            elif "cuarto" in seccion_csv or "séptimo" in seccion_csv or "septimo" in seccion_csv:
+            elif (
+                "cuarto" in seccion_csv
+                or "séptimo" in seccion_csv
+                or "septimo" in seccion_csv
+            ):
                 section = models.SectionEnum.MEDIA_BASKICA
-            elif "octavo" in seccion_csv or "undécimo" in seccion_csv or "undecimo" in seccion_csv or "bachillerato" in seccion_csv:
+            elif (
+                "octavo" in seccion_csv
+                or "undécimo" in seccion_csv
+                or "undecimo" in seccion_csv
+                or "bachillerato" in seccion_csv
+            ):
                 section = models.SectionEnum.BACHILLERATO
-            
+
             # Map Purpose (If multiple, we take the first one or logic based on role)
             purpose = None
             if fin_csv and fin_csv != "nan":
                 # Clean clean brackets and quotes if it's a list string
-                fin_csv = fin_csv.replace("[", "").replace("]", "").replace('"', '').replace("'", "")
-                fines = [f.strip() for f in fin_csv.split(',')]
-                
+                fin_csv = (
+                    fin_csv.replace("[", "")
+                    .replace("]", "")
+                    .replace('"', "")
+                    .replace("'", "")
+                )
+                fines = [f.strip() for f in fin_csv.split(",")]
+
                 if fines:
                     first_fine = fines[0].lower()
                     if "espiritual" in first_fine:
@@ -85,7 +104,7 @@ def import_users():
 
             # Check existence
             user = db.query(models.User).filter(models.User.email == email).first()
-            
+
             if user:
                 user.full_name = full_name
                 user.role = role
@@ -98,21 +117,23 @@ def import_users():
                     full_name=full_name,
                     role=role,
                     assigned_section=section,
-                    assigned_purpose=purpose
+                    assigned_purpose=purpose,
                 )
                 db.add(user)
                 count += 1
-        
+
         db.commit()
         print(f"Success! Created {count} users. Updated {updated} users.")
-        
+
     except Exception as e:
         import traceback
+
         traceback.print_exc()
         print(f"Error: {e}")
         db.rollback()
     finally:
         db.close()
+
 
 if __name__ == "__main__":
     import_users()

@@ -1,0 +1,193 @@
+{% extends 'base.html' %}
+
+{% block title %}Reportes - SAI{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  .report-card { transition: all 0.3s ease; }
+  .report-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(34, 86, 242, 0.15); }
+  .filter-btn.active { background: #2256F2; color: white; border-color: #2256F2; }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="mb-8">
+  <div class="flex items-center justify-between">
+    <div class="flex items-center gap-4">
+      <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-[#2256F2] to-[#1a48d4] shadow-lg shadow-blue-500/30">
+        <i class="fa-solid fa-file-lines text-xl text-white"></i>
+      </div>
+      <div>
+        <h1 class="text-2xl font-extrabold text-slate-900">Lista de Reportes</h1>
+        <p class="text-base text-slate-500 font-medium">Gestiona todos los reportes de acompañamiento</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <span class="text-lg font-bold text-slate-700">{{ reports|length }} reportes</span>
+    </div>
+  </div>
+</div>
+
+<!-- Filtros -->
+<div class="mb-6 p-5 rounded-2xl border-2 border-slate-200 bg-white shadow-sm">
+  <form method="get" class="space-y-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+      <!-- Buscar -->
+      <div class="lg:col-span-2">
+        <label class="block text-sm font-bold text-slate-700 mb-1">Buscar estudiante</label>
+        <div class="relative">
+          <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+          <input type="text" name="search" value="{{ request.GET.search|default:'' }}" 
+            placeholder="Nombre o código..."
+            class="w-full pl-10 pr-4 py-2.5 rounded-xl border-2 border-slate-200 text-base font-medium focus:border-[#2256F2] focus:outline-none focus:ring-4 focus:ring-blue-100/50">
+        </div>
+      </div>
+      
+      <!-- Estado -->
+      <div>
+        <label class="block text-sm font-bold text-slate-700 mb-1">Estado</label>
+        <select name="status" class="w-full px-4 py-2.5 rounded-xl border-2 border-slate-200 text-base font-medium focus:border-[#2256F2] focus:outline-none focus:ring-4 focus:ring-blue-100/50">
+          <option value="">Todos</option>
+          {% for value, label in status_choices %}
+          <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      
+      <!-- Fin Educativo -->
+      <div>
+        <label class="block text-sm font-bold text-slate-700 mb-1">Fin Educativo</label>
+        <select name="purpose" class="w-full px-4 py-2.5 rounded-xl border-2 border-slate-200 text-base font-medium focus:border-[#2256F2] focus:outline-none focus:ring-4 focus:ring-blue-100/50">
+          <option value="">Todos</option>
+          {% for value, label in purpose_choices %}
+          <option value="{{ value }}" {% if request.GET.purpose == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      
+      <!-- Período -->
+      <div>
+        <label class="block text-sm font-bold text-slate-700 mb-1">Período</label>
+        <select name="period" class="w-full px-4 py-2.5 rounded-xl border-2 border-slate-200 text-base font-medium focus:border-[#2256F2] focus:outline-none focus:ring-4 focus:ring-blue-100/50">
+          <option value="">Todos</option>
+          {% for p in periodos %}
+          <option value="{{ p }}" {% if request.GET.period == p %}selected{% endif %}>{{ p }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      
+      <!-- Grado -->
+      <div>
+        <label class="block text-sm font-bold text-slate-700 mb-1">Grado</label>
+        <select name="grado" class="w-full px-4 py-2.5 rounded-xl border-2 border-slate-200 text-base font-medium focus:border-[#2256F2] focus:outline-none focus:ring-4 focus:ring-blue-100/50">
+          <option value="">Todos</option>
+          {% for g in grado_choices %}
+          <option value="{{ g }}" {% if request.GET.grado == g %}selected{% endif %}>{{ g }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    
+    <div class="flex justify-end gap-3">
+      <a href="{% url 'acompanamiento:list' %}" class="px-6 py-2.5 rounded-xl border-2 border-slate-300 text-base font-bold text-slate-700 hover:bg-slate-100 transition-colors">
+        Limpiar filtros
+      </a>
+      <button type="submit" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#2256F2] to-[#1a48d4] text-base font-bold text-white shadow-lg shadow-blue-500/30 hover:shadow-xl hover:translate-y-[-2px] transition-all">
+        <i class="fa-solid fa-filter mr-2"></i> Aplicar filtros
+      </button>
+    </div>
+  </form>
+</div>
+
+<!-- Grid de Reportes -->
+{% if reports %}
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+  {% for report in reports %}
+  <div class="report-card relative overflow-hidden rounded-2xl border-2 bg-white shadow-md p-5" style="border-color: {% if report.status == 'ATENDIDO' %}#86efac{% elif report.status == 'SEGUIMIENTO' %}#fde047{% else %}#bfdbfe{% endif %}">
+    <!-- Badge Estado -->
+    <div class="absolute top-3 right-3">
+      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold shadow-sm
+        {% if report.status == 'ATENDIDO' %}bg-green-100 text-green-700
+        {% elif report.status == 'SEGUIMIENTO' %}bg-yellow-100 text-yellow-700
+        {% else %}bg-blue-100 text-blue-700{% endif %}">
+        {% if report.status == 'ATENDIDO' %}<i class="fa-solid fa-check-circle"></i>
+        {% elif report.status == 'SEGUIMIENTO' %}<i class="fa-solid fa-clock"></i>
+        {% else %}<i class="fa-solid fa-calendar"></i>{% endif %}
+        {{ report.get_status_display }}
+      </span>
+    </div>
+    
+    <!-- Estudiante -->
+    <div class="flex items-center gap-3 mb-4 pt-2">
+      <div class="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-[#2256F2] to-[#1a48d4] text-lg font-bold text-white shadow-md">
+        {{ report.student.full_name|slice:":1"|upper }}
+      </div>
+      <div>
+        <h3 class="text-lg font-extrabold text-slate-900 leading-tight">{{ report.student.full_name }}</h3>
+        <p class="text-sm font-medium text-slate-500">{{ report.student.code }}</p>
+      </div>
+    </div>
+    
+    <!-- Info -->
+    <div class="space-y-2 mb-4">
+      <div class="flex items-center gap-2 text-sm">
+        <i class="fa-solid fa-tag text-[#2256F6]"></i>
+        <span class="font-bold text-slate-700">{{ report.get_purpose_display|default:"Sin fin educativo" }}</span>
+      </div>
+      {% if report.student.grado %}
+      <div class="flex items-center gap-2 text-sm">
+        <i class="fa-solid fa-graduation-cap text-violet-500"></i>
+        <span class="font-medium text-slate-600">{{ report.student.grado }}</span>
+      </div>
+      {% endif %}
+      {% if report.academic_period %}
+      <div class="flex items-center gap-2 text-sm">
+        <i class="fa-solid fa-calendar text-amber-500"></i>
+        <span class="font-medium text-slate-600">{{ report.academic_period }}</span>
+      </div>
+      {% endif %}
+    </div>
+    
+    <!-- Fecha y acción -->
+    <div class="flex items-center justify-between pt-4 border-t border-slate-100">
+      <span class="text-sm font-medium text-slate-500">{{ report.created_at|date:"d/m/Y" }}</span>
+      <a href="{% url 'acompanamiento:detail' report.pk %}" 
+        class="px-4 py-2 rounded-lg bg-[#2256F2] text-sm font-bold text-white hover:bg-[#1a48d4] transition-colors">
+        Ver detalle
+      </a>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Paginación -->
+{% if page_obj.has_other_pages %}
+<div class="mt-8 flex justify-center">
+  <div class="flex items-center gap-2">
+    {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}" class="px-4 py-2 rounded-lg border-2 border-slate-200 text-sm font-bold text-slate-700 hover:bg-slate-100">Anterior</a>
+    {% endif %}
+    <span class="px-4 py-2 text-sm font-bold text-slate-600">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}" class="px-4 py-2 rounded-lg border-2 border-slate-200 text-sm font-bold text-slate-700 hover:bg-slate-100">Siguiente</a>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+{% else %}
+<!-- Sin resultados -->
+<div class="flex flex-col items-center justify-center py-20 text-center">
+  <div class="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-slate-100 text-4xl text-slate-300">
+    <i class="fa-solid fa-folder-open"></i>
+  </div>
+  <h3 class="text-xl font-bold text-slate-700">No hay reportes</h3>
+  <p class="mt-2 max-w-md text-base text-slate-500">No se encontraron reportes con los filtros seleccionados.</p>
+  <a href="{% url 'acompanamiento:list' %}" class="mt-5 px-6 py-3 rounded-xl bg-[#2256F2] text-base font-bold text-white hover:bg-[#1a48d4] transition-colors">
+    Ver todos los reportes
+  </a>
+</div>
+{% endif %}
+{% endblock %}

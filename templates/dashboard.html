@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - SAI{% endblock %}
+
+{% block content %}
+<section class="mb-8 rounded-2xl bg-gradient-to-r from-sky-600 to-cyan-500 px-6 py-8 text-white shadow-soft">
+    <h2 class="text-3xl font-bold">Dashboard Acompañamiento Integral</h2>
+    <p class="mt-2 text-sky-100">Control de estudiantes, seguimiento y cierre de casos por sección académica.</p>
+</section>
+
+<section class="grid gap-4 md:grid-cols-3">
+    <article class="rounded-2xl border border-slate-50 bg-white p-6 shadow-soft">
+        <p class="text-sm text-slate-500">Estudiantes registrados</p>
+        <p class="mt-2 text-4xl font-bold text-ocean">{{ students_count|default:0 }}</p>
+        <a href="{% url 'estudiantes:list' %}" class="mt-4 inline-block text-sm font-semibold text-ocean hover:underline">Ver estudiantes</a>
+    </article>
+
+    <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-soft">
+        <p class="text-sm text-slate-500">Reportes totales</p>
+        <p class="mt-2 text-4xl font-bold text-mint">{{ reports_count|default:0 }}</p>
+        <a href="{% url 'acompanamiento:list' %}" class="mt-4 inline-block text-sm font-semibold text-mint hover:underline">Ver reportes</a>
+    </article>
+
+    <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-soft">
+        <p class="text-sm text-slate-500">Casos abiertos</p>
+        <p class="mt-2 text-4xl font-bold text-coral">{{ open_reports_count|default:0 }}</p>
+        <a href="/admin/" class="mt-4 inline-block text-sm font-semibold text-coral hover:underline">Ir a administración</a>
+    </article>
+</section>
+
+<section class="mt-8 grid gap-4 md:grid-cols-3">
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-soft">
+        <h3 class="font-semibold">Sección de Jardín a Tercero</h3>
+        <p class="mt-2 text-sm text-slate-600">Casos de Jardín a Tercero.</p>
+    </div>
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-soft">
+        <h3 class="font-semibold">Sección de Cuarto a Séptimo </h3>
+        <p class="mt-2 text-sm text-slate-600">Casos de Cuarto a Séptimo.</p>
+    </div>
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-soft">
+        <h3 class="font-semibold">Sección de Octavo a Undécimo</h3>
+        <p class="mt-2 text-sm text-slate-600">Casos de Octavo a Undécimo.</p>
+    </div>
+</section>
+{% endblock %}

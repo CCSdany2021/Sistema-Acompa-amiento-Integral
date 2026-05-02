@@ -1,0 +1,918 @@
+{% extends 'base.html' %}
+
+{% block title %}Estudiantes - SAI{% endblock %}
+
+{% block extra_head %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  body { font-family: 'Outfit', sans-serif; }
+  .soft-shell { box-shadow: 0 20px 50px rgba(59, 91, 219, 0.08); }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- HEADER -->
+<section id="course-header-section" class="w-[calc(100%+3rem)] -ml-6 -mt-5 mb-8 border-b border-slate-200 bg-[#2256F2] py-5 shadow-sm">
+  <div class="flex flex-wrap items-center justify-between gap-4 px-6">
+    <div class="flex items-center gap-4">
+      <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-[8px] bg-[#f2f5ff] text-[#325BFF]">
+        <i class="fa-regular fa-note-sticky text-xl"></i>
+      </div>
+      <div>
+        <h2 class="text-2xl font-bold leading-tight text-white">Gestión de Reportes por Curso</h2>
+        <p class="mt-1 text-sm text-blue-100">
+          {% if selected_course %}
+            Curso activo: <span class="font-semibold text-white">{{ selected_course }}</span>
+            {% if selected_section %} | Sección: <span class="font-semibold text-white">{{ selected_section }}</span>{% endif %}
+          {% else %}
+            Selecciona un curso desde el menú lateral para ver estudiantes.
+          {% endif %}
+        </p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-4">
+      <div class="rounded-[12px] border border-slate-200 bg-white px-5 py-3 shadow-sm">
+        <div class="flex items-center gap-3">
+          <div class="text-[#365cff]"><i class="fa-solid fa-users text-lg"></i></div>
+          <div>
+            <p class="text-xs font-medium text-slate-500">Total estudiantes</p>
+            <p class="text-xl font-bold text-[#12254a]">{{ students_count }}</p>
+          </div>
+        </div>
+      </div>
+      
+      <a href="{% url 'estudiantes:sync' %}" class="shrink-0 rounded-[8px] bg-gradient-to-r from-[#2f60ff] to-[#2a49ec] px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-200 hover:opacity-95 transition-opacity">
+        Sincronizar API
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- GRID DE TARJETAS -->
+<section id="students-table-section" class="pb-10 px-4">
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+    {% for student in students %}
+    <div class="group relative overflow-hidden rounded-xl border border-slate-500 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+      
+      <!-- Header -->
+      <div class="relative border-b border-slate-100 bg-gradient-to-br from-[#f8faff] to-white p-6">
+               
+        <div class="mb-4 flex justify-center">
+          <img 
+            src="/archivos/registro_fotografico/31218.jpg" 
+            class="h-20 w-20 rounded-full object-cover shadow-lg border-2 border-white"
+            alt="{{ student.full_name }}"
+          >
+        </div>
+        
+        <div class="text-center">
+          <h3 class="text-lg font-bold text-[#12254a]">{{ student.full_name }}</h3>
+          <p class="mt-1 text-sm text-slate-500">Código: {{ student.code }}</p>
+          <div class="mt-2 inline-flex items-center gap-1 rounded-full bg-[#eef3ff] px-3 py-1 text-xs font-semibold text-[#365cff]">
+            <i class="fa-solid fa-graduation-cap"></i>
+            {{ student.course.name|default:student.section|default:"-" }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Body - Reportes -->
+      <div class="p-5">
+        <p class="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">Fines Educativos Reportados</p>
+        <div class="flex flex-wrap gap-2">
+          {% for report in student.reports.all %}
+            <button type="button" 
+              class="inline-flex items-center gap-1.5 rounded-l border px-3 py-1.5 text-xs font-semibold shadow-sm transition 
+              {% if 'Académico' in report.get_purpose_display %} border-indigo-200 bg-primary-50 text-indigo-700 hover:bg-indigo-100
+              {% elif 'Convivencia' in report.get_purpose_display %} border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100
+              {% elif 'Espiritual' in report.get_purpose_display %} border-violet-200 bg-violet-50 text-violet-700 hover:bg-violet-100
+              {% elif 'Psicoafectivo' in report.get_purpose_display %} border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100
+              {% else %} border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 {% endif %}"
+              data-workspace-open="1"
+              data-report-id="{{ report.id }}"
+              data-report-purpose="{{ report.get_purpose_display }}"
+              data-report-status="{{ report.get_status_display }}"
+              data-report-objective="{{ report.objective|default:''|force_escape }}"
+              data-report-date="{{ report.created_at|date:'d/m/Y H:i' }}"
+              data-report-created-by="{{ report.created_by.get_full_name|default:report.created_by.username|default:'-'|force_escape }}"
+              data-report-assigned-to="{{ report.assigned_to.get_full_name|default:report.assigned_to.username|default:'-'|force_escape }}"
+              data-student-name="{{ student.full_name|default:'-'|force_escape }}"
+              data-student-code="{{ student.code }}"
+              data-student-course="{{ student.course.name|default:student.section|default:'-'|force_escape }}"
+              data-obs-items="{% for obs in report.observations.all %}{{ obs.followup_date|date:'d/m/Y'|default:obs.date_log|date:'d/m/Y' }}||{{ obs.content|force_escape }}||{{ obs.created_by.get_full_name|default:obs.created_by.username|default:'Usuario'|force_escape }}{% if not forloop.last %}##{% endif %}{% endfor %}"
+              data-rec-items="{% for rec in report.recommendations.all %}{{ rec.followup_date|date:'d/m/Y'|default:rec.date_log|date:'d/m/Y' }}||{{ rec.content|force_escape }}||{{ rec.created_by.get_full_name|default:rec.created_by.username|default:'Usuario'|force_escape }}{% if not forloop.last %}##{% endif %}{% endfor %}">
+              {{ report.get_purpose_display }}
+              <span class="opacity-60">•</span>
+              {{ report.get_status_display }}
+            </button>
+          {% empty %}
+            <span class="block w-full rounded-lg border border-dashed border-slate-200 bg-slate-50 py-3 text-center text-xs text-slate-400">Sin reportes</span>
+          {% endfor %}
+        </div>
+      </div>
+      <!-- Footer -->
+      <div class="border-t border-slate-100 bg-gradient-to-r from-slate-50 to-white p-4">
+        <button type="button" 
+          class="flex w-full items-center justify-center gap-2 rounded-xl bg-[#4361ee] px-4 py-3 text-sm font-bold text-white shadow-md transition-all hover:-translate-y-0.5 hover:shadow-lg hover:bg-[#3a56d4]"
+          data-modal-target="create-report-modal"
+          data-student-id="{{ student.id }}"
+          data-student-name="{{ student.full_name }}"
+          data-student-code="{{ student.code }}"
+          data-student-course="{{ student.course.name|default:student.section|default:'-' }}"
+          data-student-section="{{ student.course.section.name|default:student.section|default:'-' }}">
+          <i class="fa-solid fa-plus-circle text-lg"></i>
+          <span>Nuevo reporte</span>
+        </button>
+      </div>
+
+    </div>
+    {% empty %}
+    <div class="col-span-full flex flex-col items-center justify-center py-20 text-center">
+      <div class="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-slate-100 text-4xl text-slate-300">
+        <i class="fa-solid fa-users"></i>
+      </div>
+      <h3 class="text-lg font-semibold text-slate-700">No hay estudiantes</h3>
+      <p class="mt-2 max-w-md text-sm text-slate-500">No hay estudiantes registrados para este curso.</p>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- WORKSPACE PANEL -->
+<section id="report-workspace-panel" class="soft-shell mt-4 hidden w-full min-h-[85vh] rounded-2xl border border-slate-300/60 bg-white shadow-2xl shadow-slate-300/40">
+  <!-- Header -->
+  <div class="flex items-center justify-between border-b-2 border-slate-200/80 bg-white px-8 py-5">
+    <div class="flex items-center gap-5">
+      <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-[#2256F2] shadow-md">
+        <i class="fa-solid fa-user-shield text-lg text-white" aria-hidden="true"></i>
+      </div>
+      <div>
+        <h3 class="text-xl font-extrabold text-slate-900 tracking-tight leading-tight">Detalle del Reporte</h3>
+        <p class="text-base text-slate-600 mt-0.5 font-medium">Información completa del acompañamiento</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-4">
+      <select id="workspace-action-select" class="min-w-[220px] rounded-lg border-2 border-slate-300 bg-white px-4 py-2.5 text-base font-semibold text-slate-800 shadow-sm focus:border-[#2256F2] focus:outline-none focus:ring-2 focus:ring-blue-200 transition-all cursor-pointer">
+        <option value="">Acciones...</option>
+        <option value="edit_observation">Nueva observación</option>
+        <option value="edit_recommendation">Nueva recomendación</option>
+        <option value="show_observations">Ver observaciones</option>
+        <option value="show_recommendations">Ver recomendaciones</option>
+        <option value="close_case" class="font-bold text-rose-600">Cerrar caso</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Contenido Principal -->
+  <div class="grid gap-6 p-8 lg:grid-cols-12">
+    <!-- Columna Izquierda - Perfil del Estudiante -->
+    <div class="lg:col-span-3 space-y-5">
+      <!-- Card Perfil Principal -->
+      <div class="relative overflow-hidden rounded-xl bg-gradient-to-br from-[#2256F2] via-[#1e4bd4] to-[#1639a8] p-5 shadow-lg">
+        <div class="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -translate-y-6 translate-x-6"></div>
+        
+        <div class="relative z-10 flex flex-col items-center text-center">
+          <div class="mb-3 flex h-20 w-20 items-center justify-center rounded-full bg-white/20 shadow-md ring-3 ring-white/30">
+            <img src="/archivos/registro_fotografico/31218.jpg" class="h-20 w-20 rounded-full object-cover" alt="Foto del estudiante">
+          </div>
+          <h4 id="workspace-student-name" class="text-lg font-bold text-white tracking-wide leading-snug">-</h4>
+          <div class="mt-2 inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1 text-sm font-semibold text-white/95">
+            <i class="fa-solid fa-id-card text-xs" aria-hidden="true"></i>
+            <span id="workspace-student-code">-</span>
+          </div>
+          <div class="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-white/15 px-3 py-1.5 text-sm font-semibold text-white">
+            <i class="fa-solid fa-graduation-cap text-xs" aria-hidden="true"></i>
+            <span id="workspace-course">-</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Estado del Reporte -->
+      <div class="rounded-xl border border-slate-300 bg-white p-4 shadow-md">
+        <div class="flex items-center justify-between mb-3">
+          <h5 class="text-sm font-bold uppercase tracking-wide text-slate-700">Estado</h5>
+          <span id="workspace-status" class="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-sm font-bold text-emerald-800 shadow-sm"></span>
+        </div>
+        <div class="space-y-2">
+          <div class="flex items-center gap-3 rounded-lg bg-slate-100 p-2.5">
+            <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-100 text-blue-700">
+              <i class="fa-regular fa-calendar" aria-hidden="true"></i>
+            </div>
+            <div>
+              <p class="text-xs font-semibold text-slate-600">Fecha</p>
+              <p id="workspace-date" class="text-base font-bold text-slate-900">-</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Equipo de Atención -->
+      <div class="rounded-xl border border-slate-300 bg-white p-4 shadow-md">
+        <h5 class="mb-3 text-sm font-bold uppercase tracking-wide text-slate-700">Equipo</h5>
+        <div class="space-y-2">
+          <div class="flex items-center gap-3 rounded-lg bg-slate-100 p-2.5">
+            <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-violet-100 text-violet-700">
+              <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-xs font-semibold text-slate-600">Remitente</p>
+              <p id="workspace-created-by" class="truncate text-sm font-semibold text-slate-800">-</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3 rounded-xl bg-slate-50 p-3">
+            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100 text-amber-600">
+              <i class="fa-solid fa-user-check"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-xs font-medium text-slate-500">Encargado</p>
+              <p id="workspace-assigned-to" class="truncate text-sm font-semibold text-slate-800">-</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Columna Derecha - Detalles del Reporte (más ancha) -->
+    <div class="lg:col-span-9 space-y-5">
+      <!-- Fin Educativo y Objetivo -->
+      <div class="rounded-xl border-2 border-slate-300 bg-white p-6 shadow-md">
+        <div class="flex items-center gap-4 mb-4">
+          <div class="flex h-11 w-11 items-center justify-center rounded-lg bg-violet-100 text-violet-700 shadow-sm">
+            <i class="fa-solid fa-bullseye text-lg" aria-hidden="true"></i>
+          </div>
+          <div>
+            <h5 class="text-lg font-extrabold text-slate-900 tracking-tight">Fin Educativo</h5>
+            <p id="workspace-purpose-card" class="text-base font-bold text-violet-700">-</p>
+          </div>
+        </div>
+        <div class="rounded-lg bg-slate-100 p-5 border-2 border-slate-200">
+          <h6 class="mb-3 text-base font-bold text-[#2256F2] flex items-center gap-2">
+            <i class="fa-solid fa-target" aria-hidden="true"></i> Objetivo del acompañamiento
+          </h6>
+          <p id="workspace-objective" class="text-lg leading-7 text-slate-800 font-semibold">-</p>
+        </div>
+      </div>
+
+      <!-- Acciones y Contenido -->
+      <div id="workspace-action-content">
+        <div id="workspace-history-block" class="hidden rounded-xl border-2 border-slate-300 bg-white p-5 shadow-md">
+          <h4 id="history-title" class="mb-5 text-lg font-extrabold text-slate-900 flex items-center gap-3">
+            <i class="fa-solid fa-clock-rotate-left text-[#2256F2]" aria-hidden="true"></i> Historial
+          </h4>
+          <div id="history-container" class="space-y-3"></div>
+        </div>
+      </div>
+    </div>
+</section>
+
+<!-- ============================================ -->
+<!-- MODAL CERRAR CASO -->
+<!-- ============================================ -->
+<div id="close-case-modal" class="fixed inset-0 z-[70] hidden items-center justify-center bg-slate-900/60 backdrop-blur-md p-4">
+  <div class="w-full max-w-4xl transform transition-all">
+    <!-- Header -->
+    <div class="relative overflow-hidden rounded-t-3xl bg-gradient-to-r from-[#e11d48] via-[#be123c] to-[#9f1239] px-8 py-6 shadow-xl shadow-rose-500/20">
+      <div class="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
+      <div class="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-8 -translate-x-8"></div>
+      
+      <div class="relative flex items-start justify-between">
+        <div class="flex items-center gap-4">
+          <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm shadow-lg">
+            <i class="fa-solid fa-check-circle text-xl text-white" aria-hidden="true"></i>
+          </div>
+          <div>
+            <h3 class="text-2xl font-extrabold text-white tracking-tight">Cerrar Caso de Acompañamiento</h3>
+            <p class="mt-1 text-base text-rose-100 font-medium">Completa los datos para finalizar el acompañamiento</p>
+          </div>
+        </div>
+        <button type="button" data-close-modal="close-case-modal" class="flex h-10 w-10 items-center justify-center rounded-xl border-2 border-white/30 text-white/80 transition hover:bg-white/20 hover:text-white backdrop-blur-sm">
+          <i class="fa-solid fa-xmark text-xl" aria-hidden="true"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div class="rounded-b-3xl border-x-2 border-b-2 border-rose-200/50 bg-white px-8 py-6 shadow-2xl shadow-rose-200/30">
+      <form method="post" id="workspace-close-case-form" class="space-y-6">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="close_report">
+        <input type="hidden" name="report_id" id="close-case-report-id">
+        
+        <!-- Header del formulario -->
+        <div class="flex items-center gap-4 mb-6 pb-4 border-b-2 border-rose-200">
+          <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-rose-100 text-rose-700">
+            <i class="fa-solid fa-check-circle text-xl" aria-hidden="true"></i>
+          </div>
+          <div>
+            <h5 class="text-xl font-extrabold text-rose-800">Cerrar Caso de Acompañamiento</h5>
+            <p class="text-base font-medium text-rose-600">Completa los datos para finalizar el acompañamiento</p>
+          </div>
+        </div>
+
+        <!-- Información del estudiante - Solo lectura -->
+        <div class="mb-6 p-4 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200">
+          <div class="flex items-center gap-3 mb-3">
+            <i class="fa-solid fa-user-graduate text-blue-600 text-lg"></i>
+            <span class="text-base font-bold text-blue-800 uppercase">Información del Estudiante</span>
+          </div>
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div>
+              <p class="text-xs font-semibold text-blue-500 uppercase">Nombre</p>
+              <p id="close-form-student-name" class="text-base font-bold text-slate-800">-</p>
+            </div>
+            <div>
+              <p class="text-xs font-semibold text-blue-500 uppercase">Código</p>
+              <p id="close-form-student-code" class="text-base font-bold text-slate-800">-</p>
+            </div>
+            <div>
+              <p class="text-xs font-semibold text-blue-500 uppercase">Curso</p>
+              <p id="close-form-student-course" class="text-base font-bold text-slate-800">-</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Datos del reporte - Solo lectura -->
+        <div class="mb-6 p-4 rounded-lg bg-slate-50 border border-slate-200">
+          <div class="flex items-center gap-3 mb-3">
+            <i class="fa-solid fa-file-lines text-slate-600 text-lg"></i>
+            <span class="text-base font-bold text-slate-700 uppercase">Datos del Reporte</span>
+          </div>
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div>
+              <p class="text-xs font-semibold text-slate-500 uppercase">Fecha inicial</p>
+              <p id="close-form-report-date" class="text-base font-semibold text-slate-800">-</p>
+            </div>
+            <div>
+              <p class="text-xs font-semibold text-slate-500 uppercase">Fin educativo</p>
+              <p id="close-form-purpose" class="text-base font-semibold text-slate-800">-</p>
+            </div>
+            <div>
+              <p class="text-xs font-semibold text-slate-500 uppercase">Remitente</p>
+              <p id="close-form-created-by" class="text-base font-semibold text-slate-800">-</p>
+            </div>
+            <div class="md:col-span-3">
+              <p class="text-xs font-semibold text-slate-500 uppercase">Objetivo</p>
+              <p id="close-form-objective" class="text-base font-medium text-slate-800 leading-relaxed">-</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Campos de cierre - Editables -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 p-5 rounded-lg bg-rose-50 border-2 border-rose-200">
+          <!-- Estado del caso -->
+          <div class="space-y-2">
+            <label class="flex items-center gap-2 text-base font-bold text-slate-800">
+              <i class="fa-solid fa-flag text-rose-600" aria-hidden="true"></i>
+              Estado del caso
+            </label>
+            <select name="close_status" id="close-status-select" required
+              class="w-full rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-base font-semibold text-slate-800 focus:border-rose-500 focus:outline-none focus:ring-4 focus:ring-rose-100/50 transition-all cursor-pointer">
+              <option value="">Selecciona el estado</option>
+              <option value="PROGRAMADO">Programado</option>
+              <option value="SEGUIMIENTO">En Seguimiento</option>
+              <option value="ATENDIDO">Atendido</option>
+            </select>
+          </div>
+
+          <!-- ¿Cumplió con el objetivo? -->
+          <div class="space-y-2">
+            <label class="flex items-center gap-2 text-base font-bold text-slate-800">
+              <i class="fa-solid fa-circle-check text-rose-600" aria-hidden="true"></i>
+              ¿Cumplió con el objetivo de acompañamiento?
+            </label>
+            <select name="cumple_acompanamiento" id="cumple-select" required
+              class="w-full rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-base font-semibold text-slate-800 focus:border-rose-500 focus:outline-none focus:ring-4 focus:ring-rose-100/50 transition-all cursor-pointer">
+              <option value="">Selecciona una opción</option>
+              <option value="true">Sí</option>
+              <option value="false">No</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Botones -->
+        <div class="flex items-center justify-end gap-4 pt-4 border-t border-slate-200">
+          <button type="button" data-close-modal="close-case-modal" class="rounded-xl border-2 border-slate-300 bg-white px-6 py-3 text-base font-bold text-slate-700 hover:bg-slate-100 hover:border-slate-400 transition-all cursor-pointer shadow-sm">
+            Cancelar
+          </button>
+          <button type="submit" class="flex items-center gap-3 rounded-xl bg-gradient-to-r from-rose-600 to-rose-700 px-8 py-3 text-base font-bold text-white shadow-lg shadow-rose-500/30 hover:shadow-xl hover:translate-y-[-2px] transition-all cursor-pointer">
+            <i class="fa-solid fa-lock" aria-hidden="true"></i>
+            Cerrar Caso
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+  <!-- Footer -->
+  <div class="border-t-2 border-slate-200 bg-white px-8 py-5">
+    <div class="flex items-center justify-between">
+      <button type="button" id="btn-back-to-list" class="group flex items-center gap-3 rounded-lg border-2 border-slate-300 bg-white px-6 py-3 text-base font-bold text-slate-800 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md hover:border-[#2256F2] hover:text-[#2256F2] cursor-pointer">
+        <i class="fa-solid fa-arrow-left transition-transform group-hover:-translate-x-1" aria-hidden="true"></i>
+        Volver al listado
+      </button>
+      <div class="flex items-center gap-3 text-base font-medium text-slate-600">
+        <i class="fa-solid fa-shield-halved"></i>
+        <span>Sistema de Acompañamiento Integral</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================ -->
+<!-- MODAL EDITAR OBSERVACIÓN - DISEÑO MODERNO -->
+<!-- ============================================ -->
+<div id="edit-observation-modal" class="fixed inset-0 z-[70] hidden items-center justify-center bg-slate-900/60 backdrop-blur-md p-4">
+  <div class="w-full max-w-4xl transform transition-all">
+    <!-- Header con gradiente -->
+    <div class="relative overflow-hidden rounded-t-3xl bg-gradient-to-r from-[#3b82f6] via-[#2563eb] to-[#1d4ed8] px-8 py-6 shadow-xl shadow-blue-500/20">
+      <div class="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
+      <div class="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-8 -translate-x-8"></div>
+      
+      <div class="relative flex items-start justify-between">
+        <div class="flex items-center gap-4">
+          <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm shadow-lg">
+            <i class="fa-solid fa-magnifying-glass text-xl text-white" aria-hidden="true"></i>
+          </div>
+          <div>
+            <h3 class="text-2xl font-extrabold text-white tracking-tight">Nueva Observación</h3>
+            <p class="mt-1 text-base text-blue-100 font-medium">Registra el seguimiento y evolución del estudiante</p>
+          </div>
+        </div>
+        <button type="button" data-close-modal="edit-observation-modal" class="flex h-10 w-10 items-center justify-center rounded-xl border-2 border-white/30 text-white/80 transition hover:bg-white/20 hover:text-white backdrop-blur-sm">
+          <i class="fa-solid fa-xmark text-xl" aria-hidden="true"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div class="rounded-b-3xl border-x-2 border-b-2 border-blue-200/50 bg-white px-8 py-6 shadow-2xl shadow-blue-200/30">
+      <form method="post" class="space-y-6">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="add_observation">
+        <input type="hidden" name="report_id" id="obs-modal-report-id">
+        
+        <!-- Campo Fecha -->
+        <div class="space-y-2">
+          <label class="flex items-center gap-2 text-base font-bold text-slate-800">
+            <i class="fa-regular fa-calendar-check text-[#3b82f6]" aria-hidden="true"></i>
+            Fecha de seguimiento
+          </label>
+          <input type="date" name="observation_followup_date" required
+            class="w-full rounded-xl border-2 border-slate-300 px-5 py-3.5 text-lg font-semibold text-slate-800 focus:border-[#3b82f6] focus:outline-none focus:ring-4 focus:ring-blue-100/50 transition-all bg-slate-50">
+        </div>
+
+        <!-- Campo Contenido -->
+        <div class="space-y-2">
+          <label class="flex items-center gap-2 text-base font-bold text-slate-800">
+            <i class="fa-solid fa-pen-nib text-[#3b82f6]" aria-hidden="true"></i>
+            Descripción de la observación
+          </label>
+          <textarea name="observation_content" rows="6" required
+            placeholder="Describe los hallazgos, evolución y aspectos relevantes del estudiante..."
+            class="w-full rounded-xl border-2 border-slate-300 px-5 py-4 text-lg font-medium text-slate-800 placeholder:text-slate-400 focus:border-[#3b82f6] focus:outline-none focus:ring-4 focus:ring-blue-100/50 transition-all bg-slate-50 resize-none leading-relaxed"></textarea>
+          <p class="text-sm text-slate-500 font-medium">Incluye observaciones sobre comportamiento, rendimiento académico, relaciones con compañeros, etc.</p>
+        </div>
+
+        <!-- Botones -->
+        <div class="flex items-center justify-end gap-4 pt-4 border-t border-slate-200">
+          <button type="button" data-close-modal="edit-observation-modal"
+            class="rounded-xl border-2 border-slate-300 bg-white px-6 py-3 text-base font-bold text-slate-700 hover:bg-slate-100 hover:border-slate-400 transition-all cursor-pointer shadow-sm">
+            Cancelar
+          </button>
+          <button type="submit"
+            class="flex items-center gap-3 rounded-xl bg-gradient-to-r from-[#3b82f6] to-[#2563eb] px-8 py-3 text-base font-bold text-white shadow-lg shadow-blue-500/30 hover:shadow-xl hover:translate-y-[-2px] transition-all cursor-pointer">
+            <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>
+            Guardar observación
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- MODAL EDITAR RECOMENDACIÓN - DISEÑO MODERNO -->
+<!-- ============================================ -->
+<div id="edit-recommendation-modal" class="fixed inset-0 z-[70] hidden items-center justify-center bg-slate-900/60 backdrop-blur-md p-4">
+  <div class="w-full max-w-4xl transform transition-all">
+    <!-- Header con gradiente verde -->
+    <div class="relative overflow-hidden rounded-t-3xl bg-gradient-to-r from-[#55a630] via-[#4a8f2a] to-[#3d7a22] px-8 py-6 shadow-xl shadow-green-500/20">
+      <div class="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
+      <div class="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-8 -translate-x-8"></div>
+      
+      <div class="relative flex items-start justify-between">
+        <div class="flex items-center gap-4">
+          <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm shadow-lg">
+            <i class="fa-solid fa-lightbulb text-xl text-white" aria-hidden="true"></i>
+          </div>
+          <div>
+            <h3 class="text-2xl font-extrabold text-white tracking-tight">Nueva Recomendación</h3>
+            <p class="mt-1 text-base text-green-100 font-medium">Registra las acciones sugeridas para el estudiante</p>
+          </div>
+        </div>
+        <button type="button" data-close-modal="edit-recommendation-modal" class="flex h-10 w-10 items-center justify-center rounded-xl border-2 border-white/30 text-white/80 transition hover:bg-white/20 hover:text-white backdrop-blur-sm">
+          <i class="fa-solid fa-xmark text-xl" aria-hidden="true"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div class="rounded-b-3xl border-x-2 border-b-2 border-green-200/50 bg-white px-8 py-6 shadow-2xl shadow-green-200/30">
+      <form method="post" class="space-y-6">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="add_recommendation">
+        <input type="hidden" name="report_id" id="rec-modal-report-id">
+        
+        <!-- Campo Fecha -->
+        <div class="space-y-2">
+          <label class="flex items-center gap-2 text-base font-bold text-slate-800">
+            <i class="fa-regular fa-calendar-check text-[#55a630]" aria-hidden="true"></i>
+            Fecha de seguimiento
+          </label>
+          <input type="date" name="recommendation_followup_date" required
+            class="w-full rounded-xl border-2 border-slate-300 px-5 py-3.5 text-lg font-semibold text-slate-800 focus:border-[#55a630] focus:outline-none focus:ring-4 focus:ring-green-100/50 transition-all bg-slate-50">
+        </div>
+
+        <!-- Campo Recomendaciones -->
+        <div class="space-y-2">
+          <label class="flex items-center gap-2 text-base font-bold text-slate-800">
+            <i class="fa-solid fa-bullseye text-[#55a630]" aria-hidden="true"></i>
+            Recomendaciones
+          </label>
+          <textarea name="recommendation_content" rows="6" required
+            placeholder="Describe las acciones, estrategias y recomendaciones para apoyar al estudiante..."
+            class="w-full rounded-xl border-2 border-slate-300 px-5 py-4 text-lg font-medium text-slate-800 placeholder:text-slate-400 focus:border-[#55a630] focus:outline-none focus:ring-4 focus:ring-green-100/50 transition-all bg-slate-50 resize-none leading-relaxed"></textarea>
+          <p class="text-sm text-slate-500 font-medium">Incluye estrategias pedagógicas, acciones de apoyo, recursos recomendados, etc.</p>
+        </div>
+
+        <!-- Botones -->
+        <div class="flex items-center justify-end gap-4 pt-4 border-t border-slate-200">
+          <button type="button" data-close-modal="edit-recommendation-modal"
+            class="rounded-xl border-2 border-slate-300 bg-white px-6 py-3 text-base font-bold text-slate-700 hover:bg-slate-100 hover:border-slate-400 transition-all cursor-pointer shadow-sm">
+            Cancelar
+          </button>
+          <button type="submit"
+            class="flex items-center gap-3 rounded-xl bg-gradient-to-r from-[#55a630] to-[#4a8f2a] px-8 py-3 text-base font-bold text-white shadow-lg shadow-green-500/30 hover:shadow-xl hover:translate-y-[-2px] transition-all cursor-pointer">
+            <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>
+            Guardar recomendación
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- MODAL CREAR REPORTE - UX MEJORADO -->
+<!-- ============================================ -->
+<div id="create-report-modal" class="fixed inset-0 z-[60] hidden items-center justify-center bg-slate-900/60 backdrop-blur-md p-4">
+  <div class="w-full max-w-4xl transform transition-all">
+    <!-- Header con diseño moderno -->
+    <div class="relative overflow-hidden rounded-t-3xl bg-gradient-to-r from-[#2252F7] via-[#1a48d4] to-[#1639a8] px-8 py-6 shadow-xl shadow-blue-500/20">
+      <div class="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full -translate-y-20 translate-x-20"></div>
+      <div class="absolute bottom-0 left-0 w-28 h-28 bg-white/5 rounded-full translate-y-10 -translate-x-10"></div>
+      
+      <div class="relative flex items-start justify-between">
+        <div class="flex items-center gap-4">
+          <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm shadow-lg ring-2 ring-white/20">
+            <i class="fa-solid fa-file-circle-plus text-2xl text-white" aria-hidden="true"></i>
+          </div>
+          <div>
+            <h3 class="text-2xl font-extrabold text-white tracking-tight">Nuevo Reporte</h3>
+            <p class="mt-1 text-base text-blue-100 font-medium">Crea un nuevo acompañamiento para el estudiante</p>
+          </div>
+        </div>
+        <button type="button" data-close-modal="create-report-modal" class="flex h-10 w-10 items-center justify-center rounded-xl border-2 border-white/30 text-white/80 transition hover:bg-white/20 hover:text-white backdrop-blur-sm">
+          <i class="fa-solid fa-xmark text-xl" aria-hidden="true"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Body con diseño mejorado -->
+    <div class="rounded-b-3xl border-x-2 border-b-2 border-blue-200/50 bg-white shadow-2xl shadow-blue-200/30">
+      <!-- Info del estudiante destacada -->
+      <div class="bg-gradient-to-r from-blue-50 to-indigo-50 px-8 py-5 border-b border-blue-100">
+        <div class="flex items-center gap-4">
+          <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-[#2252F7] shadow-md ring-2 ring-blue-200">
+            <i class="fa-solid fa-user-graduate text-lg text-white" aria-hidden="true"></i>
+          </div>
+          <div>
+            <p class="text-sm font-bold text-[#2252F7] uppercase tracking-wide">Estudiante</p>
+            <p id="modal-student-name" class="text-xl font-extrabold text-slate-900">-</p>
+          </div>
+          <div class="ml-auto flex gap-6">
+            <div class="text-center">
+              <p class="text-xs font-bold text-blue-500 uppercase">Código</p>
+              <p id="modal-student-code" class="text-base font-bold text-slate-800">-</p>
+            </div>
+            <div class="text-center">
+              <p class="text-xs font-bold text-blue-500 uppercase">Curso</p>
+              <p id="modal-student-course" class="text-base font-bold text-slate-800">-</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Formulario -->
+      <form method="post" class="p-8 space-y-6">
+        {% csrf_token %}
+        <input type="hidden" name="student_id" id="modal-student-id">
+        
+        <!-- Sección: Tipo de reporte -->
+        <div class="space-y-4">
+          <div class="flex items-center gap-3">
+            <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-[#2252F7]/10 text-[#2252F7]">
+              <i class="fa-solid fa-tag text-sm" aria-hidden="true"></i>
+            </div>
+            <h4 class="text-lg font-extrabold text-slate-900">Tipo de acompañamiento</h4>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <label class="relative cursor-pointer group">
+              <input type="radio" name="fines_educativos" value="ACADEMICO" class="peer sr-only">
+              <div class="rounded-2xl border-2 border-slate-200 p-4 text-center transition-all peer-checked:border-[#2252F7] peer-checked:bg-[#2252F7]/5 hover:border-[#2252F7]/50 hover:shadow-md">
+                <i class="fa-solid fa-graduation-cap text-2xl text-[#2252F7] mb-2" aria-hidden="true"></i>
+                <p class="text-base font-bold text-slate-800">Académico</p>
+                <p class="text-xs text-slate-500">Rendimiento escolar</p>
+              </div>
+            </label>
+            <label class="relative cursor-pointer group">
+              <input type="radio" name="fines_educativos" value="CONVIVENCIA" class="peer sr-only">
+              <div class="rounded-2xl border-2 border-slate-200 p-4 text-center transition-all peer-checked:border-[#f59e0b] peer-checked:bg-amber-50 hover:border-amber-300 hover:shadow-md">
+                <i class="fa-solid fa-users text-2xl text-amber-500 mb-2" aria-hidden="true"></i>
+                <p class="text-base font-bold text-slate-800">Convivencia</p>
+                <p class="text-xs text-slate-500">Relaciones interpersonales</p>
+              </div>
+            </label>
+            <label class="relative cursor-pointer group">
+              <input type="radio" name="fines_educativos" value="ESPIRITUAL" class="peer sr-only">
+              <div class="rounded-2xl border-2 border-slate-200 p-4 text-center transition-all peer-checked:border-[#8b5cf6] peer-checked:bg-violet-50 hover:border-violet-300 hover:shadow-md">
+                <i class="fa-solid fa-heart text-2xl text-violet-500 mb-2" aria-hidden="true"></i>
+                <p class="text-base font-bold text-slate-800">Espiritual</p>
+                <p class="text-xs text-slate-500">Desarrollo moral y ético</p>
+              </div>
+            </label>
+            <label class="relative cursor-pointer group">
+              <input type="radio" name="fines_educativos" value="PSICOAFECTIVO" class="peer sr-only">
+              <div class="rounded-2xl border-2 border-slate-200 p-4 text-center transition-all peer-checked:border-[#ec4899] peer-checked:bg-pink-50 hover:border-pink-300 hover:shadow-md">
+                <i class="fa-solid fa-brain text-2xl text-pink-500 mb-2" aria-hidden="true"></i>
+                <p class="text-base font-bold text-slate-800">Psicoafectivo</p>
+                <p class="text-xs text-slate-500">Estado emocional</p>
+              </div>
+            </label>
+          </div>
+          <input type="hidden" name="purpose" id="purpose-hidden">
+        </div>
+
+        <!-- Sección: Equipo -->
+        <div class="grid grid-cols-2 gap-6">
+          <div class="space-y-2">
+            <label class="flex items-center gap-2 text-base font-bold text-slate-800">
+              <i class="fa-solid fa-paper-plane text-[#2252F7]" aria-hidden="true"></i>
+              Quién remite
+            </label>
+            <input type="text" readonly value="{% if request.user.is_authenticated %}{{ request.user.get_full_name|default:request.user.username }}{% else %}Administrador{% endif %}" 
+              class="w-full rounded-xl border-2 border-slate-200 bg-slate-100 px-4 py-3 text-base font-semibold text-slate-600 cursor-not-allowed">
+          </div>
+          <div class="space-y-2">
+            <label class="flex items-center gap-2 text-base font-bold text-slate-800">
+              <i class="fa-solid fa-user-check text-[#2252F7]" aria-hidden="true"></i>
+              quién atenderá
+            </label>
+            <select name="assigned_to" class="w-full rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-base font-semibold text-slate-800 focus:border-[#2252F7] focus:outline-none focus:ring-4 focus:ring-blue-100/50 transition-all cursor-pointer">
+              {% for staff in staff_users %}
+              <option value="{{ staff.id }}">{{ staff.get_full_name|default:staff.username }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <!-- Sección: Objetivo -->
+        <div class="space-y-2">
+          <label class="flex items-center gap-2 text-base font-bold text-slate-800">
+            <i class="fa-solid fa-bullseye text-[#2252F7]" aria-hidden="true"></i>
+            Objetivo del acompañamiento
+          </label>
+          <textarea name="objective" rows="5" required
+            placeholder="Describe el propósito de este acompañamiento: ¿Qué se espera lograr? ¿Cuáles son las necesidades del estudiante? ¿Qué acciones se realizará?"
+            class="w-full rounded-xl border-2 border-slate-300 px-5 py-4 text-lg font-medium text-slate-800 placeholder:text-slate-400 focus:border-[#2252F7] focus:outline-none focus:ring-4 focus:ring-blue-100/50 transition-all bg-slate-50 resize-none leading-relaxed"></textarea>
+          <p class="text-sm text-slate-500 font-medium">Sé detallado para que el equipo de atención pueda actuar efectivamente.</p>
+        </div>
+
+        <!-- Botones -->
+        <div class="flex items-center justify-end gap-4 pt-6 border-t border-slate-200">
+          <button type="button" data-close-modal="create-report-modal"
+            class="rounded-xl border-2 border-slate-300 bg-white px-7 py-3.5 text-base font-bold text-slate-700 hover:bg-slate-100 hover:border-slate-400 transition-all cursor-pointer shadow-sm">
+            Cancelar
+          </button>
+          <button type="submit"
+            class="flex items-center gap-3 rounded-xl bg-gradient-to-r from-[#2252F7] to-[#1a48d4] px-8 py-3.5 text-base font-bold text-white shadow-lg shadow-blue-500/30 hover:shadow-xl hover:translate-y-[-2px] transition-all cursor-pointer">
+            <i class="fa-solid fa-plus-circle" aria-hidden="true"></i>
+            Crear reporte
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function openModal(id){
+    const m=document.getElementById(id);
+    if(m){m.classList.remove('hidden');m.classList.add('flex');}
+  }
+  
+  function closeModal(id){
+    const m=document.getElementById(id);
+    if(m){m.classList.add('hidden');m.classList.remove('flex');}
+  }
+  
+  function setText(id, value){
+    const el = document.getElementById(id);
+    if (el) el.textContent = value && String(value).trim() ? value : '-';
+  }
+
+  function renderHistory(rawItems, type = 'observation'){
+    const container=document.getElementById('history-container');
+    container.innerHTML='';
+    
+    const colors = type === 'recommendation' 
+      ? { bg: '#dcfce7', text: '#55a630', badge: '#dcfce7', badgeText: '#4a8f2a', border: '#bbf7d0', dot: '#55a630' }
+      : { bg: '#dbeafe', text: '#3b82f6', badge: '#dbeafe', badgeText: '#2563eb', border: '#bfdbfe', dot: '#3b82f6' };
+    
+    const typeLabel = type === 'recommendation' ? 'Recomendación' : 'Observación';
+    
+    if(!rawItems){
+      container.innerHTML=`<div class="rounded-lg border border-slate-200 bg-slate-50 p-4 text-base text-slate-500">Sin ${typeLabel.toLowerCase()}es registradas</div>`;
+      return;
+    }
+    
+    const items = rawItems.split('##').filter(Boolean).map(item => {
+      const parts = item.split('||');
+      return { 
+        date: parts[0] ? parts[0].trim() : '', 
+        content: parts[1] ? parts[1].trim() : '', 
+        author: parts[2] ? parts[2].trim() : 'Usuario', 
+        period: parts[3] ? parts[3].trim() : '' 
+      };
+    });
+    
+    items.sort((a, b) => {
+      const dateA = a.date.split('/').reverse().join('');
+      const dateB = b.date.split('/').reverse().join('');
+      return dateB.localeCompare(dateA);
+    });
+    
+    const total = items.length;
+    const counterDiv = document.createElement('div');
+    counterDiv.className = 'mb-5 pb-4 border-b-2 border-slate-200';
+    counterDiv.innerHTML = `<span class="text-lg font-extrabold" style="color:${colors.text}">${total} ${typeLabel}${total !== 1 ? 's' : ''}</span> <span class="text-base text-slate-500 font-medium">registrada${total !== 1 ? 's' : ''}</span>`;
+    container.appendChild(counterDiv);
+    
+    items.forEach((item) => {
+      const periodDisplay = item.period ? `<span class="ml-2 text-base font-bold px-3 py-1 rounded-lg bg-amber-100 text-amber-700 border border-amber-200">${item.period}</span>` : '';
+      const itemDiv = document.createElement('div');
+      itemDiv.className = 'mb-5 pl-5 relative';
+      itemDiv.innerHTML = `
+        <div class="absolute left-0 top-2 w-4 h-4 rounded-full border-2 border-white shadow-md" style="background:${colors.dot}"></div>
+        <div class="border-l-4 ml-2 pl-5 pb-4" style="border-color:${colors.dot}">
+          <div class="flex flex-wrap items-center gap-3 mb-3">
+            <span class="text-lg font-extrabold text-slate-900">${item.author}</span>
+            <span class="text-lg font-bold px-4 py-1.5 rounded-lg shadow-sm" style="background:${colors.bg};color:${colors.badgeText}">${item.date}</span>
+            ${periodDisplay}
+          </div>
+          <p class="text-lg leading-relaxed text-slate-700 font-medium">${item.content}</p>
+        </div>
+      `;
+      container.appendChild(itemDiv);
+    });
+  }
+
+  // Modal Crear Reporte
+  document.querySelectorAll("[data-modal-target='create-report-modal']").forEach(btn=>{
+    btn.addEventListener('click', function(){
+      document.getElementById('modal-student-id').value=this.dataset.studentId||'';
+      document.getElementById('modal-student-name').textContent=this.dataset.studentName||'';
+      document.getElementById('modal-student-code').textContent=this.dataset.studentCode||'-';
+      document.getElementById('modal-student-course').textContent=this.dataset.studentCourse||'-';
+      
+      // Resetear selección de radio buttons
+      document.querySelectorAll('input[name="fines_educativos"]').forEach(radio => {
+        radio.checked = false;
+      });
+      
+      openModal('create-report-modal');
+    });
+  });
+  
+  // Actualizar hidden input cuando se selecciona un radio button
+  document.querySelectorAll('input[name="fines_educativos"]').forEach(radio => {
+    radio.addEventListener('change', function(){
+      document.getElementById('purpose-hidden').value = this.value;
+    });
+  });
+
+  document.getElementById('fines_educativos_select')?.addEventListener('change', function(){
+    document.getElementById('purpose-hidden').value=this.value;
+  });
+
+  // Cerrar Modales
+  document.querySelectorAll('[data-close-modal]').forEach(btn=>btn.addEventListener('click', ()=>closeModal(btn.dataset.closeModal)));
+
+  // Abrir Workspace (al hacer clic en badge de reporte)
+  document.querySelectorAll('[data-workspace-open="1"]').forEach(btn=>{
+    btn.addEventListener('click', function(){
+      const headerSection = document.getElementById('course-header-section');
+      const workspacePanel = document.getElementById('report-workspace-panel');
+      const tableSection = document.getElementById('students-table-section');
+      
+      // Mostrar workspace y ocultar header/tabla
+      workspacePanel.classList.remove('hidden');
+      headerSection.classList.add('hidden');
+      tableSection.classList.add('hidden');
+      
+      // Cargar datos del estudiante en las tarjetas
+      setText('workspace-purpose-card', this.dataset.reportPurpose);
+      setText('workspace-student-name', this.dataset.studentName);
+      setText('workspace-student-code', this.dataset.studentCode);
+      setText('workspace-course', this.dataset.studentCourse);
+      setText('workspace-status', this.dataset.reportStatus);
+      setText('workspace-date', this.dataset.reportDate);
+      setText('workspace-created-by', this.dataset.reportCreatedBy);
+      setText('workspace-assigned-to', this.dataset.reportAssignedTo);
+      setText('workspace-objective', this.dataset.reportObjective);
+      
+      // Guardar IDs para los formularios
+      document.getElementById('close-case-report-id').value=this.dataset.reportId||'';
+      document.getElementById('obs-modal-report-id').value=this.dataset.reportId||'';
+      document.getElementById('rec-modal-report-id').value=this.dataset.reportId||'';
+
+      const obs=this.dataset.obsItems||'';
+      const rec=this.dataset.recItems||'';
+      const actionSelect = document.getElementById('workspace-action-select');
+      const historyBlock = document.getElementById('workspace-history-block');
+
+      const hideActionBlocks = () => {
+        historyBlock.classList.add('hidden');
+      };
+
+      actionSelect.value = '';
+      hideActionBlocks();
+      document.getElementById('history-title').textContent='Historial';
+      document.getElementById('history-container').innerHTML='';
+
+      // Lógica del dropdown de acciones
+      actionSelect.onchange = function () {
+        hideActionBlocks();
+        const selectedValue = this.value;
+        
+        if (selectedValue === 'edit_observation') {
+          openModal('edit-observation-modal');
+        }
+        else if (selectedValue === 'edit_recommendation') {
+          openModal('edit-recommendation-modal');
+        } 
+        else if (selectedValue === 'show_observations') {
+          historyBlock.classList.remove('hidden');
+          document.getElementById('history-title').innerHTML='<i class="fa-solid fa-magnifying-glass text-[#3b82f6]" aria-hidden="true"></i> Historial de observaciones';
+          renderHistory(obs, 'observation');
+        } 
+        else if (selectedValue === 'show_recommendations') {
+          historyBlock.classList.remove('hidden');
+          document.getElementById('history-title').innerHTML='<i class="fa-solid fa-lightbulb text-[#55a630]" aria-hidden="true"></i> Historial de recomendaciones';
+          renderHistory(rec, 'recommendation');
+        }
+        else if (selectedValue === 'close_case') {
+          // Mostrar modal de cierre
+          openModal('close-case-modal');
+          // Llenar datos del estudiante
+          setText('close-form-student-name', document.getElementById('workspace-student-name').textContent);
+          setText('close-form-student-code', document.getElementById('workspace-student-code').textContent);
+          setText('close-form-student-course', document.getElementById('workspace-course').textContent);
+          // Llenar datos del reporte
+          setText('close-form-report-date', document.getElementById('workspace-date').textContent);
+          setText('close-form-purpose', document.getElementById('workspace-purpose-card').textContent);
+          setText('close-form-created-by', document.getElementById('workspace-created-by').textContent);
+          setText('close-form-objective', document.getElementById('workspace-objective').textContent);
+        }
+      };
+
+      // Scroll suave al workspace
+      workspacePanel.scrollIntoView({behavior:'smooth', block:'start'});
+    });
+  });
+
+  // Botón Volver al Listado
+  document.getElementById('btn-back-to-list')?.addEventListener('click', function () {
+    document.getElementById('course-header-section').classList.remove('hidden');
+    document.getElementById('report-workspace-panel').classList.add('hidden');
+    document.getElementById('students-table-section').classList.remove('hidden');
+    document.getElementById('workspace-action-select').value = '';
+  });
+</script>
+{% endblock %}

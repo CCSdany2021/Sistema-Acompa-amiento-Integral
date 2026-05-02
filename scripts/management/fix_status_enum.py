@@ -8,10 +8,11 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.database import SQLALCHEMY_DATABASE_URL
 
+
 def fix_enums():
     print(f"Connecting to {SQLALCHEMY_DATABASE_URL}...")
     engine = create_engine(SQLALCHEMY_DATABASE_URL)
-    
+
     with engine.connect() as connection:
         # Check current values
         print("Checking current status values...")
@@ -24,12 +25,25 @@ def fix_enums():
 
         # Normalize ALL statuses to Uppercase
         print("Normalizing statuses to UPPERCASE...")
-        connection.execute(text("UPDATE reports SET status = 'PROGRAMADO' WHERE status IN ('OPEN', 'Abierto', 'Programado')"))
-        connection.execute(text("UPDATE reports SET status = 'SEGUIMIENTO' WHERE status IN ('Seguimiento')"))
-        connection.execute(text("UPDATE reports SET status = 'ATENDIDO' WHERE status IN ('CLOSED', 'Cerrado', 'Atendido')"))
-        
+        connection.execute(
+            text(
+                "UPDATE reports SET status = 'PROGRAMADO' WHERE status IN ('OPEN', 'Abierto', 'Programado')"
+            )
+        )
+        connection.execute(
+            text(
+                "UPDATE reports SET status = 'SEGUIMIENTO' WHERE status IN ('Seguimiento')"
+            )
+        )
+        connection.execute(
+            text(
+                "UPDATE reports SET status = 'ATENDIDO' WHERE status IN ('CLOSED', 'Cerrado', 'Atendido')"
+            )
+        )
+
         connection.commit()
         print("Update complete.")
+
 
 if __name__ == "__main__":
     fix_enums()

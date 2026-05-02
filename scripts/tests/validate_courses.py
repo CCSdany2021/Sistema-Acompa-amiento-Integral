@@ -1,15 +1,17 @@
 import sys
 import os
+
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from src.external_api import get_external_students
 from src.database import SessionLocal
 from src import models
 
+
 def main():
     print("Fetching all students from external API to find unique courses...")
     response = get_external_students()
-    
+
     if isinstance(response, dict):
         if "results" in response:
             students = response["results"]
@@ -35,12 +37,14 @@ def main():
 
     print("\nUnique courses from API:")
     for course, info in sorted(courses_found.items()):
-        print(f"Course: {course} | Grado: {info['grade']} | Sección: {info['section']} | Students: {info['count']}")
+        print(
+            f"Course: {course} | Grado: {info['grade']} | Sección: {info['section']} | Students: {info['count']}"
+        )
 
     print("\nLocal Courses in DB:")
     db = SessionLocal()
     local_courses = db.query(models.Course).all()
-    
+
     local_course_names = set(c.name for c in local_courses)
     api_course_names = set(courses_found.keys())
 
@@ -51,6 +55,7 @@ def main():
     print(f"Courses in DB but NOT in API: {sorted(list(missing_in_api))}")
 
     db.close()
+
 
 if __name__ == "__main__":
     main()
