@@ -15,106 +15,346 @@
                         ocean: "#0ea5e9",
                         mint: "#10b981",
                         coral: "#fb7185",
-                        sand: "#f8fafc"
+                        sand: "#f8fafc",
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            200: '#bfdbfe',
+                            300: '#93c5fd',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                        }
+                    },
+                    fontWeight: {
+                        normal: '400',
+                        medium: '500',
+                        semibold: '600',
+                        bold: '700',
                     },
                     boxShadow: {
-                        soft: "0 10px 30px rgba(2, 6, 23, 0.08)"
+                        soft: "0 10px 30px rgba(2, 6, 23, 0.08)",
+                        glow: "0 0 20px rgba(59, 130, 246, 0.5)",
+                        'glow-lg': "0 0 30px rgba(59, 130, 246, 0.6)",
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'slide-in': 'slideIn 0.3s ease-out',
+                        'fade-in': 'fadeIn 0.2s ease-out',
+                    },
+                    keyframes: {
+                        slideIn: {
+                            '0%': { transform: 'translateX(-100%)', opacity: '0' },
+                            '100%': { transform: 'translateX(0)', opacity: '1' },
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
                     }
                 }
             }
         }
     </script>
     <style>
-        .sidebar-scroll::-webkit-scrollbar { width: 8px; }
-        .sidebar-scroll::-webkit-scrollbar-thumb { background: #1d4f85; border-radius: 999px; }
+        :root {
+            --brand-primary: #2563eb;
+            --brand-light: #3b82f6;
+            --brand-subtle: #eff6ff;
+            --surface-primary: #ffffff;
+            --surface-secondary: #f8fafc;
+            --text-primary: #1e293b;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+        }
+        
+        body { 
+            font-family: 'Outfit', sans-serif; 
+            font-weight: 400; 
+            letter-spacing: -0.01em; 
+            color: var(--text-primary);
+            background: var(--surface-secondary);
+        }
+        
+        h1, h2, h3, h4 { font-weight: 600; letter-spacing: -0.02em; }
+        h1 { font-size: 1.75rem; }
+        h2 { font-size: 1.5rem; }
+        h3 { font-size: 1.25rem; }
+        
+        .font-display { font-weight: 600; }
+        .font-heading { font-weight: 500; }
+        .font-body { font-weight: 400; }
+        .font-muted { color: var(--text-secondary); }
+        
+        .sidebar-scroll::-webkit-scrollbar { width: 6px; }
+        .sidebar-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 999px; }
+        .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
         .glass-card { box-shadow: 0 24px 60px rgba(15, 23, 42, 0.06); }
+        
+        .nav-item { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        .nav-item:hover { transform: translateX(4px); }
+        .nav-item.active { 
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4), 0 0 20px rgba(59, 130, 246, 0.3);
+        }
+        
+        .bg-gradient-brand { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); }
+        .sidebar-collapsed .nav-text { display: none; }
+        .sidebar-collapsed .nav-badge { display: none; }
+        .sidebar-collapsed .sidebar-section-title { display: none; }
+        
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        .skeleton {
+            background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
     </style>
 </head>
 <body class="min-h-screen bg-[#f4f7ff] text-ink">
     <div class="flex min-h-screen">
-        <aside class="sidebar-scroll hidden w-[306px] overflow-y-auto bg-gradient-to-b from-[#07162f] to-[#0a2550] text-white shadow-2xl lg:block">
-            <div class="sticky top-0 border-b border-white/10 bg-[#0b1b38]/95 px-6 py-7 backdrop-blur">
-                <div class="flex items-center gap-4">
-                    
-                    <div>
-                        <h1 class="text-[1.85rem] font-bold tracking-tight text-blue">SAI</h1>
-                        <p class="mt-1 text-sm text-blue-100/70">Sistema Acompañamiento Integral</p>
+        <aside id="sidebar" class="sidebar-scroll fixed left-0 top-0 z-40 h-screen w-[306px] overflow-y-auto bg-gradient-to-b from-[#07162f] to-[#0a2550] text-white shadow-2xl transition-all duration-300 lg:block">
+            <div class="sticky top-0 z-50 border-b border-white/10 bg-[#0b1b38]/95 px-4 py-5 backdrop-blur">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#3b82f6] to-[#2563eb] shadow-lg shadow-blue-500/30">
+                            <i class="fa-solid fa-school text-lg"></i>
+                        </div>
+                        <div class="nav-text overflow-hidden">
+                            <h1 class="text-xl font-bold tracking-tight text-white">SAI</h1>
+                            <p class="text-xs text-blue-100/70 truncate">Sistema Acompañamiento</p>
+                        </div>
                     </div>
+                    <button id="sidebar-toggle" class="nav-text hidden rounded-lg p-2 text-white/70 hover:bg-white/10 hover:text-white lg:block">
+                        <i class="fa-solid fa-chevron-left text-sm transition-transform"></i>
+                    </button>
                 </div>
             </div>
-            <div class="px-4 py-5">
-                <a href="/" class="mb-3 flex items-center gap-3 rounded-2xl px-4 py-3 text-base font-medium text-white/90 hover:bg-white/8">
-                    <i class="fa-solid fa-house text-sm"></i>
-                    <span>Panel principal</span>
+            
+            <div class="px-3 py-4">
+                <a href="/" class="nav-item mb-2 flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-white/90 hover:bg-white/10 {% if request.path == '/' %}active{% endif %}">
+                    <i class="fa-solid fa-house w-5 text-center"></i>
+                    <span class="nav-text flex-1">Panel principal</span>
+                    <i class="fa-solid fa-chart-line nav-text text-xs text-blue-300"></i>
                 </a>
-                <a href="{% url 'acompanamiento:list' %}" class="mb-3 flex items-center gap-3 rounded-2xl px-4 py-3 text-base font-medium text-white/90 hover:bg-white/8">
-                    <i class="fa-regular fa-file-lines text-sm"></i>
-                    <span>Ver reportes</span>
+                <a href="{% url 'acompanamiento:list' %}" class="nav-item mb-2 flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-white/90 hover:bg-white/10 {% if 'report' in request.path %}active{% endif %}">
+                    <i class="fa-regular fa-file-lines w-5 text-center"></i>
+                    <span class="nav-text flex-1">Ver reportes</span>
+                    <span class="nav-badge rounded-full bg-[#3b82f6] px-2 py-0.5 text-[10px] font-bold">NEW</span>
                 </a>
-                <a href="/admin/" class="mb-5 flex items-center gap-3 rounded-2xl bg-gradient-to-r from-[#4f6dff] to-[#375dfb] px-4 py-3 text-base font-semibold text-white shadow-lg shadow-blue-900/30">
-                    <i class="fa-regular fa-folder-open text-sm"></i>
-                    <span>Administración</span>
+                <a href="/admin/" class="nav-item mb-3 flex items-center gap-3 rounded-xl bg-gradient-to-r from-[#4f6dff] to-[#375dfb] px-3 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-900/30 hover:shadow-xl hover:shadow-blue-900/40">
+                    <i class="fa-regular fa-folder-open w-5 text-center"></i>
+                    <span class="nav-text flex-1">Administración</span>
                 </a>
-                <p class="px-3 pb-3 text-[11px] font-semibold uppercase tracking-[0.24em] text-blue-100/55">Secciones</p>
+                
+                <div class="sidebar-section-title my-4 px-3">
+                    <p class="text-[11px] font-semibold uppercase tracking-[0.24em] text-blue-100/55">Secciones</p>
+                </div>
 
-                <details class="mb-3 rounded-2xl bg-white/[0.03] p-3" open>
-                    <summary class="cursor-pointer list-none font-semibold text-white/95">Jardín a Tercero</summary>
-                    <div class="mt-3 space-y-2 text-sm">
-                        <a class="flex items-center justify-between rounded-2xl px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == 'JR01' %}bg-gradient-to-r from-[#324fd7] to-[#2c6cff] shadow-lg shadow-blue-950/40{% endif %}" href="{% url 'estudiantes:list' %}?section=Jard%C3%ADn%20a%20Tercero&course=JR01"><span class="flex items-center gap-3"><span class="flex h-8 w-8 items-center justify-center rounded-full bg-white/12 text-xs font-bold">J</span>JR01</span><span class="rounded-full bg-white/12 px-2 py-1 text-[10px] font-semibold">Activo</span></a>
-                        <a class="flex items-center justify-between rounded-2xl px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == 'TR01' %}bg-gradient-to-r from-[#324fd7] to-[#2c6cff] shadow-lg shadow-blue-950/40{% endif %}" href="{% url 'estudiantes:list' %}?section=Jard%C3%ADn%20a%20Tercero&course=TR01"><span class="flex items-center gap-3"><span class="flex h-8 w-8 items-center justify-center rounded-full bg-white/12 text-xs font-bold">T</span>TR01</span><span class="rounded-full bg-white/12 px-2 py-1 text-[10px] font-semibold">Activo</span></a>
-                        <a class="flex items-center justify-between rounded-2xl px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == '101' %}bg-gradient-to-r from-[#324fd7] to-[#2c6cff] shadow-lg shadow-blue-950/40{% endif %}" href="{% url 'estudiantes:list' %}?section=Jard%C3%ADn%20a%20Tercero&course=101"><span class="flex items-center gap-3"><span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#304ffe] text-xs font-bold">1</span>101</span><span class="rounded-full bg-white/12 px-2 py-1 text-[10px] font-semibold">Activo</span></a>
-                        <a class="flex items-center justify-between rounded-2xl px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == '102' %}bg-gradient-to-r from-[#324fd7] to-[#2c6cff] shadow-lg shadow-blue-950/40{% endif %}" href="{% url 'estudiantes:list' %}?section=Jard%C3%ADn%20a%20Tercero&course=102"><span class="flex items-center gap-3"><span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#7c4dff] text-xs font-bold">1</span>102</span><span class="rounded-full bg-white/12 px-2 py-1 text-[10px] font-semibold">Activo</span></a>
-                        <a class="flex items-center justify-between rounded-2xl px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == '201' %}bg-gradient-to-r from-[#324fd7] to-[#2c6cff] shadow-lg shadow-blue-950/40{% endif %}" href="{% url 'estudiantes:list' %}?section=Jard%C3%ADn%20a%20Tercero&course=201"><span class="flex items-center gap-3"><span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#43a047] text-xs font-bold">2</span>201</span><span class="rounded-full bg-white/12 px-2 py-1 text-[10px] font-semibold">Activo</span></a>
-                        <a class="flex items-center justify-between rounded-2xl px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == '202' %}bg-gradient-to-r from-[#324fd7] to-[#2c6cff] shadow-lg shadow-blue-950/40{% endif %}" href="{% url 'estudiantes:list' %}?section=Jard%C3%ADn%20a%20Tercero&course=202"><span class="flex items-center gap-3"><span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#ffca28] text-xs font-bold text-slate-900">2</span>202</span><span class="rounded-full bg-white/12 px-2 py-1 text-[10px] font-semibold">Activo</span></a>
-                        <a class="flex items-center justify-between rounded-2xl px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == '301' %}bg-gradient-to-r from-[#324fd7] to-[#2c6cff] shadow-lg shadow-blue-950/40{% endif %}" href="{% url 'estudiantes:list' %}?section=Jard%C3%ADn%20a%20Tercero&course=301"><span class="flex items-center gap-3"><span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#26c6da] text-xs font-bold text-slate-900">3</span>301</span><span class="rounded-full bg-white/12 px-2 py-1 text-[10px] font-semibold">Activo</span></a>
-                        <a class="flex items-center justify-between rounded-2xl px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == '302' %}bg-gradient-to-r from-[#324fd7] to-[#2c6cff] shadow-lg shadow-blue-950/40{% endif %}" href="{% url 'estudiantes:list' %}?section=Jard%C3%ADn%20a%20Tercero&course=302"><span class="flex items-center gap-3"><span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#ec4899] text-xs font-bold">3</span>302</span><span class="rounded-full bg-white/12 px-2 py-1 text-[10px] font-semibold">Activo</span></a>
+                <details class="nav-item mb-2 rounded-xl bg-white/[0.03] p-2" open>
+                    <summary class="cursor-pointer list-none flex items-center justify-between rounded-lg px-2 py-2 font-semibold text-white/95 hover:bg-white/5">
+                        <span class="flex items-center gap-2">
+                            <span class="flex h-6 w-6 items-center justify-center rounded-md bg-[#22c55e]/20 text-[10px] font-bold text-[#22c55e]">J</span>
+                            <span class="nav-text">Jardín a Tercero</span>
+                        </span>
+                        <i class="fa-solid fa-chevron-down nav-text text-xs transition-transform group-open:rotate-180"></i>
+                    </summary>
+                    <div class="mt-2 space-y-1">
+                        <a class="nav-item flex items-center justify-between rounded-lg px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == 'JR01' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=Jard%C3%ADn%20a%20Tercero&course=JR01">
+                            <span class="flex items-center gap-3"><span class="flex h-7 w-7 items-center justify-center rounded-full bg-white/12 text-[10px] font-bold">J</span><span class="nav-text text-sm">JR01</span></span>
+                            <span class="nav-badge rounded-full bg-white/12 px-1.5 py-0.5 text-[9px] font-semibold">12</span>
+                        </a>
+                        <a class="nav-item flex items-center justify-between rounded-lg px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == 'TR01' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=Jard%C3%ADn%20a%20Tercero&course=TR01">
+                            <span class="flex items-center gap-3"><span class="flex h-7 w-7 items-center justify-center rounded-full bg-white/12 text-[10px] font-bold">T</span><span class="nav-text text-sm">TR01</span></span>
+                            <span class="nav-badge rounded-full bg-white/12 px-1.5 py-0.5 text-[9px] font-semibold">8</span>
+                        </a>
+                        <a class="nav-item flex items-center justify-between rounded-lg px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == '101' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=Jard%C3%ADn%20a%20Tercero&course=101">
+                            <span class="flex items-center gap-3"><span class="flex h-7 w-7 items-center justify-center rounded-full bg-[#3b82f6] text-[10px] font-bold text-white">1</span><span class="nav-text text-sm">101</span></span>
+                            <span class="nav-badge rounded-full bg-white/12 px-1.5 py-0.5 text-[9px] font-semibold">15</span>
+                        </a>
+                        <a class="nav-item flex items-center justify-between rounded-lg px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == '102' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=Jard%C3%ADn%20a%20Tercero&course=102">
+                            <span class="flex items-center gap-3"><span class="flex h-7 w-7 items-center justify-center rounded-full bg-[#8b5cf6] text-[10px] font-bold text-white">1</span><span class="nav-text text-sm">102</span></span>
+                            <span class="nav-badge rounded-full bg-white/12 px-1.5 py-0.5 text-[9px] font-semibold">18</span>
+                        </a>
+                        <a class="nav-item flex items-center justify-between rounded-lg px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == '201' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=Jard%C3%ADn%20a%20Tercero&course=201">
+                            <span class="flex items-center gap-3"><span class="flex h-7 w-7 items-center justify-center rounded-full bg-[#22c55e] text-[10px] font-bold text-white">2</span><span class="nav-text text-sm">201</span></span>
+                            <span class="nav-badge rounded-full bg-white/12 px-1.5 py-0.5 text-[9px] font-semibold">10</span>
+                        </a>
+                        <a class="nav-item flex items-center justify-between rounded-lg px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == '202' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=Jard%C3%ADn%20a%20Tercero&course=202">
+                            <span class="flex items-center gap-3"><span class="flex h-7 w-7 items-center justify-center rounded-full bg-[#fbbf24] text-[10px] font-bold text-slate-900">2</span><span class="nav-text text-sm">202</span></span>
+                            <span class="nav-badge rounded-full bg-white/12 px-1.5 py-0.5 text-[9px] font-semibold">14</span>
+                        </a>
+                        <a class="nav-item flex items-center justify-between rounded-lg px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == '301' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=Jard%C3%ADn%20a%20Tercero&course=301">
+                            <span class="flex items-center gap-3"><span class="flex h-7 w-7 items-center justify-center rounded-full bg-[#06b6d4] text-[10px] font-bold text-white">3</span><span class="nav-text text-sm">301</span></span>
+                            <span class="nav-badge rounded-full bg-white/12 px-1.5 py-0.5 text-[9px] font-semibold">9</span>
+                        </a>
+                        <a class="nav-item flex items-center justify-between rounded-lg px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == '302' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=Jard%C3%ADn%20a%20Tercero&course=302">
+                            <span class="flex items-center gap-3"><span class="flex h-7 w-7 items-center justify-center rounded-full bg-[#ec4899] text-[10px] font-bold text-white">3</span><span class="nav-text text-sm">302</span></span>
+                            <span class="nav-badge rounded-full bg-white/12 px-1.5 py-0.5 text-[9px] font-semibold">11</span>
+                        </a>
                     </div>
                 </details>
 
-                <details class="mb-3 rounded-2xl bg-white/[0.03] p-3" open>
-                    <summary class="cursor-pointer list-none font-semibold">Cuarto a Séptimo</summary>
-                    <div class="mt-3 space-y-2 text-sm">
-                        <a class="flex items-center justify-between rounded-2xl px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == '401' %}bg-gradient-to-r from-[#324fd7] to-[#2c6cff] shadow-lg shadow-blue-950/40{% endif %}" href="{% url 'estudiantes:list' %}?section=Cuarto%20a%20S%C3%A9ptimo&course=401"><span class="flex items-center gap-3"><span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#304ffe] text-xs font-bold">4</span>401</span><span class="rounded-full bg-white/12 px-2 py-1 text-[10px] font-semibold">Activo</span></a>
-                        <a class="flex items-center justify-between rounded-2xl px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == '402' %}bg-gradient-to-r from-[#324fd7] to-[#2c6cff] shadow-lg shadow-blue-950/40{% endif %}" href="{% url 'estudiantes:list' %}?section=Cuarto%20a%20S%C3%A9ptimo&course=402"><span class="flex items-center gap-3"><span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#304ffe] text-xs font-bold">4</span>402</span><span class="rounded-full bg-white/12 px-2 py-1 text-[10px] font-semibold">Activo</span></a>
-                        <a class="flex items-center justify-between rounded-2xl px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == '501' %}bg-gradient-to-r from-[#324fd7] to-[#2c6cff] shadow-lg shadow-blue-950/40{% endif %}" href="{% url 'estudiantes:list' %}?section=Cuarto%20a%20S%C3%A9ptimo&course=501"><span class="flex items-center gap-3"><span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#7c4dff] text-xs font-bold">5</span>501</span><span class="rounded-full bg-white/12 px-2 py-1 text-[10px] font-semibold">Activo</span></a>
-                        <a class="flex items-center justify-between rounded-2xl px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == '502' %}bg-gradient-to-r from-[#324fd7] to-[#2c6cff] shadow-lg shadow-blue-950/40{% endif %}" href="{% url 'estudiantes:list' %}?section=Cuarto%20a%20S%C3%A9ptimo&course=502"><span class="flex items-center gap-3"><span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#7c4dff] text-xs font-bold">5</span>502</span><span class="rounded-full bg-white/12 px-2 py-1 text-[10px] font-semibold">Activo</span></a>
-                        <a class="flex items-center justify-between rounded-2xl px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == '503' %}bg-gradient-to-r from-[#324fd7] to-[#2c6cff] shadow-lg shadow-blue-950/40{% endif %}" href="{% url 'estudiantes:list' %}?section=Cuarto%20a%20S%C3%A9ptimo&course=503"><span class="flex items-center gap-3"><span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#7c4dff] text-xs font-bold">5</span>503</span><span class="rounded-full bg-white/12 px-2 py-1 text-[10px] font-semibold">Activo</span></a>
-                        <a class="flex items-center justify-between rounded-2xl px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == '601' %}bg-gradient-to-r from-[#324fd7] to-[#2c6cff] shadow-lg shadow-blue-950/40{% endif %}" href="{% url 'estudiantes:list' %}?section=Cuarto%20a%20S%C3%A9ptimo&course=601"><span class="flex items-center gap-3"><span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#43a047] text-xs font-bold">6</span>601</span><span class="rounded-full bg-white/12 px-2 py-1 text-[10px] font-semibold">Activo</span></a>
-                        <a class="flex items-center justify-between rounded-2xl px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == '602' %}bg-gradient-to-r from-[#324fd7] to-[#2c6cff] shadow-lg shadow-blue-950/40{% endif %}" href="{% url 'estudiantes:list' %}?section=Cuarto%20a%20S%C3%A9ptimo&course=602"><span class="flex items-center gap-3"><span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#43a047] text-xs font-bold">6</span>602</span><span class="rounded-full bg-white/12 px-2 py-1 text-[10px] font-semibold">Activo</span></a>
-                        <a class="flex items-center justify-between rounded-2xl px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == '603' %}bg-gradient-to-r from-[#324fd7] to-[#2c6cff] shadow-lg shadow-blue-950/40{% endif %}" href="{% url 'estudiantes:list' %}?section=Cuarto%20a%20S%C3%A9ptimo&course=603"><span class="flex items-center gap-3"><span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#43a047] text-xs font-bold">6</span>603</span><span class="rounded-full bg-white/12 px-2 py-1 text-[10px] font-semibold">Activo</span></a>
-                        <a class="flex items-center justify-between rounded-2xl px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == '701' %}bg-gradient-to-r from-[#324fd7] to-[#2c6cff] shadow-lg shadow-blue-950/40{% endif %}" href="{% url 'estudiantes:list' %}?section=Cuarto%20a%20S%C3%A9ptimo&course=701"><span class="flex items-center gap-3"><span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#26c6da] text-xs font-bold text-slate-900">7</span>701</span><span class="rounded-full bg-white/12 px-2 py-1 text-[10px] font-semibold">Activo</span></a>
-                        <a class="flex items-center justify-between rounded-2xl px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == '702' %}bg-gradient-to-r from-[#324fd7] to-[#2c6cff] shadow-lg shadow-blue-950/40{% endif %}" href="{% url 'estudiantes:list' %}?section=Cuarto%20a%20S%C3%A9ptimo&course=702"><span class="flex items-center gap-3"><span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#26c6da] text-xs font-bold text-slate-900">7</span>702</span><span class="rounded-full bg-white/12 px-2 py-1 text-[10px] font-semibold">Activo</span></a>
-                        <a class="flex items-center justify-between rounded-2xl px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == '703' %}bg-gradient-to-r from-[#324fd7] to-[#2c6cff] shadow-lg shadow-blue-950/40{% endif %}" href="{% url 'estudiantes:list' %}?section=Cuarto%20a%20S%C3%A9ptimo&course=703"><span class="flex items-center gap-3"><span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#26c6da] text-xs font-bold text-slate-900">7</span>703</span><span class="rounded-full bg-white/12 px-2 py-1 text-[10px] font-semibold">Activo</span></a>
+                <details class="nav-item mb-2 rounded-xl bg-white/[0.03] p-2" open>
+                    <summary class="cursor-pointer list-none flex items-center justify-between rounded-lg px-2 py-2 font-semibold hover:bg-white/5">
+                        <span class="flex items-center gap-2">
+                            <span class="flex h-6 w-6 items-center justify-center rounded-md bg-[#f59e0b]/20 text-[10px] font-bold text-[#f59e0b]">4</span>
+                            <span class="nav-text">Cuarto a Séptimo</span>
+                        </span>
+                        <i class="fa-solid fa-chevron-down nav-text text-xs transition-transform group-open:rotate-180"></i>
+                    </summary>
+                    <div class="mt-2 space-y-1">
+                        <a class="nav-item flex items-center justify-between rounded-lg px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == '401' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=Cuarto%20a%20S%C3%A9ptimo&course=401">
+                            <span class="flex items-center gap-3"><span class="flex h-7 w-7 items-center justify-center rounded-full bg-[#3b82f6] text-[10px] font-bold text-white">4</span><span class="nav-text text-sm">401</span></span>
+                            <span class="nav-badge rounded-full bg-white/12 px-1.5 py-0.5 text-[9px] font-semibold">16</span>
+                        </a>
+                        <a class="nav-item flex items-center justify-between rounded-lg px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == '402' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=Cuarto%20a%20S%C3%A9ptimo&course=402">
+                            <span class="flex items-center gap-3"><span class="flex h-7 w-7 items-center justify-center rounded-full bg-[#3b82f6] text-[10px] font-bold text-white">4</span><span class="nav-text text-sm">402</span></span>
+                            <span class="nav-badge rounded-full bg-white/12 px-1.5 py-0.5 text-[9px] font-semibold">13</span>
+                        </a>
+                        <a class="nav-item flex items-center justify-between rounded-lg px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == '501' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=Cuarto%20a%20S%C3%A9ptimo&course=501">
+                            <span class="flex items-center gap-3"><span class="flex h-7 w-7 items-center justify-center rounded-full bg-[#8b5cf6] text-[10px] font-bold text-white">5</span><span class="nav-text text-sm">501</span></span>
+                            <span class="nav-badge rounded-full bg-white/12 px-1.5 py-0.5 text-[9px] font-semibold">20</span>
+                        </a>
+                        <a class="nav-item flex items-center justify-between rounded-lg px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == '502' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=Cuarto%20a%20S%C3%A9ptimo&course=502">
+                            <span class="flex items-center gap-3"><span class="flex h-7 w-7 items-center justify-center rounded-full bg-[#8b5cf6] text-[10px] font-bold text-white">5</span><span class="nav-text text-sm">502</span></span>
+                            <span class="nav-badge rounded-full bg-white/12 px-1.5 py-0.5 text-[9px] font-semibold">17</span>
+                        </a>
+                        <a class="nav-item flex items-center justify-between rounded-lg px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == '503' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=Cuarto%20a%20S%C3%A9ptimo&course=503">
+                            <span class="flex items-center gap-3"><span class="flex h-7 w-7 items-center justify-center rounded-full bg-[#8b5cf6] text-[10px] font-bold text-white">5</span><span class="nav-text text-sm">503</span></span>
+                            <span class="nav-badge rounded-full bg-white/12 px-1.5 py-0.5 text-[9px] font-semibold">19</span>
+                        </a>
+                        <a class="nav-item flex items-center justify-between rounded-lg px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == '601' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=Cuarto%20a%20S%C3%A9ptimo&course=601">
+                            <span class="flex items-center gap-3"><span class="flex h-7 w-7 items-center justify-center rounded-full bg-[#22c55e] text-[10px] font-bold text-white">6</span><span class="nav-text text-sm">601</span></span>
+                            <span class="nav-badge rounded-full bg-white/12 px-1.5 py-0.5 text-[9px] font-semibold">22</span>
+                        </a>
+                        <a class="nav-item flex items-center justify-between rounded-lg px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == '602' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=Cuarto%20a%20S%C3%A9ptimo&course=602">
+                            <span class="flex items-center gap-3"><span class="flex h-7 w-7 items-center justify-center rounded-full bg-[#22c55e] text-[10px] font-bold text-white">6</span><span class="nav-text text-sm">602</span></span>
+                            <span class="nav-badge rounded-full bg-white/12 px-1.5 py-0.5 text-[9px] font-semibold">18</span>
+                        </a>
+                        <a class="nav-item flex items-center justify-between rounded-lg px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == '603' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=Cuarto%20a%20S%C3%A9ptimo&course=603">
+                            <span class="flex items-center gap-3"><span class="flex h-7 w-7 items-center justify-center rounded-full bg-[#22c55e] text-[10px] font-bold text-white">6</span><span class="nav-text text-sm">603</span></span>
+                            <span class="nav-badge rounded-full bg-white/12 px-1.5 py-0.5 text-[9px] font-semibold">15</span>
+                        </a>
+                        <a class="nav-item flex items-center justify-between rounded-lg px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == '701' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=Cuarto%20a%20S%C3%A9ptimo&course=701">
+                            <span class="flex items-center gap-3"><span class="flex h-7 w-7 items-center justify-center rounded-full bg-[#06b6d4] text-[10px] font-bold text-white">7</span><span class="nav-text text-sm">701</span></span>
+                            <span class="nav-badge rounded-full bg-white/12 px-1.5 py-0.5 text-[9px] font-semibold">21</span>
+                        </a>
+                        <a class="nav-item flex items-center justify-between rounded-lg px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == '702' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=Cuarto%20a%20S%C3%A9ptimo&course=702">
+                            <span class="flex items-center gap-3"><span class="flex h-7 w-7 items-center justify-center rounded-full bg-[#06b6d4] text-[10px] font-bold text-white">7</span><span class="nav-text text-sm">702</span></span>
+                            <span class="nav-badge rounded-full bg-white/12 px-1.5 py-0.5 text-[9px] font-semibold">18</span>
+                        </a>
+                        <a class="nav-item flex items-center justify-between rounded-lg px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == '703' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=Cuarto%20a%20S%C3%A9ptimo&course=703">
+                            <span class="flex items-center gap-3"><span class="flex h-7 w-7 items-center justify-center rounded-full bg-[#06b6d4] text-[10px] font-bold text-white">7</span><span class="nav-text text-sm">703</span></span>
+                            <span class="nav-badge rounded-full bg-white/12 px-1.5 py-0.5 text-[9px] font-semibold">14</span>
+                        </a>
                     </div>
                 </details>
 
-                <details class="rounded-2xl bg-white/[0.03] p-3" open>
-                    <summary class="cursor-pointer list-none font-semibold">Octavo a Undécimo</summary>
-                    <div class="mt-3 space-y-2 text-sm">
-                        <a class="flex items-center justify-between rounded-2xl px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == '901' %}bg-gradient-to-r from-[#324fd7] to-[#2c6cff] shadow-lg shadow-blue-950/40{% endif %}" href="{% url 'estudiantes:list' %}?section=Octavo%20a%20Und%C3%A9cimo&course=901"><span class="flex items-center gap-3"><span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#304ffe] text-xs font-bold">9</span>901</span><span class="rounded-full bg-white/12 px-2 py-1 text-[10px] font-semibold">Activo</span></a>
-                        <a class="flex items-center justify-between rounded-2xl px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == '902' %}bg-gradient-to-r from-[#324fd7] to-[#2c6cff] shadow-lg shadow-blue-950/40{% endif %}" href="{% url 'estudiantes:list' %}?section=Octavo%20a%20Und%C3%A9cimo&course=902"><span class="flex items-center gap-3"><span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#304ffe] text-xs font-bold">9</span>902</span><span class="rounded-full bg-white/12 px-2 py-1 text-[10px] font-semibold">Activo</span></a>
-                        <a class="flex items-center justify-between rounded-2xl px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == '903' %}bg-gradient-to-r from-[#324fd7] to-[#2c6cff] shadow-lg shadow-blue-950/40{% endif %}" href="{% url 'estudiantes:list' %}?section=Octavo%20a%20Und%C3%A9cimo&course=903"><span class="flex items-center gap-3"><span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#304ffe] text-xs font-bold">9</span>903</span><span class="rounded-full bg-white/12 px-2 py-1 text-[10px] font-semibold">Activo</span></a>
-                        <a class="flex items-center justify-between rounded-2xl px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == '1001' %}bg-gradient-to-r from-[#324fd7] to-[#2c6cff] shadow-lg shadow-blue-950/40{% endif %}" href="{% url 'estudiantes:list' %}?section=Octavo%20a%20Und%C3%A9cimo&course=1001"><span class="flex items-center gap-3"><span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#7c4dff] text-xs font-bold">10</span>1001</span><span class="rounded-full bg-white/12 px-2 py-1 text-[10px] font-semibold">Activo</span></a>
-                        <a class="flex items-center justify-between rounded-2xl px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == '1002' %}bg-gradient-to-r from-[#324fd7] to-[#2c6cff] shadow-lg shadow-blue-950/40{% endif %}" href="{% url 'estudiantes:list' %}?section=Octavo%20a%20Und%C3%A9cimo&course=1002"><span class="flex items-center gap-3"><span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#7c4dff] text-xs font-bold">10</span>1002</span><span class="rounded-full bg-white/12 px-2 py-1 text-[10px] font-semibold">Activo</span></a>
-                        <a class="flex items-center justify-between rounded-2xl px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == '1003' %}bg-gradient-to-r from-[#324fd7] to-[#2c6cff] shadow-lg shadow-blue-950/40{% endif %}" href="{% url 'estudiantes:list' %}?section=Octavo%20a%20Und%C3%A9cimo&course=1003"><span class="flex items-center gap-3"><span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#7c4dff] text-xs font-bold">10</span>1003</span><span class="rounded-full bg-white/12 px-2 py-1 text-[10px] font-semibold">Activo</span></a>
-                        <a class="flex items-center justify-between rounded-2xl px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == '1101' %}bg-gradient-to-r from-[#324fd7] to-[#2c6cff] shadow-lg shadow-blue-950/40{% endif %}" href="{% url 'estudiantes:list' %}?section=Octavo%20a%20Und%C3%A9cimo&course=1101"><span class="flex items-center gap-3"><span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#43a047] text-xs font-bold">11</span>1101</span><span class="rounded-full bg-white/12 px-2 py-1 text-[10px] font-semibold">Activo</span></a>
-                        <a class="flex items-center justify-between rounded-2xl px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == '1102' %}bg-gradient-to-r from-[#324fd7] to-[#2c6cff] shadow-lg shadow-blue-950/40{% endif %}" href="{% url 'estudiantes:list' %}?section=Octavo%20a%20Und%C3%A9cimo&course=1102"><span class="flex items-center gap-3"><span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#43a047] text-xs font-bold">11</span>1102</span><span class="rounded-full bg-white/12 px-2 py-1 text-[10px] font-semibold">Activo</span></a>
-                        <a class="flex items-center justify-between rounded-2xl px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == '1103' %}bg-gradient-to-r from-[#324fd7] to-[#2c6cff] shadow-lg shadow-blue-950/40{% endif %}" href="{% url 'estudiantes:list' %}?section=Octavo%20a%20Und%C3%A9cimo&course=1103"><span class="flex items-center gap-3"><span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#43a047] text-xs font-bold">11</span>1103</span><span class="rounded-full bg-white/12 px-2 py-1 text-[10px] font-semibold">Activo</span></a>
+                <details class="nav-item rounded-xl bg-white/[0.03] p-2" open>
+                    <summary class="cursor-pointer list-none flex items-center justify-between rounded-lg px-2 py-2 font-semibold hover:bg-white/5">
+                        <span class="flex items-center gap-2">
+                            <span class="flex h-6 w-6 items-center justify-center rounded-md bg-[#6366f1]/20 text-[10px] font-bold text-[#6366f1]">8</span>
+                            <span class="nav-text">Octavo a Undécimo</span>
+                        </span>
+                        <i class="fa-solid fa-chevron-down nav-text text-xs transition-transform group-open:rotate-180"></i>
+                    </summary>
+                    <div class="mt-2 space-y-1">
+                        <a class="nav-item flex items-center justify-between rounded-lg px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == '901' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=Octavo%20a%20Und%C3%A9cimo&course=901">
+                            <span class="flex items-center gap-3"><span class="flex h-7 w-7 items-center justify-center rounded-full bg-[#3b82f6] text-[10px] font-bold text-white">9</span><span class="nav-text text-sm">901</span></span>
+                            <span class="nav-badge rounded-full bg-white/12 px-1.5 py-0.5 text-[9px] font-semibold">25</span>
+                        </a>
+                        <a class="nav-item flex items-center justify-between rounded-lg px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == '902' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=Octavo%20a%20Und%C3%A9cimo&course=902">
+                            <span class="flex items-center gap-3"><span class="flex h-7 w-7 items-center justify-center rounded-full bg-[#3b82f6] text-[10px] font-bold text-white">9</span><span class="nav-text text-sm">902</span></span>
+                            <span class="nav-badge rounded-full bg-white/12 px-1.5 py-0.5 text-[9px] font-semibold">23</span>
+                        </a>
+                        <a class="nav-item flex items-center justify-between rounded-lg px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == '903' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=Octavo%20a%20Und%C3%A9cimo&course=903">
+                            <span class="flex items-center gap-3"><span class="flex h-7 w-7 items-center justify-center rounded-full bg-[#3b82f6] text-[10px] font-bold text-white">9</span><span class="nav-text text-sm">903</span></span>
+                            <span class="nav-badge rounded-full bg-white/12 px-1.5 py-0.5 text-[9px] font-semibold">19</span>
+                        </a>
+                        <a class="nav-item flex items-center justify-between rounded-lg px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == '1001' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=Octavo%20a%20Und%C3%A9cimo&course=1001">
+                            <span class="flex items-center gap-3"><span class="flex h-7 w-7 items-center justify-center rounded-full bg-[#8b5cf6] text-[10px] font-bold text-white">10</span><span class="nav-text text-sm">1001</span></span>
+                            <span class="nav-badge rounded-full bg-white/12 px-1.5 py-0.5 text-[9px] font-semibold">28</span>
+                        </a>
+                        <a class="nav-item flex items-center justify-between rounded-lg px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == '1002' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=Octavo%20a%20Und%C3%A9cimo&course=1002">
+                            <span class="flex items-center gap-3"><span class="flex h-7 w-7 items-center justify-center rounded-full bg-[#8b5cf6] text-[10px] font-bold text-white">10</span><span class="nav-text text-sm">1002</span></span>
+                            <span class="nav-badge rounded-full bg-white/12 px-1.5 py-0.5 text-[9px] font-semibold">24</span>
+                        </a>
+                        <a class="nav-item flex items-center justify-between rounded-lg px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == '1003' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=Octavo%20a%20Und%C3%A9cimo&course=1003">
+                            <span class="flex items-center gap-3"><span class="flex h-7 w-7 items-center justify-center rounded-full bg-[#8b5cf6] text-[10px] font-bold text-white">10</span><span class="nav-text text-sm">1003</span></span>
+                            <span class="nav-badge rounded-full bg-white/12 px-1.5 py-0.5 text-[9px] font-semibold">20</span>
+                        </a>
+                        <a class="nav-item flex items-center justify-between rounded-lg px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == '1101' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=Octavo%20a%20Und%C3%A9cimo&course=1101">
+                            <span class="flex items-center gap-3"><span class="flex h-7 w-7 items-center justify-center rounded-full bg-[#22c55e] text-[10px] font-bold text-white">11</span><span class="nav-text text-sm">1101</span></span>
+                            <span class="nav-badge rounded-full bg-white/12 px-1.5 py-0.5 text-[9px] font-semibold">30</span>
+                        </a>
+                        <a class="nav-item flex items-center justify-between rounded-lg px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == '1102' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=Octavo%20a%20Und%C3%A9cimo&course=1102">
+                            <span class="flex items-center gap-3"><span class="flex h-7 w-7 items-center justify-center rounded-full bg-[#22c55e] text-[10px] font-bold text-white">11</span><span class="nav-text text-sm">1102</span></span>
+                            <span class="nav-badge rounded-full bg-white/12 px-1.5 py-0.5 text-[9px] font-semibold">27</span>
+                        </a>
+                        <a class="nav-item flex items-center justify-between rounded-lg px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == '1103' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=Octavo%20a%20Und%C3%A9cimo&course=1103">
+                            <span class="flex items-center gap-3"><span class="flex h-7 w-7 items-center justify-center rounded-full bg-[#22c55e] text-[10px] font-bold text-white">11</span><span class="nav-text text-sm">1103</span></span>
+                            <span class="nav-badge rounded-full bg-white/12 px-1.5 py-0.5 text-[9px] font-semibold">22</span>
+                        </a>
                     </div>
                 </details>
                 
             </div>
+            
+            <div class="border-t border-white/10 px-4 py-3">
+                <div class="nav-item flex items-center gap-3 rounded-lg px-3 py-2 text-xs text-white/60 hover:bg-white/5 hover:text-white">
+                    <i class="fa-solid fa-circle-info w-4"></i>
+                    <span class="nav-text">Sistema v2.0 - 2026</span>
+                </div>
+            </div>
         </aside>
-        <div class="flex-1">
-            <nav class="sticky top-0 z-30 border-b border-slate-200 bg-black/95 backdrop-blur">
-               
+        
+        <div id="main-content" class="flex-1 transition-all duration-300 lg:pl-[306px]">
+            <nav class="sticky top-0 z-30 flex items-center justify-between border-b border-slate-200 bg-white/80 backdrop-blur px-4 py-3 lg:px-5">
+                <div class="flex items-center gap-3">
+                    <button id="mobile-menu-btn" class="lg:hidden rounded-lg bg-slate-100 p-2 text-slate-600 hover:bg-slate-200">
+                        <i class="fa-solid fa-bars text-lg"></i>
+                    </button>
+                    <div class="hidden text-sm font-medium text-slate-500 lg:block">
+                        <span class="text-slate-800">Panel de Control</span> / 
+                        <span class="text-[#3b82f6]">{% block breadcrumb %}{% endblock %}</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="relative hidden md:block">
+                        <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="text" placeholder="Buscar..." 
+                            class="w-48 rounded-xl border border-slate-200 bg-slate-50 py-2 pl-9 pr-4 text-sm focus:border-[#3b82f6] focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-100">
+                    </div>
+                    <button class="relative rounded-xl bg-slate-100 p-2.5 text-slate-600 hover:bg-slate-200 hover:text-slate-900">
+                        <i class="fa-regular fa-bell text-lg"></i>
+                        <span class="absolute right-1 top-1 h-2 w-2 rounded-full bg-[#ef4444]"></span>
+                    </button>
+                    <div class="flex items-center gap-2 rounded-xl bg-slate-100 px-3 py-2">
+                        <div class="h-8 w-8 rounded-full bg-gradient-to-br from-[#3b82f6] to-[#2563eb] flex items-center justify-center text-xs font-bold text-white">
+                            <i class="fa-solid fa-user"></i>
+                        </div>
+                        <span class="hidden text-sm font-medium text-slate-700 md:block">Admin</span>
+                    </div>
+                </div>
             </nav>
 
             <main class="w-full px-4 py-4 lg:px-5">
                 {% if messages %}
                     {% for message in messages %}
-                        <div class="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-700">
-                            {{ message }}
+                        <div class="animate-slide-in mb-4 flex items-center gap-3 rounded-xl border-l-4 bg-white px-4 py-3 shadow-lg
+                            {% if message.tags == 'success' %}border-l-[#22c55e] bg-emerald-50 text-emerald-700{% elif message.tags == 'error' %}border-l-[#ef4444] bg-red-50 text-red-700{% elif message.tags == 'warning' %}border-l-[#f59e0b] bg-amber-50 text-amber-700{% else %}border-l-[#3b82f6] bg-blue-50 text-blue-700{% endif %}">
+                            <i class="fa-solid {% if message.tags == 'success' %}fa-check-circle text-lg{% elif message.tags == 'error' %}fa-circle-xmark text-lg{% elif message.tags == 'warning' %}fa-triangle-exclamation text-lg{% else %}fa-circle-info text-lg{% endif %}"></i>
+                            <span class="flex-1 font-medium">{{ message }}</span>
+                            <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-slate-600">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
                         </div>
                     {% endfor %}
                 {% endif %}
@@ -123,6 +363,43 @@
             </main>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('main-content');
+            const toggleBtn = document.getElementById('sidebar-toggle');
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            
+            if (toggleBtn) {
+                toggleBtn.addEventListener('click', function() {
+                    sidebar.classList.toggle('sidebar-collapsed');
+                    mainContent.classList.toggle('lg:pl-[306px]');
+                    mainContent.classList.toggle('lg:pl-[72px]');
+                    const icon = toggleBtn.querySelector('i');
+                    icon.classList.toggle('rotate-180');
+                });
+            }
+            
+            if (mobileMenuBtn) {
+                mobileMenuBtn.addEventListener('click', function() {
+                    sidebar.classList.toggle('-translate-x-full');
+                    sidebar.classList.toggle('lg:translate-x-0');
+                });
+            }
+
+            document.querySelectorAll('details > summary').forEach(summary => {
+                summary.addEventListener('click', function() {
+                    const details = this.parentElement;
+                    setTimeout(() => {
+                        const icon = details.querySelector('summary i.fa-chevron-down');
+                        if (icon) icon.classList.toggle('rotate-180');
+                    }, 100);
+                });
+            });
+        });
+    </script>
+</body>
 </body>
 {% block extra_js %}{% endblock %}
 </html>

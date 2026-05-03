@@ -2,6 +2,8 @@
 
 {% block title %}Estudiantes - SAI{% endblock %}
 
+{% block breadcrumb %}Estudiantes{% endblock %}
+
 {% block extra_head %}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -10,111 +12,206 @@
 <style>
   body { font-family: 'Outfit', sans-serif; }
   .soft-shell { box-shadow: 0 20px 50px rgba(59, 91, 219, 0.08); }
+  
+  .student-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+  .student-card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(37, 99, 235, 0.15); }
+  
+  .avatar-placeholder {
+    background: linear-gradient(135deg, var(--avatar-color-1) 0%, var(--avatar-color-2) 100%);
+  }
+  
+  .filter-chip { transition: all 0.2s ease; }
+  .filter-chip:hover { transform: scale(1.02); }
+  .filter-chip.active { box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.3); }
+  
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-in-up { animation: fadeInUp 0.4s ease-out forwards; }
+  
+  .skeleton-animate {
+    background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+  @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
 </style>
 {% endblock %}
 
 {% block content %}
-<!-- HEADER -->
-<section id="course-header-section" class="w-[calc(100%+3rem)] -ml-6 -mt-5 mb-8 border-b border-slate-200 bg-[#2256F2] py-5 shadow-sm">
-  <div class="flex flex-wrap items-center justify-between gap-4 px-6">
+<!-- HEADER MEJORADO -->
+<section id="course-header-section" class="mb-6 -mt-4 rounded-2xl bg-gradient-to-r from-[#2256F2] via-[#2563eb] to-[#1d4ed8] p-6 shadow-xl shadow-blue-500/20">
+  <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
     <div class="flex items-center gap-4">
-      <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-[8px] bg-[#f2f5ff] text-[#325BFF]">
-        <i class="fa-regular fa-note-sticky text-xl"></i>
+      <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white/20 backdrop-blur shadow-lg">
+        <i class="fa-solid fa-user-graduate text-2xl text-white"></i>
       </div>
       <div>
-        <h2 class="text-2xl font-bold leading-tight text-white">Gestión de Reportes por Curso</h2>
+        <h2 class="text-2xl font-bold leading-tight text-white">Gestión de Reportes</h2>
         <p class="mt-1 text-sm text-blue-100">
           {% if selected_course %}
-            Curso activo: <span class="font-semibold text-white">{{ selected_course }}</span>
-            {% if selected_section %} | Sección: <span class="font-semibold text-white">{{ selected_section }}</span>{% endif %}
+            <span class="font-semibold text-white">{{ selected_course }}</span>
+            {% if selected_section %} <span class="mx-1">•</span> Sección: <span class="font-semibold text-white">{{ selected_section }}</span>{% endif %}
           {% else %}
-            Selecciona un curso desde el menú lateral para ver estudiantes.
+            Selecciona un curso desde el menú lateral
           {% endif %}
         </p>
       </div>
     </div>
-
-    <div class="flex items-center gap-4">
-      <div class="rounded-[12px] border border-slate-200 bg-white px-5 py-3 shadow-sm">
-        <div class="flex items-center gap-3">
-          <div class="text-[#365cff]"><i class="fa-solid fa-users text-lg"></i></div>
-          <div>
-            <p class="text-xs font-medium text-slate-500">Total estudiantes</p>
-            <p class="text-xl font-bold text-[#12254a]">{{ students_count }}</p>
-          </div>
-        </div>
+    
+    <div class="flex flex-wrap items-center gap-3">
+      <div class="flex items-center gap-2 rounded-xl bg-white/20 backdrop-blur px-4 py-2.5">
+        <i class="fa-solid fa-users text-white/80"></i>
+        <span class="text-white font-semibold">{{ students_count }}</span>
+        <span class="text-xs text-white/70">estudiantes</span>
       </div>
       
-      <a href="{% url 'estudiantes:sync' %}" class="shrink-0 rounded-[8px] bg-gradient-to-r from-[#2f60ff] to-[#2a49ec] px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-200 hover:opacity-95 transition-opacity">
-        Sincronizar API
+      <div class="relative">
+        <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+        <input type="text" id="student-search" placeholder="Buscar estudiante..." 
+          class="w-56 rounded-xl border-2 border-white/20 bg-white/10 backdrop-blur py-2.5 pl-9 pr-4 text-sm text-white placeholder-white/50 focus:border-white/40 focus:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all">
+      </div>
+      
+      <button id="filter-toggle-btn" class="flex items-center gap-2 rounded-xl bg-white/20 backdrop-blur px-4 py-2.5 text-sm font-semibold text-white hover:bg-white/30 transition-all">
+        <i class="fa-solid fa-filter"></i>
+        <span>Filtros</span>
+        <span id="active-filters-count" class="hidden rounded-full bg-white text-[#2256F2] px-1.5 py-0.5 text-xs font-bold"></span>
+      </button>
+      
+      <a href="{% url 'estudiantes:sync' %}" class="flex items-center gap-2 rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-[#2256F2] shadow-lg hover:bg-blue-50 transition-all">
+        <i class="fa-solid fa-arrows-rotate"></i>
+        <span>Sincronizar</span>
       </a>
+    </div>
+  </div>
+  
+  <!-- Filtros tipo chips -->
+  <div id="filter-chips" class="mt-4 hidden">
+    <div class="flex flex-wrap items-center gap-2">
+      <span class="text-xs text-white/70 font-medium">Filtrar por:</span>
+      <button class="filter-chip rounded-full bg-white/20 px-4 py-1.5 text-xs font-semibold text-white hover:bg-white/30" data-filter="all">
+        Todos
+      </button>
+      <button class="filter-chip rounded-full bg-white/20 px-4 py-1.5 text-xs font-semibold text-white hover:bg-white/30" data-filter="with-reports">
+        Con reportes
+      </button>
+      <button class="filter-chip rounded-full bg-white/20 px-4 py-1.5 text-xs font-semibold text-white hover:bg-white/30" data-filter="without-reports">
+        Sin reportes
+      </button>
+      <button class="filter-chip rounded-full bg-white/20 px-4 py-1.5 text-xs font-semibold text-white hover:bg-white/30" data-filter="ACADEMICO">
+        Académico
+      </button>
+      <button class="filter-chip rounded-full bg-white/20 px-4 py-1.5 text-xs font-semibold text-white hover:bg-white/30" data-filter="CONVIVENCIA">
+        Convivencia
+      </button>
+      <button class="filter-chip rounded-full bg-white/20 px-4 py-1.5 text-xs font-semibold text-white hover:bg-white/30" data-filter="ESPIRITUAL">
+        Espiritual
+      </button>
+      <button class="filter-chip rounded-full bg-white/20 px-4 py-1.5 text-xs font-semibold text-white hover:bg-white/30" data-filter="PSICOAFECTIVO">
+        Psicoafectivo
+      </button>
     </div>
   </div>
 </section>
 
-<!-- GRID DE TARJETAS -->
-<section id="students-table-section" class="pb-10 px-4">
-  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+<!-- GRID DE TARJETAS MEJORADO -->
+<section id="students-table-section" class="pb-10">
+  <div id="students-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
     {% for student in students %}
-    <div class="group relative overflow-hidden rounded-xl border border-slate-500 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+    <div class="student-card animate-fade-in-up group relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm hover:shadow-xl" 
+         style="animation-delay: {{ forloop.counter0 }}0ms"
+         data-student-name="{{ student.full_name|lower }}"
+         data-student-code="{{ student.code }}"
+         data-reports-count="{{ student.reports.count }}"
+         data-report-purposes="{% for r in student.reports.all %}{{ r.purpose }}{% if not forloop.last %},{% endif %}{% endfor %}">
       
-      <!-- Header -->
-      <div class="relative border-b border-slate-100 bg-gradient-to-br from-[#f8faff] to-white p-6">
-               
-        <div class="mb-4 flex justify-center">
+      <!-- Header con avatar mejorado -->
+      <div class="relative border-b border-slate-100 bg-gradient-to-br from-slate-50 to-white p-5">
+        <button type="button" class="absolute right-3 top-3 rounded-full bg-slate-100 p-1.5 text-slate-400 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-slate-200 hover:text-slate-600">
+          <i class="fa-solid fa-ellipsis text-sm"></i>
+        </button>
+        
+        <div class="mb-3 flex justify-center">
+          {% if student.code %}
           <img 
-            src="/archivos/registro_fotografico/31218.jpg" 
-            class="h-20 w-20 rounded-full object-cover shadow-lg border-2 border-white"
+            src="/archivos/registro_fotografico/{{ student.code }}.jpg" 
+            class="avatar-placeholder h-20 w-20 rounded-full object-cover shadow-lg ring-4 ring-white"
             alt="{{ student.full_name }}"
+            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
           >
+          <div class="avatar-placeholder hidden h-20 w-20 items-center justify-center rounded-full shadow-lg ring-4 ring-white" 
+               style="--avatar-color-1: #3b82f6; --avatar-color-2: #2563eb;">
+            <span class="text-2xl font-bold text-white">{{ student.full_name|slice:":1"|upper }}</span>
+          </div>
+          {% else %}
+          <div class="avatar-placeholder flex h-20 w-20 items-center justify-center rounded-full shadow-lg ring-4 ring-white" 
+               style="--avatar-color-1: #3b82f6; --avatar-color-2: #2563eb;">
+            <span class="text-2xl font-bold text-white">{{ student.full_name|slice:":1"|upper }}</span>
+          </div>
+          {% endif %}
         </div>
         
         <div class="text-center">
-          <h3 class="text-lg font-bold text-[#12254a]">{{ student.full_name }}</h3>
-          <p class="mt-1 text-sm text-slate-500">Código: {{ student.code }}</p>
-          <div class="mt-2 inline-flex items-center gap-1 rounded-full bg-[#eef3ff] px-3 py-1 text-xs font-semibold text-[#365cff]">
-            <i class="fa-solid fa-graduation-cap"></i>
+          <h3 class="text-base font-bold text-slate-900 line-clamp-2 leading-tight">{{ student.full_name }}</h3>
+          <p class="mt-1 text-xs font-medium text-slate-500">Código: {{ student.code }}</p>
+          <div class="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[#eff6ff] px-3 py-1 text-xs font-semibold text-[#2563eb]">
+            <i class="fa-solid fa-graduation-cap text-[10px]"></i>
             {{ student.course.name|default:student.section|default:"-" }}
           </div>
         </div>
       </div>
 
       <!-- Body - Reportes -->
-      <div class="p-5">
-        <p class="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">Fines Educativos Reportados</p>
-        <div class="flex flex-wrap gap-2">
+      <div class="p-4">
+        <div class="mb-3 flex items-center justify-between">
+          <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Reportes</p>
+          <span id="report-count-{{ student.id }}" class="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-600">
+            {{ student.reports.count }}
+          </span>
+        </div>
+        <div class="flex flex-wrap gap-1.5">
           {% for report in student.reports.all %}
             <button type="button" 
-              class="inline-flex items-center gap-1.5 rounded-l border px-3 py-1.5 text-xs font-semibold shadow-sm transition 
-              {% if 'Académico' in report.get_purpose_display %} border-indigo-200 bg-primary-50 text-indigo-700 hover:bg-indigo-100
-              {% elif 'Convivencia' in report.get_purpose_display %} border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100
-              {% elif 'Espiritual' in report.get_purpose_display %} border-violet-200 bg-violet-50 text-violet-700 hover:bg-violet-100
-              {% elif 'Psicoafectivo' in report.get_purpose_display %} border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100
-              {% else %} border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 {% endif %}"
+              class="inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-[11px] font-bold shadow-sm transition-all hover:scale-105 hover:shadow-md
+              {% if report.purpose == 'ACADEMICO' %}border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100
+              {% elif report.purpose == 'CONVIVENCIA' %}border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100
+              {% elif report.purpose == 'ESPIRITUAL' %}border-violet-200 bg-violet-50 text-violet-700 hover:bg-violet-100
+              {% elif report.purpose == 'PSICOAFECTIVO' %}border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100
+              {% else %}border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100{% endif %}"
               data-workspace-open="1"
               data-report-id="{{ report.id }}"
               data-report-purpose="{{ report.get_purpose_display }}"
               data-report-status="{{ report.get_status_display }}"
-              data-report-objective="{{ report.objective|default:''|force_escape }}"
+              data-report-objective="{{ report.objective|default:''|escapejs }}"
               data-report-date="{{ report.created_at|date:'d/m/Y H:i' }}"
-              data-report-created-by="{{ report.created_by.get_full_name|default:report.created_by.username|default:'-'|force_escape }}"
-              data-report-assigned-to="{{ report.assigned_to.get_full_name|default:report.assigned_to.username|default:'-'|force_escape }}"
-              data-student-name="{{ student.full_name|default:'-'|force_escape }}"
+              data-report-created-by="{{ report.created_by.get_full_name|default:report.created_by.username|default:'-'|escapejs }}"
+              data-report-assigned-to="{{ report.assigned_to.get_full_name|default:report.assigned_to.username|default:'-'|escapejs }}"
+              data-student-name="{{ student.full_name|default:'-'|escapejs }}"
               data-student-code="{{ student.code }}"
-              data-student-course="{{ student.course.name|default:student.section|default:'-'|force_escape }}"
-              data-obs-items="{% for obs in report.observations.all %}{{ obs.followup_date|date:'d/m/Y'|default:obs.date_log|date:'d/m/Y' }}||{{ obs.content|force_escape }}||{{ obs.created_by.get_full_name|default:obs.created_by.username|default:'Usuario'|force_escape }}{% if not forloop.last %}##{% endif %}{% endfor %}"
-              data-rec-items="{% for rec in report.recommendations.all %}{{ rec.followup_date|date:'d/m/Y'|default:rec.date_log|date:'d/m/Y' }}||{{ rec.content|force_escape }}||{{ rec.created_by.get_full_name|default:rec.created_by.username|default:'Usuario'|force_escape }}{% if not forloop.last %}##{% endif %}{% endfor %}">
-              {{ report.get_purpose_display }}
-              <span class="opacity-60">•</span>
-              {{ report.get_status_display }}
+              data-student-course="{{ student.course.name|default:student.section|default:'-'|escapejs }}"
+              data-obs-items="{% for obs in report.observations.all %}{{ obs.followup_date|date:'d/m/Y'|default:obs.date_log|date:'d/m/Y' }}|| {{ obs.content|escapejs }}|| {{ obs.created_by.get_full_name|default:obs.created_by.username|default:'Usuario'|escapejs }}{% if not forloop.last %}##{% endif %}{% endfor %}"
+              data-rec-items="{% for rec in report.recommendations.all %}{{ rec.followup_date|date:'d/m/Y'|default:rec.date_log|date:'d/m/Y' }}|| {{ rec.content|escapejs }}|| {{ rec.created_by.get_full_name|default:rec.created_by.username|default:'Usuario'|escapejs }}{% if not forloop.last %}##{% endif %}{% endfor %}">
+              <span class="text-[9px]">
+                {% if report.purpose == 'ACADEMICO' %}<i class="fa-solid fa-book"></i>
+                {% elif report.purpose == 'CONVIVENCIA' %}<i class="fa-solid fa-users"></i>
+                {% elif report.purpose == 'ESPIRITUAL' %}<i class="fa-solid fa-heart"></i>
+                {% elif report.purpose == 'PSICOAFECTIVO' %}<i class="fa-solid fa-brain"></i>
+                {% endif %}
+              </span>
+<span>{{ report.get_status_display }}</span>
             </button>
           {% empty %}
-            <span class="block w-full rounded-lg border border-dashed border-slate-200 bg-slate-50 py-3 text-center text-xs text-slate-400">Sin reportes</span>
+            <span class="flex w-full items-center justify-center rounded-lg border border-dashed border-slate-200 bg-slate-50 py-3 text-center text-xs font-medium text-slate-400">
+              <i class="fa-regular fa-circle-check mr-1.5"></i>
+              Sin reportes
+            </span>
           {% endfor %}
         </div>
       </div>
-      <!-- Footer -->
-      <div class="border-t border-slate-100 bg-gradient-to-r from-slate-50 to-white p-4">
+      
+      <!-- Footer con botón mejorado -->
+      <div class="border-t border-slate-100 bg-gradient-to-r from-slate-50 to-white p-3">
         <button type="button" 
           class="flex w-full items-center justify-center gap-2 rounded-xl bg-[#4361ee] px-4 py-3 text-sm font-bold text-white shadow-md transition-all hover:-translate-y-0.5 hover:shadow-lg hover:bg-[#3a56d4]"
           data-modal-target="create-report-modal"
@@ -141,42 +238,68 @@
   </div>
 </section>
 
-<!-- WORKSPACE PANEL -->
+<!-- WORKSPACE PANEL with TABS -->
 <section id="report-workspace-panel" class="soft-shell mt-4 hidden w-full min-h-[85vh] rounded-2xl border border-slate-300/60 bg-white shadow-2xl shadow-slate-300/40">
-  <!-- Header -->
-  <div class="flex items-center justify-between border-b-2 border-slate-200/80 bg-white px-8 py-5">
-    <div class="flex items-center gap-5">
-      <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-[#2256F2] shadow-md">
-        <i class="fa-solid fa-user-shield text-lg text-white" aria-hidden="true"></i>
-      </div>
-      <div>
-        <h3 class="text-xl font-extrabold text-slate-900 tracking-tight leading-tight">Detalle del Reporte</h3>
-        <p class="text-base text-slate-600 mt-0.5 font-medium">Información completa del acompañamiento</p>
+  <!-- Header con breadcrumb -->
+  <div class="flex items-center justify-between border-b-2 border-slate-200/80 bg-white px-6 py-4">
+    <div class="flex items-center gap-4">
+      <button type="button" id="btn-back-to-list" class="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">
+        <i class="fa-solid fa-arrow-left"></i>
+        <span>Volver</span>
+      </button>
+      <div class="h-6 w-px bg-slate-200"></div>
+      <div class="flex items-center gap-3">
+        <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#2563eb] to-[#1d4ed8] shadow-md">
+          <i class="fa-solid fa-file-shield text-lg text-white" aria-hidden="true"></i>
+        </div>
+        <div>
+          <h3 class="text-lg font-bold text-slate-900">Detalle del Reporte</h3>
+          <p class="text-xs text-slate-500">Información del acompañamiento</p>
+        </div>
       </div>
     </div>
-    <div class="flex items-center gap-4">
-      <select id="workspace-action-select" class="min-w-[220px] rounded-lg border-2 border-slate-300 bg-white px-4 py-2.5 text-base font-semibold text-slate-800 shadow-sm focus:border-[#2256F2] focus:outline-none focus:ring-2 focus:ring-blue-200 transition-all cursor-pointer">
-        <option value="">Acciones...</option>
-        <option value="edit_observation">Nueva observación</option>
-        <option value="edit_recommendation">Nueva recomendación</option>
-        <option value="show_observations">Ver observaciones</option>
-        <option value="show_recommendations">Ver recomendaciones</option>
-        <option value="close_case" class="font-bold text-rose-600">Cerrar caso</option>
-      </select>
+    <div class="flex items-center gap-2">
+      <button class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">
+        <i class="fa-solid fa-print"></i>
+      </button>
+      <button class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">
+        <i class="fa-solid fa-share-nodes"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Tabs Navigation -->
+  <div class="border-b border-slate-200 bg-slate-50 px-6">
+    <div class="flex gap-1">
+      <button class="workspace-tab active tab-btn relative px-4 py-3 text-sm font-semibold text-slate-600 hover:text-slate-900" data-tab="overview">
+        <i class="fa-solid fa-chart-line mr-2"></i>Resumen
+      </button>
+      <button class="workspace-tab tab-btn relative px-4 py-3 text-sm font-semibold text-slate-600 hover:text-slate-900" data-tab="observations">
+        <i class="fa-solid fa-magnifying-glass mr-2"></i>Observaciones
+        <span class="ml-1.5 rounded-full bg-blue-100 px-1.5 py-0.5 text-[10px] font-bold text-blue-700 obs-count">0</span>
+      </button>
+      <button class="workspace-tab tab-btn relative px-4 py-3 text-sm font-semibold text-slate-600 hover:text-slate-900" data-tab="recommendations">
+        <i class="fa-solid fa-lightbulb mr-2"></i>Recomendaciones
+        <span class="ml-1.5 rounded-full bg-green-100 px-1.5 py-0.5 text-[10px] font-bold text-green-700 rec-count">0</span>
+      </button>
+      <button class="workspace-tab tab-btn relative px-4 py-3 text-sm font-semibold text-slate-600 hover:text-slate-900" data-tab="close">
+        <i class="fa-solid fa-check-circle mr-2"></i>Cerrar Caso
+      </button>
     </div>
   </div>
 
   <!-- Contenido Principal -->
-  <div class="grid gap-6 p-8 lg:grid-cols-12">
+  <div class="grid gap-6 p-6 lg:grid-cols-12">
     <!-- Columna Izquierda - Perfil del Estudiante -->
-    <div class="lg:col-span-3 space-y-5">
+    <div class="lg:col-span-3 space-y-4">
       <!-- Card Perfil Principal -->
-      <div class="relative overflow-hidden rounded-xl bg-gradient-to-br from-[#2256F2] via-[#1e4bd4] to-[#1639a8] p-5 shadow-lg">
-        <div class="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -translate-y-6 translate-x-6"></div>
+      <div class="relative overflow-hidden rounded-xl bg-gradient-to-br from-[#2563eb] via-[#1d4ed8] to-[#1e40af] p-5 shadow-lg">
+        <div class="absolute top-0 right-0 w-28 h-28 bg-white/10 rounded-full -translate-y-8 translate-x-8"></div>
         
         <div class="relative z-10 flex flex-col items-center text-center">
-          <div class="mb-3 flex h-20 w-20 items-center justify-center rounded-full bg-white/20 shadow-md ring-3 ring-white/30">
-            <img src="/archivos/registro_fotografico/31218.jpg" class="h-20 w-20 rounded-full object-cover" alt="Foto del estudiante">
+          <div class="mb-3 flex h-20 w-20 items-center justify-center rounded-full bg-white/20 shadow-md ring-4 ring-white/30">
+            <img id="workspace-student-img" src="" class="h-20 w-20 rounded-full object-cover hidden" alt="Foto">
+            <div id="workspace-student-initial" class="flex h-20 w-20 items-center justify-center rounded-full bg-white/30 text-3xl font-bold text-white">-</div>
           </div>
           <h4 id="workspace-student-name" class="text-lg font-bold text-white tracking-wide leading-snug">-</h4>
           <div class="mt-2 inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1 text-sm font-semibold text-white/95">
@@ -191,34 +314,114 @@
       </div>
 
       <!-- Estado del Reporte -->
-      <div class="rounded-xl border border-slate-300 bg-white p-4 shadow-md">
+      <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
         <div class="flex items-center justify-between mb-3">
           <h5 class="text-sm font-bold uppercase tracking-wide text-slate-700">Estado</h5>
           <span id="workspace-status" class="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-sm font-bold text-emerald-800 shadow-sm"></span>
         </div>
         <div class="space-y-2">
-          <div class="flex items-center gap-3 rounded-lg bg-slate-100 p-2.5">
-            <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-100 text-blue-700">
+          <div class="flex items-center gap-3 rounded-lg bg-slate-50 p-2.5">
+            <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
               <i class="fa-regular fa-calendar" aria-hidden="true"></i>
             </div>
             <div>
-              <p class="text-xs font-semibold text-slate-600">Fecha</p>
-              <p id="workspace-date" class="text-base font-bold text-slate-900">-</p>
+              <p class="text-xs font-semibold text-slate-500">Fecha</p>
+              <p id="workspace-date" class="text-sm font-bold text-slate-900">-</p>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Equipo de Atención -->
-      <div class="rounded-xl border border-slate-300 bg-white p-4 shadow-md">
+      <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
         <h5 class="mb-3 text-sm font-bold uppercase tracking-wide text-slate-700">Equipo</h5>
         <div class="space-y-2">
-          <div class="flex items-center gap-3 rounded-lg bg-slate-100 p-2.5">
-            <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-violet-100 text-violet-700">
+          <div class="flex items-center gap-3 rounded-lg bg-slate-50 p-2.5">
+            <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-violet-50 text-violet-600">
               <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
             </div>
             <div class="flex-1 min-w-0">
-              <p class="text-xs font-semibold text-slate-600">Remitente</p>
+              <p class="text-xs font-semibold text-slate-500">Remitente</p>
+              <p id="workspace-created-by" class="truncate text-sm font-semibold text-slate-800">-</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3 rounded-xl bg-slate-50 p-3">
+            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
+              <i class="fa-solid fa-user-check"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-xs font-medium text-slate-500">Encargado</p>
+              <p id="workspace-assigned-to" class="truncate text-sm font-semibold text-slate-800">-</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Columna Derecha - Detalles del Reporte (más ancha) -->
+    <div class="lg:col-span-9 space-y-4">
+      <!-- Tab: Resumen -->
+      <div id="tab-overview" class="workspace-tab-content">
+        <div class="rounded-xl border-2 border-slate-200 bg-white p-5 shadow-sm">
+          <div class="flex items-center gap-4 mb-4">
+            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-violet-100 text-violet-600 shadow-sm">
+              <i class="fa-solid fa-bullseye text-lg" aria-hidden="true"></i>
+            </div>
+            <div>
+              <h5 class="text-base font-bold text-slate-900">Fin Educativo</h5>
+              <p id="workspace-purpose-card" class="text-sm font-bold text-violet-700">-</p>
+            </div>
+          </div>
+          <div class="rounded-lg bg-slate-50 p-4 border-2 border-slate-100">
+            <h6 class="mb-3 text-sm font-bold text-[#2563eb] flex items-center gap-2">
+              <i class="fa-solid fa-target" aria-hidden="true"></i> Objetivo del acompañamiento
+            </h6>
+            <p id="workspace-objective" class="text-base leading-relaxed text-slate-700 font-medium">-</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: Observaciones -->
+      <div id="tab-observations" class="workspace-tab-content hidden">
+        <div class="rounded-xl border-2 border-slate-200 bg-white p-5 shadow-sm">
+          <div class="mb-4 flex items-center justify-between">
+            <h4 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+              <i class="fa-solid fa-magnifying-glass text-blue-600"></i> Observaciones
+            </h4>
+            <button onclick="openModal('edit-observation-modal')" class="rounded-lg bg-[#2563eb] px-3 py-1.5 text-sm font-semibold text-white hover:bg-[#1d4ed8]">
+              <i class="fa-solid fa-plus mr-1"></i> Nueva
+            </button>
+          </div>
+          <div id="observations-container" class="space-y-3"></div>
+        </div>
+      </div>
+
+      <!-- Tab: Recomendaciones -->
+      <div id="tab-recommendations" class="workspace-tab-content hidden">
+        <div class="rounded-xl border-2 border-slate-200 bg-white p-5 shadow-sm">
+          <div class="mb-4 flex items-center justify-between">
+            <h4 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+              <i class="fa-solid fa-lightbulb text-green-600"></i> Recomendaciones
+            </h4>
+            <button onclick="openModal('edit-recommendation-modal')" class="rounded-lg bg-[#22c55e] px-3 py-1.5 text-sm font-semibold text-white hover:bg-[#16a34a]">
+              <i class="fa-solid fa-plus mr-1"></i> Nueva
+            </button>
+          </div>
+          <div id="recommendations-container" class="space-y-3"></div>
+        </div>
+      </div>
+
+      <!-- Tab: Cerrar Caso -->
+      <div id="tab-close" class="workspace-tab-content hidden">
+        <button onclick="openModal('close-case-modal')" class="w-full rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 p-8 text-center hover:border-red-300 hover:bg-red-50 transition-colors">
+          <i class="fa-solid fa-check-circle text-4xl text-slate-300 mb-3"></i>
+          <p class="text-lg font-bold text-slate-600">Cerrar Caso de Acompañamiento</p>
+          <p class="text-sm text-slate-500 mt-1">Finaliza el seguimiento del estudiante</p>
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
               <p id="workspace-created-by" class="truncate text-sm font-semibold text-slate-800">-</p>
             </div>
           </div>
@@ -854,53 +1057,105 @@
 
       const obs=this.dataset.obsItems||'';
       const rec=this.dataset.recItems||'';
-      const actionSelect = document.getElementById('workspace-action-select');
-      const historyBlock = document.getElementById('workspace-history-block');
+      
+      // Actualizar foto del estudiante
+      const studentCode = this.dataset.studentCode;
+      const studentImg = document.getElementById('workspace-student-img');
+      const studentInitial = document.getElementById('workspace-student-initial');
+      if (studentCode) {
+        studentImg.src = '/archivos/registro_fotografico/' + studentCode + '.jpg';
+        studentImg.onerror = function() { 
+          this.classList.add('hidden'); 
+          studentInitial.classList.add('flex'); 
+          studentInitial.classList.remove('hidden');
+          studentInitial.textContent = (document.getElementById('workspace-student-name').textContent || '-').charAt(0).toUpperCase();
+        };
+        studentImg.onload = function() {
+          studentImg.classList.remove('hidden');
+          studentInitial.classList.add('hidden');
+        };
+      }
 
-      const hideActionBlocks = () => {
-        historyBlock.classList.add('hidden');
-      };
+      // Actualizar contadores de tabs
+      const obsCount = obs ? obs.split('##').filter(Boolean).length : 0;
+      const recCount = rec ? rec.split('##').filter(Boolean).length : 0;
+      document.querySelectorAll('.obs-count').forEach(el => el.textContent = obsCount);
+      document.querySelectorAll('.rec-count').forEach(el => el.textContent = recCount);
 
-      actionSelect.value = '';
-      hideActionBlocks();
-      document.getElementById('history-title').textContent='Historial';
-      document.getElementById('history-container').innerHTML='';
+      // Reset tabs
+      document.querySelectorAll('.workspace-tab').forEach(tab => tab.classList.remove('active', 'bg-[#2563eb]', 'text-white'));
+      document.querySelectorAll('.workspace-tab-content').forEach(content => content.classList.add('hidden'));
+      document.querySelector('[data-tab="overview"]').classList.add('active', 'bg-[#2563eb]', 'text-white');
+      document.getElementById('tab-overview').classList.remove('hidden');
 
-      // Lógica del dropdown de acciones
-      actionSelect.onchange = function () {
-        hideActionBlocks();
-        const selectedValue = this.value;
+      // Función para renderizar timeline
+      function renderTimeline(rawItems, containerId, type) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = '';
         
-        if (selectedValue === 'edit_observation') {
-          openModal('edit-observation-modal');
+        const colors = type === 'recommendation' 
+          ? { bg: '#f0fdf4', text: '#16a34a', border: '#bbf7d0', icon: '#22c55e' }
+          : { bg: '#eff6ff', text: '#2563eb', border: '#bfdbfe', icon: '#3b82f6' };
+        
+        const typeLabel = type === 'recommendation' ? 'Recomendación' : 'Observación';
+        
+        if (!rawItems) {
+          container.innerHTML = `<div class="flex flex-col items-center py-8 text-center">
+            <i class="fa-regular fa-clipboard text-4xl text-slate-200 mb-3"></i>
+            <p class="text-sm text-slate-500">No hay ${typeLabel.toLowerCase()}es registradas</p>
+            <button onclick="openModal('${type === 'recommendation' ? 'edit-recommendation-modal' : 'edit-observation-modal'}')" class="mt-3 text-sm font-semibold text-[${colors.text}] hover:underline">
+              Agregar ${typeLabel.toLowerCase()}
+            </button>
+          </div>`;
+          return;
         }
-        else if (selectedValue === 'edit_recommendation') {
-          openModal('edit-recommendation-modal');
-        } 
-        else if (selectedValue === 'show_observations') {
-          historyBlock.classList.remove('hidden');
-          document.getElementById('history-title').innerHTML='<i class="fa-solid fa-magnifying-glass text-[#3b82f6]" aria-hidden="true"></i> Historial de observaciones';
-          renderHistory(obs, 'observation');
-        } 
-        else if (selectedValue === 'show_recommendations') {
-          historyBlock.classList.remove('hidden');
-          document.getElementById('history-title').innerHTML='<i class="fa-solid fa-lightbulb text-[#55a630]" aria-hidden="true"></i> Historial de recomendaciones';
-          renderHistory(rec, 'recommendation');
-        }
-        else if (selectedValue === 'close_case') {
-          // Mostrar modal de cierre
-          openModal('close-case-modal');
-          // Llenar datos del estudiante
-          setText('close-form-student-name', document.getElementById('workspace-student-name').textContent);
-          setText('close-form-student-code', document.getElementById('workspace-student-code').textContent);
-          setText('close-form-student-course', document.getElementById('workspace-course').textContent);
-          // Llenar datos del reporte
-          setText('close-form-report-date', document.getElementById('workspace-date').textContent);
-          setText('close-form-purpose', document.getElementById('workspace-purpose-card').textContent);
-          setText('close-form-created-by', document.getElementById('workspace-created-by').textContent);
-          setText('close-form-objective', document.getElementById('workspace-objective').textContent);
-        }
-      };
+        
+        const items = rawItems.split('##').filter(Boolean).map(item => {
+          const parts = item.split('||');
+          return { date: parts[0]?.trim() || '', content: parts[1]?.trim() || '', author: parts[2]?.trim() || 'Usuario' };
+        });
+        
+        items.sort((a, b) => {
+          const dateA = a.date.split('/').reverse().join('');
+          const dateB = b.date.split('/').reverse().join('');
+          return dateB.localeCompare(dateA);
+        });
+        
+        items.forEach((item, index) => {
+          const itemDiv = document.createElement('div');
+          itemDiv.className = 'relative flex gap-4 rounded-lg border border-slate-200 bg-slate-50 p-4 hover:bg-slate-100 transition-colors';
+          itemDiv.innerHTML = `
+            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[${colors.bg}]">
+              <i class="fa-solid fa-${type === 'recommendation' ? 'lightbulb' : 'magnifying-glass'} text-[${colors.icon}]"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-sm font-bold text-slate-900">${item.author}</span>
+                <span class="rounded-full bg-white border border-slate-200 px-2 py-0.5 text-[10px] font-semibold text-slate-500">${item.date}</span>
+              </div>
+              <p class="text-sm text-slate-600 leading-relaxed">${item.content}</p>
+            </div>
+          `;
+          container.appendChild(itemDiv);
+        });
+      }
+
+      // Renderizar observaciones y recomendaciones
+      renderTimeline(obs, 'observations-container', 'observation');
+      renderTimeline(rec, 'recommendations-container', 'recommendation');
+
+      // Tabs
+      document.querySelectorAll('.workspace-tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+          const tabName = this.dataset.tab;
+          
+          document.querySelectorAll('.workspace-tab').forEach(t => t.classList.remove('active', 'bg-[#2563eb]', 'text-white'));
+          document.querySelectorAll('.workspace-tab-content').forEach(c => c.classList.add('hidden'));
+          
+          this.classList.add('active', 'bg-[#2563eb]', 'text-white');
+          document.getElementById('tab-' + tabName).classList.remove('hidden');
+        });
+      });
 
       // Scroll suave al workspace
       workspacePanel.scrollIntoView({behavior:'smooth', block:'start'});
@@ -912,7 +1167,85 @@
     document.getElementById('course-header-section').classList.remove('hidden');
     document.getElementById('report-workspace-panel').classList.add('hidden');
     document.getElementById('students-table-section').classList.remove('hidden');
-    document.getElementById('workspace-action-select').value = '';
+  });
+
+  // Búsqueda de estudiantes
+  const searchInput = document.getElementById('student-search');
+  const studentCards = document.querySelectorAll('.student-card');
+  
+  searchInput?.addEventListener('input', function() {
+    const query = this.value.toLowerCase().trim();
+    studentCards.forEach(card => {
+      const name = card.dataset.studentName || '';
+      const code = card.dataset.studentCode || '';
+      if (query === '' || name.includes(query) || code.includes(query)) {
+        card.classList.remove('hidden');
+      } else {
+        card.classList.add('hidden');
+      }
+    });
+    updateVisibleCount();
+  });
+
+  // Toggle filtros
+  const filterToggleBtn = document.getElementById('filter-toggle-btn');
+  const filterChips = document.getElementById('filter-chips');
+  
+  filterToggleBtn?.addEventListener('click', function() {
+    filterChips.classList.toggle('hidden');
+  });
+
+  // Filtros por tipo
+  document.querySelectorAll('.filter-chip').forEach(chip => {
+    chip.addEventListener('click', function() {
+      const filter = this.dataset.filter;
+      
+      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('bg-[#2563eb]', 'text-white'));
+      this.classList.add('bg-[#2563eb]', 'text-white');
+      
+      studentCards.forEach(card => {
+        const reportsCount = parseInt(card.dataset.reportsCount || '0');
+        const purposes = card.dataset.reportPurposes || '';
+        
+        let show = true;
+        if (filter === 'with-reports') {
+          show = reportsCount > 0;
+        } else if (filter === 'without-reports') {
+          show = reportsCount === 0;
+        } else if (filter === 'all') {
+          show = true;
+        } else if (filter && purposes) {
+          show = purposes.includes(filter);
+        } else if (filter) {
+          show = filter === 'all';
+        }
+        
+        if (show) {
+          card.classList.remove('hidden');
+        } else {
+          card.classList.add('hidden');
+        }
+      });
+      
+      updateVisibleCount();
+    });
+  });
+
+  // Contador de estudiantes visibles
+  function updateVisibleCount() {
+    const visible = document.querySelectorAll('.student-card:not(.hidden)').length;
+    // Opcional: mostrar contador
+  }
+
+  // Keyboard shortcuts
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      filterChips?.classList.add('hidden');
+    }
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      e.preventDefault();
+      searchInput?.focus();
+    }
   });
 </script>
 {% endblock %}
