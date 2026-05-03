@@ -36,6 +36,17 @@
     animation: shimmer 1.5s infinite;
   }
   @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+
+  /* Tabs coloreados por tipo */
+  .tab-resumen.active { background: linear-gradient(135deg, #475569 0%, #334155 100%); color: white; border-bottom: 3px solid #475569; }
+  .tab-observaciones.active { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; border-bottom: 3px solid #3b82f6; }
+  .tab-recomendaciones.active { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white; border-bottom: 3px solid #22c55e; }
+  .tab-cerrar.active { background: linear-gradient(135deg, #ec4899 0%, #db2777 100%); color: white; border-bottom: 3px solid #ec4899; }
+  
+  /* Contenido de tabs con bordes de color */
+  #tab-observations.tab-active { border-left: 4px solid #3b82f6; }
+  #tab-recommendations.tab-active { border-left: 4px solid #22c55e; }
+  #tab-close.tab-active { border-left: 4px solid #ec4899; }
 </style>
 {% endblock %}
 
@@ -268,21 +279,21 @@
     </div>
   </div>
 
-  <!-- Tabs Navigation -->
+  <!-- Tabs Navigation with colors -->
   <div class="border-b border-slate-200 bg-slate-50 px-6">
-    <div class="flex gap-1">
-      <button class="workspace-tab active tab-btn relative px-4 py-3 text-sm font-semibold text-slate-600 hover:text-slate-900" data-tab="overview">
+    <div class="flex gap-2">
+      <button class="workspace-tab tab-resumen active tab-btn relative px-4 py-3 text-sm font-medium text-slate-600 hover:text-slate-900 rounded-t-lg" data-tab="overview">
         <i class="fa-solid fa-chart-line mr-2"></i>Resumen
       </button>
-      <button class="workspace-tab tab-btn relative px-4 py-3 text-sm font-semibold text-slate-600 hover:text-slate-900" data-tab="observations">
+      <button class="workspace-tab tab-observaciones tab-btn relative px-4 py-3 text-sm font-medium text-slate-600 hover:text-slate-900 rounded-t-lg" data-tab="observations">
         <i class="fa-solid fa-magnifying-glass mr-2"></i>Observaciones
         <span class="ml-1.5 rounded-full bg-blue-100 px-1.5 py-0.5 text-[10px] font-bold text-blue-700 obs-count">0</span>
       </button>
-      <button class="workspace-tab tab-btn relative px-4 py-3 text-sm font-semibold text-slate-600 hover:text-slate-900" data-tab="recommendations">
+      <button class="workspace-tab tab-recomendaciones tab-btn relative px-4 py-3 text-sm font-medium text-slate-600 hover:text-slate-900 rounded-t-lg" data-tab="recommendations">
         <i class="fa-solid fa-lightbulb mr-2"></i>Recomendaciones
         <span class="ml-1.5 rounded-full bg-green-100 px-1.5 py-0.5 text-[10px] font-bold text-green-700 rec-count">0</span>
       </button>
-      <button class="workspace-tab tab-btn relative px-4 py-3 text-sm font-semibold text-slate-600 hover:text-slate-900" data-tab="close">
+      <button class="workspace-tab tab-cerrar tab-btn relative px-4 py-3 text-sm font-medium text-slate-600 hover:text-slate-900 rounded-t-lg" data-tab="close">
         <i class="fa-solid fa-check-circle mr-2"></i>Cerrar Caso
       </button>
     </div>
@@ -1082,10 +1093,15 @@
       document.querySelectorAll('.obs-count').forEach(el => el.textContent = obsCount);
       document.querySelectorAll('.rec-count').forEach(el => el.textContent = recCount);
 
-      // Reset tabs
-      document.querySelectorAll('.workspace-tab').forEach(tab => tab.classList.remove('active', 'bg-[#2563eb]', 'text-white'));
-      document.querySelectorAll('.workspace-tab-content').forEach(content => content.classList.add('hidden'));
-      document.querySelector('[data-tab="overview"]').classList.add('active', 'bg-[#2563eb]', 'text-white');
+      // Reset tabs - aplicar color默认 del tab Resumen
+      document.querySelectorAll('.workspace-tab').forEach(tab => {
+        tab.classList.remove('active', 'bg-[#2563eb]', 'text-white', 'bg-slate-600', 'bg-blue-600', 'bg-green-600', 'bg-pink-600', 'text-white');
+      });
+      document.querySelectorAll('.workspace-tab-content').forEach(content => {
+        content.classList.add('hidden');
+        content.classList.remove('tab-active');
+      });
+      document.querySelector('[data-tab="overview"]').classList.add('active', 'tab-resumen');
       document.getElementById('tab-overview').classList.remove('hidden');
 
       // Función para renderizar timeline
@@ -1144,16 +1160,35 @@
       renderTimeline(obs, 'observations-container', 'observation');
       renderTimeline(rec, 'recommendations-container', 'recommendation');
 
-      // Tabs
+      // Tabs con colores específicos
       document.querySelectorAll('.workspace-tab').forEach(tab => {
         tab.addEventListener('click', function() {
           const tabName = this.dataset.tab;
+          const tabClassMap = {
+            'overview': 'tab-resumen',
+            'observations': 'tab-observaciones',
+            'recommendations': 'tab-recomendaciones',
+            'close': 'tab-cerrar'
+          };
           
-          document.querySelectorAll('.workspace-tab').forEach(t => t.classList.remove('active', 'bg-[#2563eb]', 'text-white'));
-          document.querySelectorAll('.workspace-tab-content').forEach(c => c.classList.add('hidden'));
+          // Quitar todos los colores activos
+          document.querySelectorAll('.workspace-tab').forEach(t => {
+            t.classList.remove('active', 'bg-[#2563eb]', 'text-white', 'bg-slate-600', 'text-white', 'bg-green-600', 'text-white', 'bg-pink-600', 'text-white');
+          });
+          document.querySelectorAll('.workspace-tab-content').forEach(c => {
+            c.classList.add('hidden');
+            c.classList.remove('tab-active');
+          });
           
-          this.classList.add('active', 'bg-[#2563eb]', 'text-white');
-          document.getElementById('tab-' + tabName).classList.remove('hidden');
+          // Aplicar color según el tab
+          const colorClass = tabClassMap[tabName];
+          this.classList.add('active', colorClass);
+          
+          const content = document.getElementById('tab-' + tabName);
+          if (content) {
+            content.classList.remove('hidden');
+            content.classList.add('tab-active');
+          }
         });
       });
 
