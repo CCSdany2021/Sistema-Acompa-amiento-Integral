@@ -55,15 +55,15 @@ brand: {
     </script>
     <style>
         :root {
-            /* Color principal - DORADO INSTITUCIONAL */
-            --brand-primary: #F2C144;
-            --brand-light: #f5d06a;
-            --brand-subtle: #fef9e7;
-            --brand-50: #fef9e7;
-            --brand-100: #fef3c7;
-            --brand-500: #F2C144;
-            --brand-600: #e5b13a;
-            --brand-700: #c99b2a;
+            /* Color principal - AZUL INSTITUCIONAL */
+            --brand-primary: #153459;
+            --brand-light: #1e4570;
+            --brand-subtle: #f0f5f9;
+            --brand-50: #f0f5f9;
+            --brand-100: #e2e8f0;
+            --brand-500: #153459;
+            --brand-600: #0f2940;
+            --brand-700: #0a1f30;
             --surface-primary: #ffffff;
             --surface-secondary: #f8fafc;
             --text-primary: #334155;
@@ -138,19 +138,19 @@ brand: {
         
         /* Shadow overrides - dorado */
         .shadow-blue-500\/30 {
-            --tw-shadow-color: rgba(242, 193, 68, 0.3);
+            --tw-shadow-color: rgba(21, 52, 89, 0.3);
             --tw-shadow: var(--tw-shadow-colored);
         }
         .shadow-blue-500\/20 {
-            --tw-shadow-color: rgba(242, 193, 68, 0.2);
+            --tw-shadow-color: rgba(21, 52, 89, 0.2);
             --tw-shadow: var(--tw-shadow-colored);
         }
         .shadow-blue-500\/ {
-            --tw-shadow-color: rgba(242, 193, 68, 0.25);
+            --tw-shadow-color: rgba(21, 52, 89, 0.25);
             --tw-shadow: var(--tw-shadow-colored);
         }
         
-        /* Botones principales - DORADO INSTITUCIONAL */
+        /* Botones principales - AZUL INSTITUCIONAL */
         button[type="submit"]:not(.filter-chip), 
         a.bg-\[\#2256F2\], 
         a.bg-\[\#2563eb\],
@@ -158,18 +158,18 @@ brand: {
         .bg-\[\#2563eb\],
         .bg-\[\\#3b82f6\],
         .bg-\[\#4361ee\] {
-            background-color: #F2C144 !important;
-            background: linear-gradient(135deg, #F2C144 0%, #d4a53a 100%) !important;
-            color: #1a1a2e !important;
+            background-color: #153459 !important;
+            background: linear-gradient(135deg, #153459 0%, #0f2940 100%) !important;
+            color: #ffffff !important;
             font-weight: 600 !important;
         }
         
         button[type="submit"]:not(.filter-chip):hover, 
         a.bg-\[\#2256F2\]:hover, 
         a.bg-\[\#2563eb\"]:hover {
-            background-color: #d4a53a !important;
-            background: linear-gradient(135deg, #d4a53a 0%, #c99b2a 100%) !important;
-            color: #1a1a2e !important;
+            background-color: #0f2940 !important;
+            background: linear-gradient(135deg, #0f2940 0%, #0a1f30 100%) !important;
+            color: #ffffff !important;
         }
         
         /* Textos en botones dorados - OSCURO para contraste */
@@ -184,9 +184,9 @@ brand: {
             color: #c99b2a !important;
         }
         
-        /* Bordes - dorado */
+        /* Bordes - AZUL INSTITUCIONAL */
         .border-\[\#2256F2\], .border-\[\#2563eb\], .focus\:border-\[\#2256F2\], .focus\:border-\[\#2563eb\] {
-            border-color: #F2C144 !important;
+            border-color: #153459 !important;
         }
         
         /* Hover states */
@@ -194,18 +194,23 @@ brand: {
         .hover\:bg-\[\#2563eb\]:hover,
         .hover\:bg-blue-50:hover,
         .hover\:bg-blue-100:hover {
-            background-color: #f0fdfa !important;
+            background-color: #f0f5f9 !important;
         }
         
-        /* Badge counts and bg-blue */
+        /* Badge counts */
         .bg-blue-50, .bg-blue-100, .bg-blue-200 {
-            background-color: #f0fdfa !important;
+            background-color: #f0f5f9 !important;
         }
         
         /* Focus rings */
         .focus\:ring-blue-100\/50:focus {
-            --tw-ring-color: rgba(13, 148, 136, 0.1) !important;
+            --tw-ring-color: rgba(21, 52, 89, 0.1) !important;
         }
+        
+        /* REDONDEO MAX 10px para tarjetas */
+        .rounded-2xl { border-radius: 10px !important; }
+        .rounded-3xl { border-radius: 10px !important; }
+        .rounded-full { border-radius: 10px !important; }
     </style>
 </head>
 <body class="min-h-screen bg-[#f4f7ff] text-ink">
