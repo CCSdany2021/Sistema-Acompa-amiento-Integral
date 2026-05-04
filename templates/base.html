@@ -211,6 +211,16 @@ brand: {
         .rounded-2xl { border-radius: 10px !important; }
         .rounded-3xl { border-radius: 10px !important; }
         .rounded-full { border-radius: 10px !important; }
+        
+        /* Full width layout fixes */
+        #main-content {
+            width: 100%;
+            max-width: 100%;
+        }
+        
+        main {
+            max-width: 100% !important;
+        }
     </style>
 </head>
 <body class="min-h-screen bg-[#f4f7ff] text-ink">
@@ -411,7 +421,7 @@ brand: {
             </div>
         </aside>
         
-        <div id="main-content" class="flex-1 transition-all duration-300 lg:pl-[306px]">
+        <div id="main-content" class="flex-1 min-w-0 transition-all duration-300 lg:pl-[306px]">
             <nav class="sticky top-0 z-30 flex items-center justify-between border-b border-slate-200 bg-white/80 backdrop-blur px-4 py-3 lg:px-5">
                 <div class="flex items-center gap-3">
                     <button id="mobile-menu-btn" class="lg:hidden rounded-lg bg-slate-100 p-2 text-slate-600 hover:bg-slate-200">
