@@ -148,10 +148,10 @@
 </section>
 
 <!-- GRID DE TARJETAS MEJORADO -->
-<section id="students-table-section" class="pb-10">
-  <div id="students-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+<section id="students-table-section" class="pb-10 w-full">
+  <div id="students-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 w-full">
     {% for student in students %}
-    <div class="student-card animate-fade-in-up group relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm hover:shadow-xl" 
+    <div class="student-card animate-fade-in-up group relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm hover:shadow-xl" 
          style="animation-delay: {{ forloop.counter0 }}0ms"
          data-student-name="{{ student.full_name|lower }}"
          data-student-code="{{ student.code }}"
@@ -159,7 +159,7 @@
          data-report-purposes="{% for r in student.reports.all %}{{ r.purpose }}{% if not forloop.last %},{% endif %}{% endfor %}">
       
       <!-- Header con avatar mejorado -->
-      <div class="relative border-b border-slate-100 bg-gradient-to-br from-slate-50 to-white p-5">
+      <div class="relative border-b border-slate-100 bg-gradient-to-br from-slate-50 to-white p-4">
         <button type="button" class="absolute right-3 top-3 rounded-full bg-slate-100 p-1.5 text-slate-400 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-slate-200 hover:text-slate-600">
           <i class="fa-solid fa-ellipsis text-sm"></i>
         </button>
@@ -187,7 +187,7 @@
         <div class="text-center">
           <h3 class="text-base font-bold text-slate-900 line-clamp-2 leading-tight">{{ student.full_name }}</h3>
           <p class="mt-1 text-xs font-medium text-slate-500">Código: {{ student.code }}</p>
-          <div class="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[#eff6ff] px-3 py-1 text-xs font-semibold text-[#2563eb]">
+          <div class="mt-2 inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
             <i class="fa-solid fa-graduation-cap text-[10px]"></i>
             {{ student.course.name|default:student.section|default:"-" }}
           </div>
