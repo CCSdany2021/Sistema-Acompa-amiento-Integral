@@ -47,6 +47,27 @@
   #tab-observations.tab-active { border-left: 4px solid #3b82f6; }
   #tab-recommendations.tab-active { border-left: 4px solid #22c55e; }
   #tab-close.tab-active { border-left: 4px solid #ec4899; }
+/* Tooltip para badges de reportes */
+  .report-badge { position: relative; }
+  .report-badge::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1e293b;
+    color: white;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+    z-index: 100;
+    margin-bottom: 4px;
+  }
+  .report-badge:hover::after { opacity: 1; }
 </style>
 {% endblock %}
 
@@ -181,10 +202,10 @@
             {{ student.reports.count }}
           </span>
         </div>
-        <div class="flex flex-wrap gap-1.5">
+<div class="flex flex-wrap gap-1">
           {% for report in student.reports.all %}
             <button type="button" 
-              class="inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-[11px] font-bold shadow-sm transition-all hover:scale-105 hover:shadow-md
+              class="report-badge inline-flex items-center gap-1 rounded-lg border px-2 py-1 text-[9px] shadow-sm transition-all hover:scale-105 hover:shadow-md
               {% if report.purpose == 'ACADEMICO' %}border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100
               {% elif report.purpose == 'CONVIVENCIA' %}border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100
               {% elif report.purpose == 'ESPIRITUAL' %}border-violet-200 bg-violet-50 text-violet-700 hover:bg-violet-100
@@ -202,15 +223,17 @@
               data-student-code="{{ student.code }}"
               data-student-course="{{ student.course.name|default:student.section|default:'-'|escapejs }}"
               data-obs-items="{% for obs in report.observations.all %}{{ obs.followup_date|date:'d/m/Y'|default:obs.date_log|date:'d/m/Y' }}|| {{ obs.content|escapejs }}|| {{ obs.created_by.get_full_name|default:obs.created_by.username|default:'Usuario'|escapejs }}{% if not forloop.last %}##{% endif %}{% endfor %}"
-              data-rec-items="{% for rec in report.recommendations.all %}{{ rec.followup_date|date:'d/m/Y'|default:rec.date_log|date:'d/m/Y' }}|| {{ rec.content|escapejs }}|| {{ rec.created_by.get_full_name|default:rec.created_by.username|default:'Usuario'|escapejs }}{% if not forloop.last %}##{% endif %}{% endfor %}">
-              <span class="text-[9px]">
-                {% if report.purpose == 'ACADEMICO' %}<i class="fa-solid fa-book"></i>
-                {% elif report.purpose == 'CONVIVENCIA' %}<i class="fa-solid fa-users"></i>
-                {% elif report.purpose == 'ESPIRITUAL' %}<i class="fa-solid fa-heart"></i>
-                {% elif report.purpose == 'PSICOAFECTIVO' %}<i class="fa-solid fa-brain"></i>
-                {% endif %}
+              data-rec-items="{% for rec in report.recommendations.all %}{{ rec.followup_date|date:'d/m/Y'|default:rec.date_log|date:'d/m/Y' }}|| {{ rec.content|escapejs }}|| {{ rec.created_by.get_full_name|default:rec.created_by.username|default:'Usuario'|escapejs }}{% if not forloop.last %}##{% endif %}{% endfor %}"
+              data-tooltip="{{ report.get_purpose_display }} - {{ report.get_status_display }}">
+              <i class="fa-solid fa-{% if report.purpose == 'ACADEMICO' %}book{% elif report.purpose == 'CONVIVENCIA' %}users{% elif report.purpose == 'ESPIRITUAL' %}heart{% elif report.purpose == 'PSICOAFECTIVO' %}brain{% else %}file{% endif %} text-[8px]"></i>
+              <span class="
+                {% if report.status == 'ATENDIDO' %}text-green-600
+                {% elif report.status == 'SEGUIMIENTO' %}text-amber-600
+                {% else %}text-blue-600{% endif %}">
+                {% if report.status == 'ATENDIDO' %}✓
+                {% elif report.status == 'SEGUIMIENTO' %}⟳
+                {% else %}○{% endif %}
               </span>
-<span>{{ report.get_status_display }}</span>
             </button>
           {% empty %}
             <span class="flex w-full items-center justify-center rounded-lg border border-dashed border-slate-200 bg-slate-50 py-3 text-center text-xs font-medium text-slate-400">
