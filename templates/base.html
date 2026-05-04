@@ -99,6 +99,13 @@ brand: {
         .nav-item.active { 
             background: linear-gradient(135deg, #F2C144 0%, #d4a53a 100%);
             box-shadow: 0 4px 15px rgba(242, 193, 68, 0.5);
+            color: #1a1a2e !important;
+            font-weight: 600;
+        }
+        
+        .nav-item.active .nav-text,
+        .nav-item.active i {
+            color: #1a1a2e !important;
         }
         
         .bg-gradient-brand { background: linear-gradient(135deg, #F2C144 0%, #c99b2a 100%); }
@@ -152,7 +159,24 @@ brand: {
         .bg-\[\\#3b82f6\],
         .bg-\[\#4361ee\] {
             background-color: #F2C144 !important;
-            background: linear-gradient(135deg, #F2C144 0%, #e5b13a 100%) !important;
+            background: linear-gradient(135deg, #F2C144 0%, #d4a53a 100%) !important;
+            color: #1a1a2e !important;
+            font-weight: 600 !important;
+        }
+        
+        button[type="submit"]:not(.filter-chip):hover, 
+        a.bg-\[\#2256F2\]:hover, 
+        a.bg-\[\#2563eb\"]:hover {
+            background-color: #d4a53a !important;
+            background: linear-gradient(135deg, #d4a53a 0%, #c99b2a 100%) !important;
+            color: #1a1a2e !important;
+        }
+        
+        /* Textos en botones dorados - OSCURO para contraste */
+        button[type="submit"]:not(.filter-chip), 
+        button[type="submit"]:not(.filter-chip):hover,
+        .btn-primary {
+            color: #1a1a2e !important;
         }
         
         /* Textos - dorado */
@@ -215,7 +239,7 @@ brand: {
                     <span class="nav-text flex-1">Ver reportes</span>
                     <span class="nav-badge rounded-full bg-[#3b82f6] px-2 py-0.5 text-[10px] font-bold">NEW</span>
                 </a>
-                <a href="/admin/" class="nav-item mb-3 flex items-center gap-3 rounded-xl bg-gradient-to-r from-[#4f6dff] to-[#375dfb] px-3 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-900/30 hover:shadow-xl hover:shadow-blue-900/40">
+                <a href="/admin/" class="nav-item mb-3 flex items-center gap-3 rounded-xl bg-gradient-to-r from-[#F2C144] to-[#d4a53a] px-3 py-3 text-sm font-semibold text-[#1a1a2e] shadow-lg shadow-amber-500/30 hover:shadow-xl hover:shadow-amber-500/40">
                     <i class="fa-regular fa-folder-open w-5 text-center"></i>
                     <span class="nav-text flex-1">Administración</span>
                 </a>
