@@ -221,6 +221,17 @@ brand: {
         main {
             max-width: 100% !important;
         }
+        
+        /* Fix grid containers to fill width */
+        .grid {
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+        
+        /* Ensure proper distribution */
+        [class*="grid-cols-"] {
+            width: 100%;
+        }
     </style>
 </head>
 <body class="min-h-screen bg-[#f4f7ff] text-ink">
