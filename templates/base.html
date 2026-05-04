@@ -55,15 +55,15 @@ brand: {
     </script>
     <style>
         :root {
-            /* Color principal - VERDE AZULADO (teal) más relajante para la vista */
-            --brand-primary: #0d9488;
-            --brand-light: #14b8a6;
-            --brand-subtle: #f0fdfa;
-            --brand-50: #f0fdfa;
-            --brand-100: #ccfbf1;
-            --brand-500: #14b8a6;
-            --brand-600: #0d9488;
-            --brand-700: #0f766e;
+            /* Color principal - DORADO INSTITUCIONAL */
+            --brand-primary: #F2C144;
+            --brand-light: #f5d06a;
+            --brand-subtle: #fef9e7;
+            --brand-50: #fef9e7;
+            --brand-100: #fef3c7;
+            --brand-500: #F2C144;
+            --brand-600: #e5b13a;
+            --brand-700: #c99b2a;
             --surface-primary: #ffffff;
             --surface-secondary: #f8fafc;
             --text-primary: #334155;
@@ -90,18 +90,20 @@ brand: {
         .font-muted { color: var(--text-secondary); }
         
         .sidebar-scroll::-webkit-scrollbar { width: 6px; }
-        .sidebar-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 999px; }
+        .sidebar-scroll::-webkit-scrollbar-thumb { background: rgba(242, 193, 68, 0.4); border-radius: 999px; }
         .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
         .glass-card { box-shadow: 0 24px 60px rgba(15, 23, 42, 0.06); }
         
         .nav-item { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
         .nav-item:hover { transform: translateX(4px); }
         .nav-item.active { 
-            background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
-            box-shadow: 0 4px 15px rgba(13, 148, 136, 0.4), 0 0 20px rgba(20, 184, 166, 0.3);
+            background: linear-gradient(135deg, #F2C144 0%, #d4a53a 100%);
+            box-shadow: 0 4px 15px rgba(242, 193, 68, 0.5);
         }
         
-        .bg-gradient-brand { background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%); }
+        .bg-gradient-brand { background: linear-gradient(135deg, #F2C144 0%, #c99b2a 100%); }
+        
+        .sidebar-scroll::-webkit-scrollbar-thumb { background: rgba(242, 193, 68, 0.4); border-radius: 999px; }
         .sidebar-collapsed .nav-text { display: none; }
         .sidebar-collapsed .nav-badge { display: none; }
         .sidebar-collapsed .sidebar-section-title { display: none; }
@@ -118,49 +120,49 @@ brand: {
 
         /* OVERRIDE: Cambiar todos los azules a TEAL para reducir fatiga visual */
         .bg-gradient-to-r.from-\[\\#2256F2\], .bg-gradient-to-r.from-\[\\#2563eb\], .bg-gradient-to-r.from-\[\\#3b82f6\] {
-            background: linear-gradient(to right, #14b8a6, #0d9488) !important;
+            background: linear-gradient(to right, #F2C144, #e5b13a) !important;
         }
         .via-\[\\#2563eb\], .via-\[\\#3b82f6\] {
-            --tw-gradient-via: #0f766e !important;
+            --tw-gradient-via: #c99b2a !important;
         }
         .to-\[\\#1d4ed8\], .to-\[\\#1a48d4\] {
-            --tw-gradient-to: #0f766e !important;
+            --tw-gradient-to: #c99b2a !important;
         }
         
-        /* Shadow overrides */
+        /* Shadow overrides - dorado */
         .shadow-blue-500\/30 {
-            --tw-shadow-color: rgba(13, 148, 136, 0.3);
+            --tw-shadow-color: rgba(242, 193, 68, 0.3);
             --tw-shadow: var(--tw-shadow-colored);
         }
         .shadow-blue-500\/20 {
-            --tw-shadow-color: rgba(13, 148, 136, 0.2);
+            --tw-shadow-color: rgba(242, 193, 68, 0.2);
             --tw-shadow: var(--tw-shadow-colored);
         }
         .shadow-blue-500\/ {
-            --tw-shadow-color: rgba(13, 148, 136, 0.25);
+            --tw-shadow-color: rgba(242, 193, 68, 0.25);
             --tw-shadow: var(--tw-shadow-colored);
         }
         
-        /* Botones principales */
+        /* Botones principales - DORADO INSTITUCIONAL */
         button[type="submit"]:not(.filter-chip), 
         a.bg-\[\#2256F2\], 
         a.bg-\[\#2563eb\],
         .bg-\[\#2256F2\],
         .bg-\[\#2563eb\],
-        .bg-\[\#3b82f6\],
+        .bg-\[\\#3b82f6\],
         .bg-\[\#4361ee\] {
-            background-color: #14b8a6 !important;
-            background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%) !important;
+            background-color: #F2C144 !important;
+            background: linear-gradient(135deg, #F2C144 0%, #e5b13a 100%) !important;
         }
         
-        /* Textos en azul */
+        /* Textos - dorado */
         .text-\[\#2256F2\], .text-\[\#2563eb\], .text-\[\#3b82f6\], .text-blue-600, .text-blue-700 {
-            color: #0d9488 !important;
+            color: #c99b2a !important;
         }
         
-        /* Bordes en azul */
+        /* Bordes - dorado */
         .border-\[\#2256F2\], .border-\[\#2563eb\], .focus\:border-\[\#2256F2\], .focus\:border-\[\#2563eb\] {
-            border-color: #0d9488 !important;
+            border-color: #F2C144 !important;
         }
         
         /* Hover states */
@@ -184,11 +186,11 @@ brand: {
 </head>
 <body class="min-h-screen bg-[#f4f7ff] text-ink">
     <div class="flex min-h-screen">
-        <aside id="sidebar" class="sidebar-scroll fixed left-0 top-0 z-40 h-screen w-[306px] overflow-y-auto bg-[#0f2928] text-white shadow-2xl transition-all duration-300 lg:block">
+        <aside id="sidebar" class="sidebar-scroll fixed left-0 top-0 z-40 h-screen w-[306px] overflow-y-auto bg-[#153459] text-white shadow-2xl transition-all duration-300 lg:block">
             <div class="sticky top-0 z-50 border-b border-white/10 bg-[#0b1b38]/95 px-4 py-5 backdrop-blur">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3">
-                        <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#14b8a6] to-[#0d9488] shadow-lg shadow-teal-500/30">
+                        <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#F2C144] to-[#e5b13a] shadow-lg shadow-amber-500/30">
                             <i class="fa-solid fa-school text-lg"></i>
                         </div>
                         <div class="nav-text overflow-hidden">
