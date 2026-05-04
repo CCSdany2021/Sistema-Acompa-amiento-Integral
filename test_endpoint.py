@@ -1,4 +1,5 @@
 import requests
+
 try:
     r = requests.get("http://127.0.0.1:8002/dashboard", allow_redirects=False)
     print(f"Status: {r.status_code}")

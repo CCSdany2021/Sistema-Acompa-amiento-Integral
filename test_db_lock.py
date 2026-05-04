@@ -1,4 +1,5 @@
 from src.database import SessionLocal
+
 try:
     db = SessionLocal()
     db.execute("SELECT 1")

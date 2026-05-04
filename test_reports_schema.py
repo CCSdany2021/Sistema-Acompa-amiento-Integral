@@ -2,6 +2,7 @@ from src.database import SessionLocal
 from src import models, schemas
 import traceback
 
+
 def check_reports():
     db = SessionLocal()
     try:
@@ -20,6 +21,7 @@ def check_reports():
         print(f"Query error: {e}")
     finally:
         db.close()
+
 
 if __name__ == "__main__":
     check_reports()
