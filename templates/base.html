@@ -16,29 +16,23 @@
                         mint: "#10b981",
                         coral: "#fb7185",
                         sand: "#f8fafc",
-                        brand: {
-                            50: '#eff6ff',
-                            100: '#dbeafe',
-                            200: '#bfdbfe',
-                            300: '#93c5fd',
-                            400: '#60a5fa',
-                            500: '#3b82f6',
-                            600: '#2563eb',
-                            700: '#1d4ed8',
-                            800: '#1e40af',
-                            900: '#1e3a8a',
+brand: {
+                            50: '#f0fdfa',
+                            100: '#ccfbf1',
+                            200: '#99f6e4',
+                            300: '#5eead4',
+                            400: '#2dd4bf',
+                            500: '#14b8a6',
+                            600: '#0d9488',
+                            700: '#0f766e',
+                            800: '#115e59',
+                            900: '#134e4a',
                         }
-                    },
-                    fontWeight: {
-                        normal: '400',
-                        medium: '500',
-                        semibold: '600',
-                        bold: '700',
                     },
                     boxShadow: {
                         soft: "0 10px 30px rgba(2, 6, 23, 0.08)",
-                        glow: "0 0 20px rgba(59, 130, 246, 0.5)",
-                        'glow-lg': "0 0 30px rgba(59, 130, 246, 0.6)",
+                        glow: "0 0 20px rgba(13, 148, 136, 0.5)",
+                        'glow-lg': "0 0 30px rgba(13, 148, 136, 0.6)",
                     },
                     animation: {
                         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
@@ -61,13 +55,19 @@
     </script>
     <style>
         :root {
-            --brand-primary: #2563eb;
-            --brand-light: #3b82f6;
-            --brand-subtle: #eff6ff;
+            /* Color principal - VERDE AZULADO (teal) más relajante para la vista */
+            --brand-primary: #0d9488;
+            --brand-light: #14b8a6;
+            --brand-subtle: #f0fdfa;
+            --brand-50: #f0fdfa;
+            --brand-100: #ccfbf1;
+            --brand-500: #14b8a6;
+            --brand-600: #0d9488;
+            --brand-700: #0f766e;
             --surface-primary: #ffffff;
             --surface-secondary: #f8fafc;
-            --text-primary: #1e293b;
-            --text-secondary: #475569;
+            --text-primary: #334155;
+            --text-secondary: #64748b;
             --text-muted: #94a3b8;
         }
         
@@ -97,11 +97,11 @@
         .nav-item { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
         .nav-item:hover { transform: translateX(4px); }
         .nav-item.active { 
-            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4), 0 0 20px rgba(59, 130, 246, 0.3);
+            background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
+            box-shadow: 0 4px 15px rgba(13, 148, 136, 0.4), 0 0 20px rgba(20, 184, 166, 0.3);
         }
         
-        .bg-gradient-brand { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); }
+        .bg-gradient-brand { background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%); }
         .sidebar-collapsed .nav-text { display: none; }
         .sidebar-collapsed .nav-badge { display: none; }
         .sidebar-collapsed .sidebar-section-title { display: none; }
@@ -115,15 +115,80 @@
             background-size: 200% 100%;
             animation: shimmer 1.5s infinite;
         }
+
+        /* OVERRIDE: Cambiar todos los azules a TEAL para reducir fatiga visual */
+        .bg-gradient-to-r.from-\[\\#2256F2\], .bg-gradient-to-r.from-\[\\#2563eb\], .bg-gradient-to-r.from-\[\\#3b82f6\] {
+            background: linear-gradient(to right, #14b8a6, #0d9488) !important;
+        }
+        .via-\[\\#2563eb\], .via-\[\\#3b82f6\] {
+            --tw-gradient-via: #0f766e !important;
+        }
+        .to-\[\\#1d4ed8\], .to-\[\\#1a48d4\] {
+            --tw-gradient-to: #0f766e !important;
+        }
+        
+        /* Shadow overrides */
+        .shadow-blue-500\/30 {
+            --tw-shadow-color: rgba(13, 148, 136, 0.3);
+            --tw-shadow: var(--tw-shadow-colored);
+        }
+        .shadow-blue-500\/20 {
+            --tw-shadow-color: rgba(13, 148, 136, 0.2);
+            --tw-shadow: var(--tw-shadow-colored);
+        }
+        .shadow-blue-500\/ {
+            --tw-shadow-color: rgba(13, 148, 136, 0.25);
+            --tw-shadow: var(--tw-shadow-colored);
+        }
+        
+        /* Botones principales */
+        button[type="submit"]:not(.filter-chip), 
+        a.bg-\[\#2256F2\], 
+        a.bg-\[\#2563eb\],
+        .bg-\[\#2256F2\],
+        .bg-\[\#2563eb\],
+        .bg-\[\#3b82f6\],
+        .bg-\[\#4361ee\] {
+            background-color: #14b8a6 !important;
+            background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%) !important;
+        }
+        
+        /* Textos en azul */
+        .text-\[\#2256F2\], .text-\[\#2563eb\], .text-\[\#3b82f6\], .text-blue-600, .text-blue-700 {
+            color: #0d9488 !important;
+        }
+        
+        /* Bordes en azul */
+        .border-\[\#2256F2\], .border-\[\#2563eb\], .focus\:border-\[\#2256F2\], .focus\:border-\[\#2563eb\] {
+            border-color: #0d9488 !important;
+        }
+        
+        /* Hover states */
+        .hover\:bg-\[\#2256F2\]:hover, 
+        .hover\:bg-\[\#2563eb\]:hover,
+        .hover\:bg-blue-50:hover,
+        .hover\:bg-blue-100:hover {
+            background-color: #f0fdfa !important;
+        }
+        
+        /* Badge counts and bg-blue */
+        .bg-blue-50, .bg-blue-100, .bg-blue-200 {
+            background-color: #f0fdfa !important;
+        }
+        
+        /* Focus rings */
+        .focus\:ring-blue-100\/50:focus {
+            --tw-ring-color: rgba(13, 148, 136, 0.1) !important;
+        }
     </style>
 </head>
 <body class="min-h-screen bg-[#f4f7ff] text-ink">
     <div class="flex min-h-screen">
-        <aside id="sidebar" class="sidebar-scroll fixed left-0 top-0 z-40 h-screen w-[306px] overflow-y-auto bg-gradient-to-b from-[#07162f] to-[#0a2550] text-white shadow-2xl transition-all duration-300 lg:block">
+        <aside id="sidebar" class="sidebar-scroll fixed left-0 top-0 z-40 h-screen w-[306px] overflow-y-auto bg-[#0f2928] text-white shadow-2xl transition-all duration-300 lg:block">
             <div class="sticky top-0 z-50 border-b border-white/10 bg-[#0b1b38]/95 px-4 py-5 backdrop-blur">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3">
-                        <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#3b82f6] to-[#2563eb] shadow-lg shadow-blue-500/30">
+                        <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#14b8a6] to-[#0d9488] shadow-lg shadow-teal-500/30">
                             <i class="fa-solid fa-school text-lg"></i>
                         </div>
                         <div class="nav-text overflow-hidden">
