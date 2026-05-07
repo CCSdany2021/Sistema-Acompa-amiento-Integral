@@ -1,9 +1,8 @@
-from src.database import engine
-from sqlalchemy import text
-import pandas as pd
+import sqlite3
 
-with engine.connect() as conn:
-    print("Checking columns in reports table...")
-    result = conn.execute(text("SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'reports';"))
-    df = pd.DataFrame(result.fetchall(), columns=['column_name', 'data_type'])
-    print(df)
+conn = sqlite3.connect("data/db/acompanamiento.db")
+cursor = conn.cursor()
+cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+tables = cursor.fetchall()
+print("Tables:", tables)
+conn.close()

@@ -28,6 +28,23 @@
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
   }
+
+  /* Estilos para selección de fines educativos */
+  input[name="fines_educativos"]:checked + div.academico { border-color: #2563eb; background-color: #dbeafe; }
+  input[name="fines_educativos"]:checked + div.academico i { color: #1d4ed8; transform: scale(1.1); }
+  input[name="fines_educativos"]:checked + div.academico p { color: #1e3a8a; }
+
+  input[name="fines_educativos"]:checked + div.convivencia { border-color: #d97706; background-color: #fef3c7; }
+  input[name="fines_educativos"]:checked + div.convivencia i { color: #b45309; transform: scale(1.1); }
+  input[name="fines_educativos"]:checked + div.convivencia p { color: #78350f; }
+
+  input[name="fines_educativos"]:checked + div.espiritual { border-color: #7c3aed; background-color: #ede9fe; }
+  input[name="fines_educativos"]:checked + div.espiritual i { color: #6d28d9; transform: scale(1.1); }
+  input[name="fines_educativos"]:checked + div.espiritual p { color: #4c1d95; }
+
+  input[name="fines_educativos"]:checked + div.psicoafectivo { border-color: #db2777; background-color: #fce7f3; }
+  input[name="fines_educativos"]:checked + div.psicoafectivo i { color: #be185d; transform: scale(1.1); }
+  input[name="fines_educativos"]:checked + div.psicoafectivo p { color: #831843; }
   .animate-fade-in-up { animation: fadeInUp 0.4s ease-out forwards; }
   
   .skeleton-animate {
@@ -417,7 +434,7 @@
 
       <!-- Tab: Observaciones -->
       <div id="tab-observations" class="workspace-tab-content hidden">
-        <div class="rounded-xl border-2 border-slate-200 bg-white p-5 shadow-sm">
+        <div class="rounded-l border-2 border-slate-200 bg-white p-5 shadow-sm">
           <div class="mb-4 flex items-center justify-between">
             <h4 class="text-lg font-bold text-slate-900 flex items-center gap-2">
               <i class="fa-solid fa-magnifying-glass text-blue-600"></i> Observaciones
@@ -665,7 +682,7 @@
 <div id="edit-observation-modal" class="fixed inset-0 z-[70] hidden items-center justify-center bg-slate-900/60 backdrop-blur-md p-4">
   <div class="w-full max-w-4xl transform transition-all">
     <!-- Header con gradiente -->
-    <div class="relative overflow-hidden rounded-t-3xl bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6 shadow-xl">
+    <div class="relative overflow-hidden rounded-t-l bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6 shadow-xl">
       <div class="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
       <div class="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-8 -translate-x-8"></div>
       
@@ -806,10 +823,10 @@
 <!-- ============================================ -->
 <!-- MODAL CREAR REPORTE - UX MEJORADO -->
 <!-- ============================================ -->
-<div id="create-report-modal" class="fixed inset-0 z-[60] hidden items-center justify-center bg-slate-900/60 backdrop-blur-md p-4">
-  <div class="w-full max-w-4xl transform transition-all">
+<div id="create-report-modal" class="fixed inset-0 z-[60] hidden items-center justify-center bg-slate-900/60 backdrop-blur-md p-4 ">
+  <div class="w-full max-w-6xl transform transition-all">
     <!-- Header con diseño moderno -->
-    <div class="relative overflow-hidden rounded-t-3xl bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6 shadow-xl">
+    <div class="relative overflow-hidden rounded-t-l bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6 shadow-xl">
       <div class="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full -translate-y-20 translate-x-20"></div>
       <div class="absolute bottom-0 left-0 w-28 h-28 bg-white/5 rounded-full translate-y-10 -translate-x-10"></div>
       
@@ -830,7 +847,7 @@
     </div>
 
     <!-- Body con diseño mejorado -->
-    <div class="rounded-b-3xl border-x-2 border-b-2 border-blue-200/50 bg-white shadow-2xl shadow-blue-200/30">
+    <div class="rounded-b-l border-x-2 border-b-2 border-blue-200/50 bg-white shadow-2xl shadow-blue-200/30">
       <!-- Info del estudiante destacada -->
       <div class="bg-gradient-to-r from-blue-50 to-indigo-50 px-8 py-5 border-b border-blue-100">
         <div class="flex items-center gap-4">
@@ -870,32 +887,32 @@
           <div class="grid grid-cols-2 gap-4">
             <label class="relative cursor-pointer group">
               <input type="radio" name="fines_educativos" value="ACADEMICO" class="peer sr-only">
-              <div class="rounded-2xl border-2 border-slate-200 p-4 text-center transition-all peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:border-blue-300 hover:shadow-md">
-                <i class="fa-solid fa-graduation-cap text-2xl text-blue-600 mb-2" aria-hidden="true"></i>
+              <div class="academico rounded-2xl border-2 border-slate-200 p-4 text-center transition-all hover:border-blue-300 bg-hover:blue-300 hover:shadow-md">
+                <i class="fa-solid fa-graduation-cap text-2xl text-blue-500 mb-2 transition-all" aria-hidden="true"></i>
                 <p class="text-base font-bold text-slate-800">Académico</p>
                 <p class="text-xs text-slate-500">Rendimiento escolar</p>
               </div>
             </label>
             <label class="relative cursor-pointer group">
               <input type="radio" name="fines_educativos" value="CONVIVENCIA" class="peer sr-only">
-              <div class="rounded-2xl border-2 border-slate-200 p-4 text-center transition-all peer-checked:border-amber-500 peer-checked:bg-amber-50 hover:border-amber-300 hover:shadow-md">
-                <i class="fa-solid fa-users text-2xl text-amber-600 mb-2" aria-hidden="true"></i>
+              <div class="convivencia rounded-2xl border-2 border-slate-200 p-4 text-center transition-all hover:border-amber-300 hover:shadow-md">
+                <i class="fa-solid fa-users text-2xl text-amber-500 mb-2 transition-all" aria-hidden="true"></i>
                 <p class="text-base font-bold text-slate-800">Convivencia</p>
                 <p class="text-xs text-slate-500">Relaciones interpersonales</p>
               </div>
             </label>
             <label class="relative cursor-pointer group">
               <input type="radio" name="fines_educativos" value="ESPIRITUAL" class="peer sr-only">
-              <div class="rounded-2xl border-2 border-slate-200 p-4 text-center transition-all peer-checked:border-violet-500 peer-checked:bg-violet-50 hover:border-violet-300 hover:shadow-md">
-                <i class="fa-solid fa-heart text-2xl text-violet-600 mb-2" aria-hidden="true"></i>
+              <div class="espiritual rounded-2xl border-2 border-slate-200 p-4 text-center transition-all hover:border-violet-300 hover:shadow-md">
+                <i class="fa-solid fa-heart text-2xl text-violet-500 mb-2 transition-all" aria-hidden="true"></i>
                 <p class="text-base font-bold text-slate-800">Espiritual</p>
                 <p class="text-xs text-slate-500">Desarrollo moral y ético</p>
               </div>
             </label>
             <label class="relative cursor-pointer group">
               <input type="radio" name="fines_educativos" value="PSICOAFECTIVO" class="peer sr-only">
-              <div class="rounded-2xl border-2 border-slate-200 p-4 text-center transition-all peer-checked:border-pink-500 peer-checked:bg-pink-50 hover:border-pink-300 hover:shadow-md">
-                <i class="fa-solid fa-brain text-2xl text-pink-600 mb-2" aria-hidden="true"></i>
+              <div class="psicoafectivo rounded-2xl border-2 border-slate-200 p-4 text-center transition-all hover:border-pink-300 hover:shadow-md">
+                <i class="fa-solid fa-brain text-2xl text-pink-500 mb-2 transition-all" aria-hidden="true"></i>
                 <p class="text-base font-bold text-slate-800">Psicoafectivo</p>
                 <p class="text-xs text-slate-500">Estado emocional</p>
               </div>
@@ -946,8 +963,7 @@
             Cancelar
           </button>
           <button type="submit"
-            class="flex items-center gap-3 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-3.5 text-base font-bold text-white shadow-lg hover:shadow-xl hover:translate-y-[-2px] transition-all cursor-pointer">
-            <i class="fa-solid fa-plus-circle" aria-hidden="true"></i>
+            class="flex items-center gap-3 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-3.5 text-base font-bold text-white shadow-lg hover:shadow-xl hover:translate-y-[-2px] transition-all cursor-pointer text-white">            
             Crear reporte
           </button>
         </div>
