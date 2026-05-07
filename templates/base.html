@@ -287,55 +287,55 @@ brand: {
 </head>
 <body class="min-h-screen bg-gray-50 text-slate-900">
     <div class="flex min-h-screen">
-        <aside id="sidebar" class="sidebar-scroll fixed left-0 top-0 z-40 h-screen w-[280px] overflow-y-auto bg-white border-r border-slate-200 text-slate-700 shadow-lg transition-all duration-300 lg:block">
-            <div class="sticky top-0 z-50 border-b border-slate-200 bg-white px-4 py-4 backdrop-blur">
+        <aside id="sidebar" class="sidebar-scroll fixed left-0 top-0 z-40 h-screen w-[280px] overflow-y-auto bg-[#1e3a5f] border-r border-[#2d5a8c] text-white shadow-lg transition-all duration-300 lg:block">
+            <div class="sticky top-0 z-50 border-b border-white/10 bg-[#172e4d] px-4 py-4 backdrop-blur">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3">
-                        <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-md">
+                        <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-400 to-blue-500 shadow-md">
                             <i class="fa-solid fa-school text-lg text-white"></i>
                         </div>
                         <div class="nav-text overflow-hidden">
-                            <h1 class="text-xl font-bold tracking-tight text-slate-900">SAI</h1>
-                            <p class="text-xs text-slate-500 truncate">Sistema Acompañamiento Integral</p>
+                            <h1 class="text-xl font-bold tracking-tight text-white">SAI</h1>
+                            <p class="text-xs text-blue-200 truncate">Sistema Acompañamiento</p>
                         </div>
                     </div>
-                    <button id="sidebar-toggle" class="nav-text rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-700 lg:block transition-colors">
+                    <button id="sidebar-toggle" class="nav-text rounded-lg p-2 text-white/70 hover:bg-white/10 hover:text-white lg:block transition-colors">
                         <i class="fa-solid fa-sidebar text-sm"></i>
                     </button>
                 </div>
             </div>
-            
+
             <div class="px-3 py-4">
-                <a href="/" class="nav-item mb-1 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-100 {% if request.path == '/' %}active{% endif %}" data-tooltip="Panel principal">
+                <a href="/" class="nav-item mb-1 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/90 hover:bg-[#F2C144]/20 {% if request.path == '/' %}active{% endif %}" data-tooltip="Panel principal">
                     <i class="fa-solid fa-house w-5 text-center"></i>
                     <span class="nav-text flex-1">Panel principal</span>
                 </a>
-                <a href="{% url 'acompanamiento:list' %}" class="nav-item mb-1 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-100 {% if 'report' in request.path %}active{% endif %}" data-tooltip="Ver reportes">
+                <a href="{% url 'acompanamiento:list' %}" class="nav-item mb-1 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/90 hover:bg-[#F2C144]/20 {% if 'report' in request.path %}active{% endif %}" data-tooltip="Ver reportes">
                     <i class="fa-regular fa-file-lines w-5 text-center"></i>
                     <span class="nav-text flex-1">Ver reportes</span>
-                    <span class="nav-badge rounded-full bg-blue-500 px-2 py-0.5 text-[10px] font-bold text-white">NEW</span>
+                    <span class="nav-badge rounded-full bg-blue-400 px-2 py-0.5 text-[10px] font-bold text-white">NEW</span>
                 </a>
-                <a href="/admin/" class="nav-item mb-1 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-100" data-tooltip="Administración">
+                <a href="/admin/" class="nav-item mb-1 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/90 hover:bg-[#F2C144]/20" data-tooltip="Administración">
                     <i class="fa-regular fa-folder-open w-5 text-center"></i>
                     <span class="nav-text flex-1">Administración</span>
                 </a>
 
                 <div class="sidebar-section-title my-4 px-3">
-                    <p class="nav-text text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-400">Cursos por sección</p>
+                    <p class="nav-text text-[11px] font-semibold uppercase tracking-[0.24em] text-blue-300">Cursos por sección</p>
                 </div>
 
-                <details class="nav-item mb-2 rounded-lg bg-slate-50 border border-slate-200" data-tooltip="Jardín a Tercero">
-                    <summary class="cursor-pointer list-none flex items-center justify-between rounded-lg px-3 py-2.5 font-semibold text-slate-800 hover:bg-slate-100 transition-colors">
+                <details class="nav-item mb-2 rounded-lg bg-white/5 border border-white/10" data-tooltip="Jardín a Tercero">
+                    <summary class="cursor-pointer list-none flex items-center justify-between rounded-lg px-3 py-2.5 font-semibold text-white hover:bg-[#F2C144]/20 transition-colors">
                         <span class="flex items-center gap-2">
-                            <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-100 text-xs font-bold text-emerald-700">J</span>
+                            <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500 text-xs font-bold text-white">J</span>
                             <span class="nav-text text-sm">Jardín a Tercero</span>
                         </span>
-                        <i class="fa-solid fa-chevron-down nav-text text-xs transition-transform details-chevron text-slate-500"></i>
+                        <i class="fa-solid fa-chevron-down nav-text text-xs transition-transform details-chevron text-white/70"></i>
                     </summary>
                     <div class="mt-2 space-y-0.5 pl-2">
-                        <a class="nav-item flex items-center justify-between rounded-lg px-3 py-2 hover:bg-white transition-all {% if request.GET.course == 'JR01' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=Jard%C3%ADn%20a%20Tercero&course=JR01" data-tooltip="JR01">
-                            <span class="flex items-center gap-2"><span class="flex h-6 w-6 items-center justify-center rounded-md bg-slate-200 text-[10px] font-bold text-slate-700">J</span><span class="nav-text text-sm">JR01</span></span>
-                            <span class="nav-badge rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-semibold text-slate-600">12</span>
+                        <a class="nav-item flex items-center justify-between rounded-lg px-3 py-2 text-white/90 hover:bg-[#F2C144] hover:text-[#1e3a5f] transition-all {% if request.GET.course == 'JR01' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=Jard%C3%ADn%20a%20Tercero&course=JR01" data-tooltip="JR01">
+                            <span class="flex items-center gap-2"><span class="flex h-6 w-6 items-center justify-center rounded-md bg-white/20 text-[10px] font-bold">J</span><span class="nav-text text-sm">JR01</span></span>
+                            <span class="nav-badge rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-semibold">12</span>
                         </a>
                         <a class="nav-item flex items-center justify-between rounded-lg px-3 py-2.5 hover:bg-white/8 {% if request.GET.course == 'TR01' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=Jard%C3%ADn%20a%20Tercero&course=TR01">
                             <span class="flex items-center gap-3"><span class="flex h-7 w-7 items-center justify-center rounded-full bg-white/12 text-[10px] font-bold">T</span><span class="nav-text text-sm">TR01</span></span>
