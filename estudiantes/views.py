@@ -11,19 +11,24 @@ from acompanamiento.models import Student, Report, ReportPurpose, ReportStatus
 
 INSTITUTIONAL_STRUCTURE = [
     {
-        "name": "Jardín a Tercero",
+        "name": "Preescolar",
         "key": "preescolar",
         "courses": ["JR01", "TR01", "101", "102", "201", "202", "301", "302"],
     },
     {
-        "name": "Cuarto a Séptimo",
-        "key": "primaria",
+        "name": "Primaria",
+        "key": "basica_primaria",
         "courses": ["401", "402", "501", "502", "503", "601", "602", "603", "701", "702", "703"],
     },
     {
-        "name": "Octavo a Undécimo",
-        "key": "bachillerato",
-        "courses": ["901", "902", "903", "1001", "1002", "1003", "1101", "1102", "1103"],
+        "name": "Secundaria",
+        "key": "basica_secundaria",
+        "courses": ["801", "802", "803", "901", "902", "903"],
+    },
+    {
+        "name": "Media",
+        "key": "media_academica",
+        "courses": ["1001", "1002", "1003", "1101", "1102", "1103"],
     },
 ]
 
@@ -216,9 +221,36 @@ class StudentListView(ListView):
         context["students_count"] = self.get_queryset().count()
         context["report_purposes"] = list(ReportPurpose.choices)
         context["staff_users"] = get_user_model().objects.filter(is_active=True).order_by("first_name", "last_name", "username")
+        context["cuarto_septimo_courses"] = [
+            {'code': '401', 'section': 'basica_primaria'},
+            {'code': '402', 'section': 'basica_primaria'},
+            {'code': '501', 'section': 'basica_primaria'},
+            {'code': '502', 'section': 'basica_primaria'},
+            {'code': '503', 'section': 'basica_primaria'},
+            {'code': '601', 'section': 'basica_secundaria'},
+            {'code': '602', 'section': 'basica_secundaria'},
+            {'code': '603', 'section': 'basica_secundaria'},
+            {'code': '701', 'section': 'basica_secundaria'},
+            {'code': '702', 'section': 'basica_secundaria'},
+            {'code': '703', 'section': 'basica_secundaria'},
+        ]
+        context["octavo_once_courses"] = [
+            {'code': '801', 'section': 'basica_secundaria'},
+            {'code': '802', 'section': 'basica_secundaria'},
+            {'code': '803', 'section': 'basica_secundaria'},
+            {'code': '901', 'section': 'basica_secundaria'},
+            {'code': '902', 'section': 'basica_secundaria'},
+            {'code': '903', 'section': 'basica_secundaria'},
+            {'code': '1001', 'section': 'media_academica'},
+            {'code': '1002', 'section': 'media_academica'},
+            {'code': '1003', 'section': 'media_academica'},
+            {'code': '1101', 'section': 'media_academica'},
+            {'code': '1102', 'section': 'media_academica'},
+            {'code': '1103', 'section': 'media_academica'},
+        ]
         return context
 
 def sync_students(request):
     count = Student.sync_from_api()
-    messages.success(request, f'✓ {count} estudiantes sincronizados desde API')
+    messages.success(request, f'[OK] {count} estudiantes sincronizados desde API')
     return redirect('estudiantes:list')

@@ -73,7 +73,7 @@ class Student(models.Model):
 
     @staticmethod
     def sync_from_api():
-        """Sincroniza estudiantes desde Sistema Gestor Educativo"""
+        """Sincroniza estudiantes desde Sistema Gestor Educativo (con paginación)"""
         import requests
         from django.conf import settings
 
@@ -82,38 +82,72 @@ class Student(models.Model):
             headers = {'X-API-Key': settings.GESTOR_EDUCATIVO_API_KEY}
             params = {'estado': 'activo'}
 
-            response = requests.get(url, headers=headers, params=params, timeout=10)
-            response.raise_for_status()
-
-            data = response.json()
-            students_data = data if isinstance(data, list) else data.get('results', [])
-
             count = 0
-            for student in students_data:
-                # Mapear grado desde API
-                grado_api = student.get('grado', '').upper()
-                grado_map = {
-                    'PREESCOLAR': Grado.PREESCOLAR,
-                    'PRIMARIA': Grado.PRIMARIA,
-                    'BACHILLERATO': Grado.BACHILLERATO,
-                }
-                grado = grado_map.get(grado_api, Grado.PRIMARIA)
+            page = 1
 
-                Student.objects.update_or_create(
-                    code=student.get('codigo_estudiante', ''),
-                    defaults={
-                        'full_name': student.get('nombre_completo', 'Sin Nombre'),
-                        'email': student.get('email', ''),
-                        'section': student.get('seccion', ''),
-                        'grado': grado,
-                        'external_id': str(student.get('uuid', student.get('id', ''))),
+            while url:
+                response = requests.get(url, headers=headers, params=params, timeout=10, verify=False)
+                response.raise_for_status()
+
+                data = response.json()
+                students_data = data if isinstance(data, list) else data.get('results', [])
+
+                for student in students_data:
+                    grado_api = student.get('grado', '').upper()
+                    grado_map = {
+                        'PREESCOLAR': Grado.PREESCOLAR,
+                        'PRIMARIA': Grado.PRIMARIA,
+                        'BACHILLERATO': Grado.BACHILLERATO,
+                        'JARDIN': Grado.PREESCOLAR,
+                        'TRANSICION': Grado.PREESCOLAR,
                     }
-                )
-                count += 1
+                    grado = grado_map.get(grado_api, Grado.PRIMARIA)
 
+                    # Obtener o crear la seccion
+                    seccion_name = student.get('seccion', '')
+                    section_obj = None
+                    if seccion_name:
+                        section_obj, _ = Section.objects.get_or_create(
+                            name=seccion_name,
+                            defaults={'grado': grado}
+                        )
+
+                    # Obtener o crear el curso
+                    course_obj = None
+                    curso_code = student.get('curso', '')
+                    if curso_code and section_obj:
+                        course_obj, _ = Course.objects.get_or_create(
+                            section=section_obj,
+                            name=curso_code
+                        )
+
+                    Student.objects.update_or_create(
+                        code=student.get('codigo_estudiante', ''),
+                        defaults={
+                            'full_name': student.get('nombre_completo', 'Sin Nombre'),
+                            'email': student.get('email', ''),
+                            'section': student.get('seccion', ''),
+                            'grado': grado,
+                            'course': course_obj,
+                            'external_id': str(student.get('uuid', student.get('id', ''))),
+                        }
+                    )
+                    count += 1
+
+                # Ir a la siguiente página
+                url = data.get('next') if isinstance(data, dict) else None
+                if url:
+                    page += 1
+                    print(f"Sincronizando pagina {page}... ({count} estudiantes procesados)")
+                    # Usar la URL directa del siguiente link, sin params adicionales
+                    params = {}
+
+            print(f"[OK] Sincronizacion completada: {count} estudiantes")
             return count
         except Exception as e:
-            print(f"Error sincronizando: {e}")
+            print(f"[ERROR] Error sincronizando: {e}")
+            import traceback
+            traceback.print_exc()
             return 0
 
 class ReportStatus(models.TextChoices):

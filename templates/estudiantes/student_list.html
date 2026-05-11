@@ -267,10 +267,10 @@
           class="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md hover:bg-blue-700"
           data-modal-target="create-report-modal"
           data-student-id="{{ student.id }}"
-          data-student-name="{{ student.full_name }}"
+          data-student-name="{{ student.full_name|escapejs }}"
           data-student-code="{{ student.code }}"
-          data-student-course="{{ student.course.name|default:student.section|default:'-' }}"
-          data-student-section="{{ student.course.section.name|default:student.section|default:'-' }}">
+          data-student-course="{{ student.course.name|default:student.section|default:'Sin curso'|escapejs }}"
+          data-student-section="{{ student.course.section.name|default:student.section|default:'Sin seccion'|escapejs }}">
           <i class="fa-solid fa-plus-circle text-lg"></i>
           <span>Nuevo reporte</span>
         </button>
