@@ -163,15 +163,14 @@ class ReportPurpose(models.TextChoices):
 
 
 class UserRole(models.TextChoices):
-    DOCENTE = "DOCENTE", "Docente"
-    COORDINADOR = "COORDINADOR", "Coordinador"
-    ADMIN = "ADMIN", "Administrador"
+    ADMIN_GLOBAL = "ADMIN_GLOBAL", "Admin Global"
+    ADMIN_SECCION = "ADMIN_SECCION", "Admin de Sección"
 
 
 class Educador(models.Model):
     """Perfil de usuario con rol y alcance por sección."""
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='educador')
-    rol = models.CharField(max_length=20, choices=UserRole.choices, default=UserRole.DOCENTE)
+    rol = models.CharField(max_length=20, choices=UserRole.choices, default=UserRole.ADMIN_SECCION)
     seccion_asignada = models.ForeignKey(
         Section,
         on_delete=models.SET_NULL,
@@ -179,6 +178,15 @@ class Educador(models.Model):
         blank=True,
         related_name='educadores'
     )
+    # Soporte multi-sección: reemplaza seccion_asignada (se mantiene por compatibilidad)
+    secciones = models.ManyToManyField(
+        Section,
+        blank=True,
+        related_name='educadores_m2m',
+        verbose_name='Secciones asignadas'
+    )
+    fines_educativos = models.JSONField(default=list, blank=True)
+    acceso_global = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -218,7 +226,11 @@ class Report(models.Model):
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='reports_created')
     assigned_to = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='reports_assigned')
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    # Trazabilidad histórica
+    year = models.IntegerField(default=2026, db_index=True)
+    external_id = models.CharField(max_length=50, blank=True, db_index=True, help_text="ID del sistema origen (Power Apps)")
+
+    created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:

@@ -4,203 +4,225 @@
 
 {% block extra_head %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  .info-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(0,0,0,.06)}
+  .info-row:last-child{border-bottom:none}
+  .info-label{font-size:12px;font-weight:600;color:#64748b}
+  .info-value{font-size:13px;font-weight:700;color:#0f172a;text-align:right}
+  .card-title{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;display:flex;align-items:center;gap:8px;padding-bottom:12px;margin-bottom:12px}
+  /* Timeline items */
+  .tl-item{background:#fff;border-radius:5px;padding:12px 14px;box-shadow:0 1px 3px rgba(0,0,0,.06);border:1px solid}
+  .tl-badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:5px}
+  .tl-created{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;padding:2px 8px;border-radius:5px;background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0}
+</style>
 {% endblock %}
 
 {% block content %}
 
-<!-- Header del Reporte -->
-<div class="mb-8 p-6 rounded-2xl border-2 bg-[#27418C] text-white shadow-xl">    
-  <div class="flex items-start justify-between">
+<!-- Header -->
+<div class="mb-6 rounded-2xl bg-[#023059] text-white p-6 shadow-lg">
+  <div class="flex items-center justify-between">
     <div class="flex items-center gap-4">
-      <div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm text-3xl font-bold">
+      <div class="flex h-14 w-14 items-center justify-center rounded-xl bg-white/15 text-2xl font-bold">
         {{ report.student.full_name|slice:":1"|upper }}
       </div>
       <div>
-        <h1 class="text-2xl font-extrabold">{{ report.student.full_name }}</h1>
-        <p class="text-blue-100 font-medium">{{ report.student.code }} | {{ report.student.grado|default:"Sin grado" }}</p>
+        <div class="text-xl font-extrabold">{{ report.student.full_name }}</div>
+        <div class="text-blue-200 text-sm font-medium mt-0.5">{{ report.student.code }} · {{ report.student.grado|default:"Sin grado" }}</div>
       </div>
     </div>
-    <div class="mb-6">
-        <a href="{% url 'acompanamiento:list' %}" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-slate-200 text-base font-bold text-white hover:text-black
-         hover:bg-slate-100 transition-colors">
-          <i class="fa-solid fa-arrow-left"></i> Volver a reportes
-        </a>
-      </div>
-    <span class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold bg-white/20 backdrop-blur-sm
-      {% if report.status == 'ATENDIDO' %}bg-green-500 text-white
-      {% elif report.status == 'SEGUIMIENTO' %}bg-yellow-500 text-white
-      {% else %}bg-blue-500 text-white{% endif %}">
-      {{ report.get_status_display }}
-    </span>
+    <div class="flex items-center gap-3">
+      <span class="px-4 py-1.5 rounded-full text-xs font-bold
+        {% if report.status == 'ATENDIDO' %}bg-green-500/30 text-green-200 border border-green-400/40
+        {% elif report.status == 'SEGUIMIENTO' %}bg-amber-500/30 text-amber-200 border border-amber-400/40
+        {% else %}bg-red-500/30 text-red-200 border border-red-400/40{% endif %}">
+        {{ report.get_status_display }}
+      </span>
+      <a href="{% url 'acompanamiento:list' %}" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-sm font-semibold text-white transition">
+        <i class="fa-solid fa-arrow-left text-xs"></i> Volver
+      </a>
+    </div>
   </div>
 </div>
 
-<!-- Info Principal -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-  <!-- Datos del Estudiante -->
-  <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-    <h3 class="text-lg font-extrabold text-slate-900 mb-4 flex items-center gap-2">
-      <i class="fa-solid fa-user-graduate text-slate-600"></i> Datos del Estudiante
-    </h3>
-    <div class="space-y-3">
-      <div class="flex justify-between py-2 border-b border-slate-100">
-        <span class="text-sm font-medium text-slate-500">Nombre</span>
-        <span class="text-sm font-bold text-slate-800">{{ report.student.full_name }}</span>
+<!-- Cards de info -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5">
+
+  <!-- Datos del Estudiante — azul cielo -->
+  <div class="rounded-xl border border-sky-200 bg-gradient-to-br from-sky-50 to-blue-50 p-5 shadow-sm">
+    <div class="card-title border-b border-sky-200 text-sky-700">
+      <i class="fa-solid fa-user-graduate text-sky-500"></i> Datos del Estudiante
+    </div>
+    <div>
+      <div class="info-row">
+        <span class="info-label">Nombre</span>
+        <span class="info-value">{{ report.student.full_name }}</span>
       </div>
-      <div class="flex justify-between py-2 border-b border-slate-100">
-        <span class="text-sm font-medium text-slate-500">Código</span>
-        <span class="text-sm font-bold text-slate-800">{{ report.student.code }}</span>
+      <div class="info-row">
+        <span class="info-label">Código</span>
+        <span class="info-value">{{ report.student.code }}</span>
       </div>
-      <div class="flex justify-between py-2 border-b border-slate-100">
-        <span class="text-sm font-medium text-slate-500">Grado</span>
-        <span class="text-sm font-bold text-slate-800">{{ report.student.grado|default:"-" }}</span>
+      <div class="info-row">
+        <span class="info-label">Grado</span>
+        <span class="info-value">{{ report.student.grado|default:"-" }}</span>
       </div>
-      <div class="flex justify-between py-2">
-        <span class="text-sm font-medium text-slate-500">Sección</span>
-        <span class="text-sm font-bold text-slate-800">{{ report.student.section|default:"-" }}</span>
+      <div class="info-row">
+        <span class="info-label">Sección</span>
+        <span class="info-value">{{ report.student.section|default:"-" }}</span>
       </div>
     </div>
   </div>
 
-  <!-- Datos del Reporte -->
-  <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-    <h3 class="text-lg font-extrabold text-slate-900 mb-4 flex items-center gap-2">
-      <i class="fa-solid fa-file-lines text-slate-600"></i> Datos del Reporte
-    </h3>
-    <div class="space-y-3">
-      <div class="flex justify-between py-2 border-b border-slate-100">
-        <span class="text-sm font-medium text-slate-500">Fin Educativo</span>
-        <span class="text-sm font-bold text-slate-800">{{ report.get_purpose_display|default:"-" }}</span>
+  <!-- Datos del Reporte — violeta -->
+  <div class="rounded-xl border border-violet-200 bg-gradient-to-br from-violet-50 to-purple-50 p-5 shadow-sm">
+    <div class="card-title border-b border-violet-200 text-violet-700">
+      <i class="fa-solid fa-file-lines text-violet-500"></i> Datos del Reporte
+    </div>
+    <div>
+      <div class="info-row">
+        <span class="info-label">Fin Educativo</span>
+        <span class="info-value">{{ report.get_purpose_display|default:"-" }}</span>
       </div>
-      <div class="flex justify-between py-2 border-b border-slate-100">
-        <span class="text-sm font-medium text-slate-500">Período</span>
-        <span class="text-sm font-bold text-amber-600">{{ report.academic_period|default:"-" }}</span>
+      <div class="info-row">
+        <span class="info-label">Período</span>
+        <span class="info-value" style="color:#d97706">{{ report.academic_period|default:"-" }}</span>
       </div>
-      <div class="flex justify-between py-2 border-b border-slate-100">
-        <span class="text-sm font-medium text-slate-500">Creado</span>
-        <span class="text-sm font-bold text-slate-800">{{ report.created_at|date:"d/m/Y" }}</span>
+      <div class="info-row">
+        <span class="info-label">Creado</span>
+        <span class="info-value">{{ report.created_at|date:"d/m/Y" }}</span>
       </div>
-      <div class="flex justify-between py-2">
-        <span class="text-sm font-medium text-slate-500">Cumplió</span>
-        <span class="text-sm font-bold {% if report.is_accomplished %}text-green-600{% else %}text-red-600{% endif %}">
-          {% if report.is_accomplished %}<i class="fa-solid fa-check-circle"></i> Sí{% else %}<i class="fa-solid fa-xmark-circle"></i> No{% endif %}
+      <div class="info-row">
+        <span class="info-label">Cumplió</span>
+        <span class="info-value {% if report.is_accomplished %}text-green-600{% else %}text-red-500{% endif %}">
+          {% if report.is_accomplished %}<i class="fa-solid fa-circle-check"></i> Sí{% else %}<i class="fa-solid fa-circle-xmark"></i> No{% endif %}
         </span>
       </div>
     </div>
   </div>
 
-  <!-- Equipo -->
-  <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-    <h3 class="text-lg font-extrabold text-slate-900 mb-4 flex items-center gap-2">
-      <i class="fa-solid fa-users text-slate-600"></i> Equipo
-    </h3>
+  <!-- Equipo — ámbar -->
+  <div class="rounded-xl border border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 p-5 shadow-sm">
+    <div class="card-title border-b border-amber-200 text-amber-700">
+      <i class="fa-solid fa-users text-amber-500"></i> Equipo
+    </div>
     <div class="space-y-3">
-      <div class="flex items-center gap-3 py-2 border-b border-slate-100">
-        <div class="flex h-8 w-8 items-center justify-center rounded-full bg-violet-100 text-violet-600">
+      <div class="flex items-center gap-3 py-1">
+        <div class="flex h-8 w-8 items-center justify-center rounded-full bg-violet-100 text-violet-600 flex-shrink-0">
           <i class="fa-solid fa-paper-plane text-xs"></i>
         </div>
         <div>
-          <p class="text-xs text-slate-500">Remitente</p>
-          <p class="text-sm font-bold text-slate-800">{{ report.created_by.get_full_name|default:report.created_by.username|default:"-" }}</p>
+          <div class="info-label">Remitente</div>
+          <div class="info-value text-left" style="text-align:left">{{ report.created_by.get_full_name|default:report.created_by.username|default:"-" }}</div>
         </div>
       </div>
-      <div class="flex items-center gap-3 py-2">
-        <div class="flex h-8 w-8 items-center justify-center rounded-full bg-amber-100 text-amber-600">
+      <div class="flex items-center gap-3 py-1">
+        <div class="flex h-8 w-8 items-center justify-center rounded-full bg-amber-100 text-amber-600 flex-shrink-0">
           <i class="fa-solid fa-user-check text-xs"></i>
         </div>
         <div>
-          <p class="text-xs text-slate-500">Encargado</p>
-          <p class="text-sm font-bold text-slate-800">{{ report.assigned_to.get_full_name|default:report.assigned_to.username|default:"-" }}</p>
+          <div class="info-label">Encargado</div>
+          <div class="info-value text-left" style="text-align:left">{{ report.assigned_to.get_full_name|default:report.assigned_to.username|default:"-" }}</div>
         </div>
       </div>
     </div>
   </div>
+
 </div>
 
 <!-- Objetivo -->
-<div class="mb-8 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-  <h3 class="text-lg font-extrabold text-slate-900 mb-3 flex items-center gap-2">
-    <i class="fa-solid fa-bullseye text-[#153459]"></i> Objetivo del Acompañamiento
-  </h3>
-  <p class="text-base leading-relaxed text-slate-700 font-medium">{{ report.objective|default:"Sin objetivo registrado." }}</p>
+<div class="mb-5 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+  <div class="card-title border-b border-slate-100 text-slate-600">
+    <i class="fa-solid fa-bullseye text-[#023059]"></i> Objetivo del Acompañamiento
+  </div>
+  <p class="text-sm leading-relaxed text-slate-700 font-medium">{{ report.objective|default:"Sin objetivo registrado." }}</p>
 </div>
 
-<!-- Trazabilidad - Observaciones -->
-<div class="mb-8 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-  <div class="flex items-center justify-between mb-4">
-    <h3 class="text-xl font-extrabold text-slate-900 flex items-center gap-2">
-      <i class="fa-solid fa-eye "></i>  Observaciones
-      <span class="px-3 py-1 rounded-full text-sm font-bold bg-blue-100 text-blue-700">{{ report.observations.count }}</span>
-    </h3>
+<!-- Observaciones -->
+<div class="mb-5 rounded-xl border border-blue-200 bg-gradient-to-br from-blue-50/60 to-slate-50 p-5 shadow-sm">
+  <div class="card-title border-b border-blue-100 text-blue-700 mb-4">
+    <i class="fa-solid fa-eye text-blue-500"></i> Observaciones
+    <span class="ml-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-700">{{ report.observations.count }}</span>
   </div>
-  
+
   {% if report.observations.all %}
-  <div class="space-y-0">
+  <div class="space-y-3">
     {% for obs in report.observations.all %}
     <div class="relative pl-5">
-      <div class="absolute left-0 top-2 w-3 h-3 rounded-full bg-blue-500"></div>
-      <div class="border-l-4 border-blue-200 ml-1 pl-4 pb-4">
-        <div class="flex flex-wrap items-center gap-3 mb-2">
-          <span class="text-base font-extrabold text-slate-900">{{ obs.created_by.get_full_name|default:obs.created_by.username }}</span>
-          <span class="text-sm font-bold px-3 py-0.5 rounded-lg bg-blue-100 text-blue-700">
-            {% if obs.followup_date %}{{ obs.followup_date|date:"d/m/Y" }}{% else %}{{ obs.date_log|date:"d/m/Y" }}{% endif %}
-          </span>
-          {% if report.academic_period %}
-          <span class="text-xs font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-700">{{ report.academic_period }}</span>
-          {% endif %}
+      <div class="absolute left-0 top-3 w-3 h-3 rounded-full bg-blue-500 ring-2 ring-white shadow"></div>
+      <div class="border-l-2 border-blue-200 ml-1 pl-4 pb-1">
+        <div class="tl-item border-blue-100">
+          <div class="flex flex-wrap items-center gap-2 mb-2">
+            <span class="text-sm font-extrabold text-slate-900">{{ obs.created_by.get_full_name|default:obs.created_by.username }}</span>
+            <span class="tl-badge bg-blue-100 text-blue-700">
+              {% if obs.followup_date %}{{ obs.followup_date|date:"d/m/Y" }}{% else %}{{ obs.date_log|date:"d/m/Y" }}{% endif %}
+            </span>
+            <span class="tl-created"><i class="fa-regular fa-clock" style="font-size:9px"></i> Creada: {{ obs.date_log|date:"d/m/Y H:i" }}</span>
+            {% if report.academic_period %}
+            <span class="tl-badge bg-amber-100 text-amber-700">{{ report.academic_period }}</span>
+            {% endif %}
+          </div>
+          <p class="text-sm leading-relaxed text-slate-700">{{ obs.content }}</p>
         </div>
-        <p class="text-base leading-relaxed text-slate-700">{{ obs.content }}</p>
       </div>
     </div>
     {% endfor %}
   </div>
   {% else %}
-  <div class="rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 p-8 text-center">
-    <p class="text-base text-slate-500 font-medium">Sin observaciones registradas</p>
+  <div class="rounded-[5px] border-2 border-dashed border-blue-200 bg-blue-50/50 p-6 text-center">
+    <p class="text-sm text-slate-500 font-medium">Sin observaciones registradas</p>
   </div>
   {% endif %}
 </div>
 
-<!-- Trazabilidad - Recomendaciones -->
-<div class="mb-8 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-  <div class="flex items-center justify-between mb-4">
-    <h3 class="text-xl font-extrabold text-slate-900 flex items-center gap-2">
-      <i class="fa-solid fa-lightbulb text-green-500"></i> Recomendaciones
-      <span class="px-3 py-1 rounded-full text-sm font-bold bg-green-100 text-green-700">{{ report.recommendations.count }}</span>
-    </h3>
+<!-- Recomendaciones -->
+<div class="mb-6 rounded-xl border border-emerald-200 bg-gradient-to-br from-emerald-50/60 to-slate-50 p-5 shadow-sm">
+  <div class="card-title border-b border-emerald-100 text-emerald-700 mb-4">
+    <i class="fa-solid fa-lightbulb text-emerald-500"></i> Recomendaciones
+    <span class="ml-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">{{ report.recommendations.count }}</span>
   </div>
-  
+
   {% if report.recommendations.all %}
-  <div class="space-y-0">
+  <div class="space-y-3">
     {% for rec in report.recommendations.all %}
     <div class="relative pl-5">
-      <div class="absolute left-0 top-2 w-3 h-3 rounded-full bg-green-500"></div>
-      <div class="border-l-4 border-green-200 ml-1 pl-4 pb-4">
-        <div class="flex flex-wrap items-center gap-3 mb-2">
-          <span class="text-base font-extrabold text-slate-900">{{ rec.created_by.get_full_name|default:rec.created_by.username }}</span>
-          <span class="text-sm font-bold px-3 py-0.5 rounded-lg bg-green-100 text-green-700">
-            {% if rec.followup_date %}{{ rec.followup_date|date:"d/m/Y" }}{% else %}{{ rec.date_log|date:"d/m/Y" }}{% endif %}
-          </span>
-          {% if report.academic_period %}
-          <span class="text-xs font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-700">{{ report.academic_period }}</span>
-          {% endif %}
+      <div class="absolute left-0 top-3 w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-white shadow"></div>
+      <div class="border-l-2 border-emerald-200 ml-1 pl-4 pb-1">
+        <div class="tl-item border-emerald-100">
+          <div class="flex flex-wrap items-center gap-2 mb-2">
+            <span class="text-sm font-extrabold text-slate-900">{{ rec.created_by.get_full_name|default:rec.created_by.username }}</span>
+            <span class="tl-badge bg-emerald-100 text-emerald-700">
+              {% if rec.followup_date %}{{ rec.followup_date|date:"d/m/Y" }}{% else %}{{ rec.date_log|date:"d/m/Y" }}{% endif %}
+            </span>
+            <span class="tl-created"><i class="fa-regular fa-clock" style="font-size:9px"></i> Creada: {{ rec.date_log|date:"d/m/Y H:i" }}</span>
+            {% if report.academic_period %}
+            <span class="tl-badge bg-amber-100 text-amber-700">{{ report.academic_period }}</span>
+            {% endif %}
+          </div>
+          <p class="text-sm leading-relaxed text-slate-700">{{ rec.content }}</p>
         </div>
-        <p class="text-base leading-relaxed text-slate-700">{{ rec.content }}</p>
       </div>
     </div>
     {% endfor %}
   </div>
   {% else %}
-  <div class="rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 p-8 text-center">
-    <p class="text-base text-slate-500 font-medium">Sin recomendaciones registradas</p>
+  <div class="rounded-[5px] border-2 border-dashed border-emerald-200 bg-emerald-50/50 p-6 text-center">
+    <p class="text-sm text-slate-500 font-medium">Sin recomendaciones registradas</p>
   </div>
   {% endif %}
 </div>
-   
+
+<!-- Acciones -->
+<div class="flex justify-end gap-4 pt-4 border-t border-slate-200">
+  {% if report.status != 'ATENDIDO' %}
+  <button type="button" id="btn-close-case" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 text-sm font-bold text-white shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all">
+    <i class="fa-solid fa-check-circle mr-2"></i> Cerrar Caso
+  </button>
+  {% endif %}
+</div>
+
 <!-- Modal Cerrar Caso -->
 <div id="close-case-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/60 backdrop-blur-md p-4">
   <div class="w-full max-w-3xl transform transition-all">
-    <!-- Header -->
     <div class="relative overflow-hidden rounded-t-3xl bg-gradient-to-r from-green-600 to-emerald-500 px-8 py-6 shadow-xl shadow-green-500/20">
       <div class="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
       <div class="relative flex items-start justify-between">
@@ -218,20 +240,16 @@
         </button>
       </div>
     </div>
-
-    <!-- Body -->
     <div class="rounded-b-3xl border-x-2 border-b-2 border-green-200 bg-white px-8 py-6 shadow-2xl">
       <form method="post" action="{% url 'acompanamiento:cerrar' report.pk %}" class="space-y-5">
         {% csrf_token %}
-        
-        <!-- Info Estudiante -->
         <div class="p-4 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100">
           <div class="flex items-center gap-4">
             <div class="flex h-12 w-12 items-center justify-center rounded-full bg-[#2256F2] text-xl font-bold text-white">
               {{ report.student.full_name|slice:":1"|upper }}
             </div>
             <div>
-              <p class="text-sm font-bold text-blue-600 uppercase">Estudiante</p>
+              <p class="text-xs font-bold text-blue-600 uppercase">Estudiante</p>
               <p class="text-lg font-extrabold text-slate-900">{{ report.student.full_name }}</p>
             </div>
             <div class="ml-auto text-right">
@@ -240,50 +258,29 @@
             </div>
           </div>
         </div>
-
-        <!-- Datos del Reporte -->
         <div class="grid grid-cols-2 gap-4">
           <div class="space-y-2">
-            <label class="flex items-center gap-2 text-sm font-bold text-slate-700">
-              <i class="fa-solid fa-calendar text-green-600"></i>
-              Fecha Inicial
-            </label>
+            <label class="flex items-center gap-2 text-sm font-bold text-slate-700"><i class="fa-solid fa-calendar text-green-600"></i> Fecha Inicial</label>
             <input type="text" value="{{ report.created_at|date:'d/m/Y' }}" readonly class="w-full rounded-lg border-2 border-slate-200 bg-slate-100 px-4 py-2.5 text-base font-medium text-slate-600">
           </div>
           <div class="space-y-2">
-            <label class="flex items-center gap-2 text-sm font-bold text-slate-700">
-              <i class="fa-solid fa-tag text-green-600"></i>
-              Fin Educativo
-            </label>
+            <label class="flex items-center gap-2 text-sm font-bold text-slate-700"><i class="fa-solid fa-tag text-green-600"></i> Fin Educativo</label>
             <input type="text" value="{{ report.get_purpose_display|default:'Sin especificar' }}" readonly class="w-full rounded-lg border-2 border-slate-200 bg-slate-100 px-4 py-2.5 text-base font-medium text-slate-600">
           </div>
         </div>
-
-        <!-- Equipo -->
         <div class="grid grid-cols-2 gap-4">
           <div class="space-y-2">
-            <label class="flex items-center gap-2 text-sm font-bold text-slate-700">
-              <i class="fa-solid fa-paper-plane text-green-600"></i>
-              Quién Remite
-            </label>
+            <label class="flex items-center gap-2 text-sm font-bold text-slate-700"><i class="fa-solid fa-paper-plane text-green-600"></i> Quién Remite</label>
             <input type="text" value="{{ report.created_by.get_full_name|default:report.created_by.username }}" readonly class="w-full rounded-lg border-2 border-slate-200 bg-slate-100 px-4 py-2.5 text-base font-medium text-slate-600">
           </div>
           <div class="space-y-2">
-            <label class="flex items-center gap-2 text-sm font-bold text-slate-700">
-              <i class="fa-solid fa-user-check text-green-600"></i>
-              Quién Atiende
-            </label>
+            <label class="flex items-center gap-2 text-sm font-bold text-slate-700"><i class="fa-solid fa-user-check text-green-600"></i> Quién Atiende</label>
             <input type="text" value="{{ report.assigned_to.get_full_name|default:report.assigned_to.username|default:'Sin asignar' }}" readonly class="w-full rounded-lg border-2 border-slate-200 bg-slate-100 px-4 py-2.5 text-base font-medium text-slate-600">
           </div>
         </div>
-
-        <!-- Estado y Cumplimiento -->
         <div class="grid grid-cols-2 gap-4">
           <div class="space-y-2">
-            <label class="flex items-center gap-2 text-sm font-bold text-slate-700">
-              <i class="fa-solid fa-circle-check text-green-600"></i>
-              Estado Final
-            </label>
+            <label class="flex items-center gap-2 text-sm font-bold text-slate-700"><i class="fa-solid fa-circle-check text-green-600"></i> Estado Final</label>
             <select name="status" required class="w-full rounded-xl border-2 border-slate-300 px-4 py-3 text-base font-semibold text-slate-800 focus:border-green-500 focus:outline-none focus:ring-4 focus:ring-green-100/50">
               <option value="ATENDIDO" selected>Atendido</option>
               <option value="SEGUIMIENTO">En Seguimiento</option>
@@ -291,23 +288,16 @@
             </select>
           </div>
           <div class="space-y-2">
-            <label class="flex items-center gap-2 text-sm font-bold text-slate-700">
-              <i class="fa-solid fa-bullseye text-green-600"></i>
-              ¿Cumplió objetivo?
-            </label>
+            <label class="flex items-center gap-2 text-sm font-bold text-slate-700"><i class="fa-solid fa-bullseye text-green-600"></i> ¿Cumplió objetivo?</label>
             <select name="is_accomplished" required class="w-full rounded-xl border-2 border-slate-300 px-4 py-3 text-base font-semibold text-slate-800 focus:border-green-500 focus:outline-none focus:ring-4 focus:ring-green-100/50">
               <option value="true">Sí</option>
               <option value="false">No</option>
             </select>
           </div>
         </div>
-
-        <!-- Botones -->
         <div class="flex items-center justify-end gap-4 pt-4 border-t border-slate-200">
-          <button type="button" onclick="closeModal('close-case-modal')" class="px-6 py-3 rounded-xl border-2 border-slate-300 bg-white text-base font-bold text-slate-700 hover:bg-slate-100 transition-all">
-            Cancelar
-          </button>
-          <button type="submit" class="px-8 py-3 rounded-xl bg-gradient-to-r from-green-600 to-emerald-500 text-base font-bold text-white shadow-lg shadow-green-500/30 hover:shadow-xl hover:translate-y-[-2px] transition-all">
+          <button type="button" onclick="closeModal('close-case-modal')" class="px-6 py-3 rounded-xl border-2 border-slate-300 bg-white text-base font-bold text-slate-700 hover:bg-slate-100 transition-all">Cancelar</button>
+          <button type="submit" class="px-8 py-3 rounded-xl bg-gradient-to-r from-green-600 to-emerald-500 text-base font-bold text-white shadow-lg shadow-green-500/30 hover:shadow-xl hover:-translate-y-0.5 transition-all">
             <i class="fa-solid fa-check mr-2"></i> Confirmar Cierre
           </button>
         </div>
@@ -316,25 +306,14 @@
   </div>
 </div>
 
-<!-- Script para modal -->
 <script>
-  function closeModal(id) {
+  function closeModal(id){
     document.getElementById(id).classList.add('hidden');
     document.getElementById(id).classList.remove('flex');
   }
-  
-  document.getElementById('btn-close-case').addEventListener('click', function() {
+  document.getElementById('btn-close-case') && document.getElementById('btn-close-case').addEventListener('click',function(){
     document.getElementById('close-case-modal').classList.remove('hidden');
     document.getElementById('close-case-modal').classList.add('flex');
   });
 </script>
-
-<!-- Acciones -->
-<div class="flex justify-end gap-4 pt-6 border-t border-slate-200">
-  {% if report.status != 'ATENDIDO' %}
-  <button type="button" id="btn-close-case" class="px-6 py-3 rounded-xl bg-gradient-to-r from-green-500 to-green-600 text-base font-bold text-white shadow-lg shadow-green-500/30 hover:shadow-xl hover:translate-y-[-2px] transition-all">
-    <i class="fa-solid fa-check-circle mr-2"></i> Cerrar Caso
-  </button>
-  {% endif %}
-</div>
 {% endblock %}

@@ -77,6 +77,266 @@ class ReportDetailView(DetailView):
     model = Report
     template_name = 'acompanamiento/report_detail.html'
 
+def _calc_indicadores(qs):
+    """Calcula indicadores de eficiencia y eficacia sobre un QuerySet de Report."""
+    from django.db.models import Count
+    total     = qs.count()
+    atendidos = qs.filter(status='ATENDIDO').count()
+    eficiencia = round(atendidos * 100 / total, 1) if total else 0
+
+    eficacia_num = qs.filter(status='ATENDIDO', cumple_acompanamiento=True).count()
+    eficacia     = round(eficacia_num * 100 / atendidos, 1) if atendidos else 0
+
+    FINES = ['ACADEMICO', 'PSICOAFECTIVO', 'ESPIRITUAL', 'CONVIVENCIA']
+    FINES_L = {'ACADEMICO': 'Académico', 'PSICOAFECTIVO': 'Psicoafectivo',
+               'ESPIRITUAL': 'Espiritual', 'CONVIVENCIA': 'Convivencia'}
+    # 3 secciones institucionales — basica_secundaria agrupa también media_academica
+    SEC_GROUPS = [
+        ('preescolar',        'Jardín–Tercero',    ['preescolar']),
+        ('basica_primaria',   'Cuarto–Séptimo',    ['basica_primaria']),
+        ('basica_secundaria', 'Octavo–Undécimo',   ['basica_secundaria', 'media_academica']),
+    ]
+
+    # Desglose por fin educativo
+    por_fin = []
+    for f in FINES:
+        fqs  = qs.filter(purpose=f)
+        ftot = fqs.count()
+        fate = fqs.filter(status='ATENDIDO').count()
+        fef  = fqs.filter(status='ATENDIDO', cumple_acompanamiento=True).count()
+        por_fin.append({
+            'fin': FINES_L[f], 'key': f,
+            'total': ftot,
+            'atendidos': fate,
+            'eficiencia': round(fate * 100 / ftot, 1) if ftot else 0,
+            'eficacia_num': fef,
+            'eficacia': round(fef * 100 / fate, 1) if fate else 0,
+        })
+
+    # Desglose por sección
+    por_seccion = []
+    for key, label, sec_keys in SEC_GROUPS:
+        sqs  = qs.filter(student__section__in=sec_keys)
+        stot = sqs.count()
+        sate = sqs.filter(status='ATENDIDO').count()
+        sef  = sqs.filter(status='ATENDIDO', cumple_acompanamiento=True).count()
+        if stot > 0:
+            por_seccion.append({
+                'seccion': label,
+                'total': stot,
+                'atendidos': sate,
+                'eficiencia': round(sate * 100 / stot, 1) if stot else 0,
+                'eficacia_num': sef,
+                'eficacia': round(sef * 100 / sate, 1) if sate else 0,
+            })
+
+    return {
+        'total': total, 'atendidos': atendidos,
+        'eficiencia': eficiencia, 'cumple_ef': eficiencia >= 80,
+        'eficacia_num': eficacia_num, 'eficacia': eficacia, 'cumple_ec': eficacia >= 80,
+        'por_fin': por_fin, 'por_seccion': por_seccion,
+    }
+
+
+def indicadores_view(request):
+    """Módulo de indicadores SGI — Eficiencia y Eficacia del acompañamiento."""
+    from django.db.models import Q
+
+    # Filtros GET
+    periodo  = request.GET.get('periodo', '')
+    seccion  = request.GET.get('seccion', '')
+    fin      = request.GET.get('fin', '')
+    anio     = request.GET.get('anio', '2026')
+
+    qs = Report.objects.filter(year=int(anio) if anio.isdigit() else 2026)
+    if periodo:
+        qs = qs.filter(academic_period=periodo)
+    if seccion:
+        # basica_secundaria incluye también los estudiantes con section=media_academica
+        if seccion == 'basica_secundaria':
+            qs = qs.filter(student__section__in=['basica_secundaria', 'media_academica'])
+        else:
+            qs = qs.filter(student__section__iexact=seccion)
+    if fin:
+        qs = qs.filter(purpose=fin)
+
+    periodos_disponibles = (Report.objects.filter(year=int(anio) if anio.isdigit() else 2026)
+                            .exclude(academic_period='')
+                            .values_list('academic_period', flat=True)
+                            .distinct().order_by('academic_period'))
+
+    stats = _calc_indicadores(qs)
+
+    return render(request, 'acompanamiento/indicadores.html', {
+        'stats': stats,
+        'periodo': periodo,
+        'seccion': seccion,
+        'fin': fin,
+        'anio': anio,
+        'periodos': list(periodos_disponibles),
+        'secciones': [
+            ('preescolar',        'Jardín–Tercero'),
+            ('basica_primaria',   'Cuarto–Séptimo'),
+            ('basica_secundaria', 'Octavo–Undécimo'),
+        ],
+        'fines': [
+            ('ACADEMICO', 'Académico'), ('PSICOAFECTIVO', 'Psicoafectivo'),
+            ('ESPIRITUAL', 'Espiritual'), ('CONVIVENCIA', 'Convivencia'),
+        ],
+    })
+
+
+def informe_acompanamiento_view(request):
+    """Informe ejecutivo imprimible de acompañamiento integral (2 páginas, estilo SGI)."""
+    from django.db.models import Count, Q
+    from django.db.models.functions import TruncMonth
+    from django.utils import timezone
+
+    anio    = request.GET.get('anio', '2026')
+    periodo = request.GET.get('periodo', '')
+    seccion = request.GET.get('seccion', '')
+    fin     = request.GET.get('fin', '')
+
+    qs = Report.objects.filter(year=int(anio) if anio.isdigit() else 2026)
+    if periodo: qs = qs.filter(academic_period=periodo)
+    if seccion: qs = qs.filter(student__section__iexact=seccion)
+    if fin:     qs = qs.filter(purpose=fin)
+
+    stats = _calc_indicadores(qs)
+    total = stats['total']
+
+    FINES_COLORS = {
+        'ACADEMICO':    '#2563eb',
+        'CONVIVENCIA':  '#f59e0b',
+        'ESPIRITUAL':   '#7c3aed',
+        'PSICOAFECTIVO':'#db2777',
+    }
+
+    # Distribución por fin con %
+    por_fin_dist = []
+    for row in stats['por_fin']:
+        pct = round(row['total'] * 100 / total, 1) if total else 0
+        por_fin_dist.append({**row, 'pct': pct, 'color': FINES_COLORS.get(row['key'], '#64748b')})
+
+    # Estado de casos
+    seg = qs.filter(status='SEGUIMIENTO').count()
+    pro = qs.filter(status='PROGRAMADO').count()
+    estados = [
+        {'label': 'Atendidos',       'valor': stats['atendidos'], 'pct': stats['eficiencia'], 'color': '#16a34a'},
+        {'label': 'En Seguimiento',  'valor': seg, 'pct': round(seg*100/total,1) if total else 0, 'color': '#d97706'},
+        {'label': 'Programados',     'valor': pro, 'pct': round(pro*100/total,1) if total else 0, 'color': '#dc2626'},
+    ]
+
+    # Top 5 educadores
+    top_q = (qs.filter(assigned_to__isnull=False)
+               .values('assigned_to__first_name','assigned_to__last_name','assigned_to__email')
+               .annotate(total=Count('id'), atendidos=Count('id', filter=Q(status='ATENDIDO')))
+               .order_by('-total')[:5])
+    top_eds = []
+    for i, ed in enumerate(top_q):
+        nombre = f"{ed['assigned_to__first_name']} {ed['assigned_to__last_name']}".strip()
+        fines_ed = sorted(set(qs.filter(
+            assigned_to__first_name=ed['assigned_to__first_name'],
+            assigned_to__last_name=ed['assigned_to__last_name']
+        ).values_list('purpose', flat=True)))
+        top_eds.append({
+            'rank': i + 1, 'nombre': nombre or ed['assigned_to__email'] or '-',
+            'total': ed['total'], 'atendidos': ed['atendidos'], 'fines': fines_ed,
+        })
+
+    # Tendencia mensual
+    MESES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']
+    monthly_raw = (qs.annotate(mes=TruncMonth('created_at'))
+                     .values('mes')
+                     .annotate(total=Count('id'),
+                               academico=Count('id', filter=Q(purpose='ACADEMICO')),
+                               convivencia=Count('id', filter=Q(purpose='CONVIVENCIA')),
+                               espiritual=Count('id', filter=Q(purpose='ESPIRITUAL')),
+                               psicoafectivo=Count('id', filter=Q(purpose='PSICOAFECTIVO')))
+                     .order_by('mes'))
+    monthly = [{'mes': MESES[m['mes'].month-1], **m} for m in monthly_raw if m['mes']]
+    monthly_max = max((m['total'] for m in monthly), default=1)
+
+    periodos = list(Report.objects.filter(year=int(anio) if anio.isdigit() else 2026)
+                    .exclude(academic_period='')
+                    .values_list('academic_period', flat=True)
+                    .distinct().order_by('academic_period'))
+
+    return render(request, 'acompanamiento/informe.html', {
+        'stats': stats, 'por_fin_dist': por_fin_dist, 'estados': estados,
+        'top_eds': top_eds, 'monthly': monthly, 'monthly_max': monthly_max,
+        'anio': anio, 'periodo': periodo, 'seccion': seccion, 'fin': fin,
+        'fecha': timezone.now(), 'periodos': periodos,
+        'secciones': [('preescolar','Jardín–Tercero'),('basica_primaria','Cuarto–Séptimo'),
+                      ('basica_secundaria','Octavo–Undécimo')],
+        'fines': [('ACADEMICO','Académico'),('PSICOAFECTIVO','Psicoafectivo'),
+                  ('ESPIRITUAL','Espiritual'),('CONVIVENCIA','Convivencia')],
+    })
+
+
+def admin_educadores_view(request):
+    """Gestión de roles y permisos de educadores (solo acceso global)."""
+    from .permissions import can_manage_educadores
+    from django.contrib.auth import get_user_model
+    import json
+
+    # Mismo patrón de resolución de usuario que StudentListView
+    actual_user = request.user
+    User = get_user_model()
+    if not actual_user or not actual_user.is_authenticated:
+        actual_user = (
+            User.objects.filter(is_superuser=True, is_active=True).first()
+            or User.objects.filter(is_staff=True, is_active=True).first()
+        )
+
+    if not can_manage_educadores(actual_user):
+        from django.http import HttpResponseForbidden
+        return HttpResponseForbidden('No tienes permiso. Requiere superuser o acceso_global=True.')
+
+    User = get_user_model()
+
+    if request.method == 'POST':
+        action = request.POST.get('action', '')
+        user_id = request.POST.get('user_id', '')
+        if action == 'save_educador' and user_id:
+            user = User.objects.filter(pk=user_id).first()
+            if user:
+                ed, _ = Educador.objects.get_or_create(user=user)
+                ed.rol            = request.POST.get('rol', 'ADMIN_SECCION')
+                ed.acceso_global  = request.POST.get('acceso_global') == '1'
+                ed.is_active      = request.POST.get('is_active') == '1'
+                fines = request.POST.getlist('fines_educativos')
+                ed.fines_educativos = fines
+                ed.save()
+                sec_ids = request.POST.getlist('secciones')
+                ed.secciones.set(Section.objects.filter(pk__in=sec_ids))
+                messages.success(request, f'Perfil de {user.get_full_name()} actualizado.')
+        return redirect('acompanamiento:admin_educadores')
+
+    # Lista de todos los usuarios con su perfil educador
+    all_users = User.objects.filter(is_active=True).order_by('first_name', 'last_name')
+    educadores_data = []
+    for u in all_users:
+        try:
+            ed = u.educador
+        except Exception:
+            ed = None
+        educadores_data.append({'user': u, 'educador': ed})
+
+    sections = Section.objects.all().order_by('name')
+    fines = [
+        ('ACADEMICO', 'Académico'), ('PSICOAFECTIVO', 'Psicoafectivo'),
+        ('ESPIRITUAL', 'Espiritual'), ('CONVIVENCIA', 'Convivencia'),
+    ]
+
+    return render(request, 'acompanamiento/admin_educadores.html', {
+        'educadores_data': educadores_data,
+        'sections': sections,
+        'fines': fines,
+        'rol_choices': UserRole.choices,
+    })
+
+
 def cerrar_report(request, pk):
     """Cierra un reporte con los criterios seleccionados"""
     report = Report.objects.get(pk=pk)

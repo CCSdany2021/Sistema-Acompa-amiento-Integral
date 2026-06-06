@@ -11,24 +11,19 @@ from acompanamiento.models import Student, Report, ReportPurpose, ReportStatus
 
 INSTITUTIONAL_STRUCTURE = [
     {
-        "name": "Preescolar",
+        "name": "Jardín–Tercero",
         "key": "preescolar",
-        "courses": ["JR01", "TR01", "101", "102", "201", "202", "301", "302"],
+        "courses": ["JR01", "TR01", "TR02", "101", "102", "201", "202", "301", "302"],
     },
     {
-        "name": "Primaria",
+        "name": "Cuarto–Séptimo",
         "key": "basica_primaria",
         "courses": ["401", "402", "501", "502", "503", "601", "602", "603", "701", "702", "703"],
     },
     {
-        "name": "Secundaria",
+        "name": "Octavo–Undécimo",
         "key": "basica_secundaria",
-        "courses": ["801", "802", "803", "901", "902", "903"],
-    },
-    {
-        "name": "Media",
-        "key": "media_academica",
-        "courses": ["1001", "1002", "1003", "1101", "1102", "1103"],
+        "courses": ["801", "802", "803", "901", "902", "903", "1001", "1002", "1003", "1101", "1102", "1103"],
     },
 ]
 
@@ -82,7 +77,12 @@ class StudentListView(ListView):
             messages.error(request, "No se encontró el estudiante seleccionado.")
             return redirect(self._build_redirect_url())
 
-        actor_user = self._resolve_actor_user()
+        remite_user_id = request.POST.get("remite_user_id")
+        actor_user = None
+        if remite_user_id:
+            actor_user = get_user_model().objects.filter(pk=remite_user_id, is_active=True).first()
+        if not actor_user:
+            actor_user = self._resolve_actor_user()
         if not actor_user:
             messages.error(
                 request,
@@ -94,7 +94,21 @@ class StudentListView(ListView):
         if assigned_to_id:
             assigned_to = get_user_model().objects.filter(pk=assigned_to_id).first()
 
-        Report.objects.create(
+        # Validar: el estudiante no puede tener dos acompañamientos activos del mismo fin educativo
+        duplicate = Report.objects.filter(
+            student=student,
+            purpose=purpose,
+        ).exclude(status=ReportStatus.ATENDIDO).first()
+        if duplicate:
+            purpose_label = dict(ReportPurpose.choices).get(purpose, purpose)
+            messages.error(
+                request,
+                f"{student.full_name} ya tiene un acompañamiento activo de '{purpose_label}'. "
+                "Ciérralo o cámbialo a ATENDIDO antes de crear uno nuevo del mismo fin."
+            )
+            return redirect(self._build_redirect_url())
+
+        report = Report.objects.create(
             student=student,
             purpose=purpose,
             fines_educativos=fines_educativos or [purpose],
@@ -105,6 +119,11 @@ class StudentListView(ListView):
             assigned_to=assigned_to or actor_user,
             institucional_quien_atiende=(request.POST.get("institucional_quien_atiende") or "").strip(),
         )
+
+        # Enviar notificación por correo al asignado
+        from acompanamiento.email_notifications import notify_report_assigned
+        notify_report_assigned(report)
+
         messages.success(request, f"Reporte creado para {student.full_name}.")
         return redirect(self._build_redirect_url())
 
@@ -161,14 +180,16 @@ class StudentListView(ListView):
                 "fin_educativo": report.purpose,
             }
             try:
-                report.recommendations.create(**base_data, followup_date=followup_date)
+                rec = report.recommendations.create(**base_data, followup_date=followup_date)
             except OperationalError:
-                # Fallback defensivo cuando la BD activa está desincronizada.
-                report.recommendations.create(**base_data)
+                rec = report.recommendations.create(**base_data)
                 messages.warning(
                     self.request,
                     "Se guardó la recomendación sin fecha de seguimiento. Ejecuta migraciones para sincronizar la base de datos activa."
                 )
+            # Notificar a los docentes del curso
+            from acompanamiento.email_notifications import notify_recommendation_to_teachers
+            notify_recommendation_to_teachers(rec)
             messages.success(self.request, "Recomendación registrada correctamente.")
 
         elif action == "close_report":
@@ -220,7 +241,21 @@ class StudentListView(ListView):
         context["selected_section"] = (self.request.GET.get("section") or "").strip()
         context["students_count"] = self.get_queryset().count()
         context["report_purposes"] = list(ReportPurpose.choices)
-        context["staff_users"] = get_user_model().objects.filter(is_active=True).order_by("first_name", "last_name", "username")
+        # Educadores activos con sus fines para filtrado dinámico en el modal
+        from acompanamiento.models import Educador
+        import json
+        educadores = Educador.objects.filter(is_active=True).select_related('user')
+        staff_users = []
+        educadores_json = []
+        for ed in educadores:
+            staff_users.append(ed.user)
+            educadores_json.append({
+                'id': ed.user.id,
+                'nombre': ed.user.get_full_name() or ed.user.username,
+                'fines': ed.fines_educativos,
+            })
+        context["staff_users"] = staff_users
+        context["educadores_json"] = json.dumps(educadores_json)
         context["cuarto_septimo_courses"] = [
             {'code': '401', 'section': 'basica_primaria'},
             {'code': '402', 'section': 'basica_primaria'},
@@ -235,18 +270,18 @@ class StudentListView(ListView):
             {'code': '703', 'section': 'basica_secundaria'},
         ]
         context["octavo_once_courses"] = [
-            {'code': '801', 'section': 'basica_secundaria'},
-            {'code': '802', 'section': 'basica_secundaria'},
-            {'code': '803', 'section': 'basica_secundaria'},
-            {'code': '901', 'section': 'basica_secundaria'},
-            {'code': '902', 'section': 'basica_secundaria'},
-            {'code': '903', 'section': 'basica_secundaria'},
-            {'code': '1001', 'section': 'media_academica'},
-            {'code': '1002', 'section': 'media_academica'},
-            {'code': '1003', 'section': 'media_academica'},
-            {'code': '1101', 'section': 'media_academica'},
-            {'code': '1102', 'section': 'media_academica'},
-            {'code': '1103', 'section': 'media_academica'},
+            {'code': '801',  'section': 'basica_secundaria'},
+            {'code': '802',  'section': 'basica_secundaria'},
+            {'code': '803',  'section': 'basica_secundaria'},
+            {'code': '901',  'section': 'basica_secundaria'},
+            {'code': '902',  'section': 'basica_secundaria'},
+            {'code': '903',  'section': 'basica_secundaria'},
+            {'code': '1001', 'section': 'basica_secundaria'},
+            {'code': '1002', 'section': 'basica_secundaria'},
+            {'code': '1003', 'section': 'basica_secundaria'},
+            {'code': '1101', 'section': 'basica_secundaria'},
+            {'code': '1102', 'section': 'basica_secundaria'},
+            {'code': '1103', 'section': 'basica_secundaria'},
         ]
         return context
 

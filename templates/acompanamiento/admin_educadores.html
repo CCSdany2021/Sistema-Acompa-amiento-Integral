@@ -1,0 +1,283 @@
+{% extends "base.html" %}
+{% block title %}Gestión de Educadores — SAI{% endblock %}
+{% block breadcrumb %}Administración · Educadores{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  .ed-row:hover { background: #f8fafc; }
+  .fin-badge { border-radius: 4px; padding: 1px 7px; font-size: 11px; font-weight: 600; }
+  .fin-ACADEMICO    { background:#dbeafe; color:#1d4ed8; }
+  .fin-CONVIVENCIA  { background:#fef3c7; color:#92400e; }
+  .fin-ESPIRITUAL   { background:#ede9fe; color:#5b21b6; }
+  .fin-PSICOAFECTIVO{ background:#fce7f3; color:#9d174d; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="px-4 py-6 lg:px-6 w-full space-y-5">
+
+  <!-- Header -->
+  <div class="flex flex-wrap items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-900">Gestión de Educadores</h1>
+      <p class="text-sm text-slate-500 mt-0.5">Asigna roles, secciones y fines educativos por usuario</p>
+    </div>
+    <div class="flex items-center gap-2 text-sm font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-[5px] px-3 py-2">
+      <i class="fa-solid fa-shield-check text-emerald-500"></i>
+      Acceso exclusivo CAP
+    </div>
+  </div>
+
+  <!-- Mensajes -->
+  {% for m in messages %}
+  <div class="rounded-[5px] px-4 py-3 text-sm font-medium
+              {% if m.tags == 'success' %}bg-emerald-50 text-emerald-800 border border-emerald-200
+              {% else %}bg-red-50 text-red-800 border border-red-200{% endif %}">
+    {{ m }}
+  </div>
+  {% endfor %}
+
+  <!-- Tabla -->
+  <div class="rounded-[6px] border border-slate-200 bg-white overflow-hidden">
+    <div class="border-b border-slate-100 px-5 py-3 flex items-center justify-between">
+      <h3 class="font-semibold text-slate-800">
+        Usuarios del sistema
+        <span class="ml-2 text-xs font-normal text-slate-400">({{ educadores_data|length }} usuarios)</span>
+      </h3>
+      <input type="text" id="search-ed" placeholder="Buscar nombre o email…"
+             class="rounded-[5px] border border-slate-300 px-3 py-1.5 text-sm w-56 focus:border-blue-500 focus:outline-none">
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <tr>
+            <th class="px-5 py-3 text-left">Usuario</th>
+            <th class="px-4 py-3 text-left">Rol</th>
+            <th class="px-4 py-3 text-left">Secciones</th>
+            <th class="px-4 py-3 text-left">Fines educativos</th>
+            <th class="px-4 py-3 text-center">Global</th>
+            <th class="px-4 py-3 text-center">Activo</th>
+            <th class="px-5 py-3 text-center">Acción</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100" id="ed-tbody">
+          {% for item in educadores_data %}
+          <tr class="ed-row transition-colors" data-name="{{ item.user.get_full_name|lower }} {{ item.user.email|lower }}">
+            <td class="px-5 py-3">
+              <p class="font-medium text-slate-900">{{ item.user.get_full_name|default:item.user.username }}</p>
+              <p class="text-xs text-slate-400">{{ item.user.email }}</p>
+            </td>
+            <td class="px-4 py-3">
+              {% if item.educador %}
+                <span class="rounded-full px-2 py-0.5 text-xs font-semibold
+                  {% if item.educador.rol == 'ADMIN_GLOBAL' %}bg-blue-100 text-blue-700
+                  {% else %}bg-slate-100 text-slate-600{% endif %}">
+                  {{ item.educador.get_rol_display }}
+                </span>
+              {% else %}
+                <span class="text-slate-400 text-xs italic">Sin perfil</span>
+              {% endif %}
+            </td>
+            <td class="px-4 py-3">
+              {% if item.educador %}
+                {% if item.educador.acceso_global %}
+                  <span class="text-xs text-emerald-600 font-semibold">Todas</span>
+                {% else %}
+                  <div class="flex flex-wrap gap-1">
+                    {% for sec in item.educador.secciones.all %}
+                    <span class="rounded-[3px] bg-slate-100 px-1.5 py-0.5 text-xs text-slate-600">{{ sec.name }}</span>
+                    {% empty %}
+                    {% if item.educador.seccion_asignada %}
+                    <span class="rounded-[3px] bg-slate-100 px-1.5 py-0.5 text-xs text-slate-600">{{ item.educador.seccion_asignada.name }}</span>
+                    {% else %}
+                    <span class="text-slate-400 text-xs italic">Ninguna</span>
+                    {% endif %}
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              {% endif %}
+            </td>
+            <td class="px-4 py-3">
+              {% if item.educador %}
+                <div class="flex flex-wrap gap-1">
+                  {% for f in item.educador.fines_educativos %}
+                  <span class="fin-badge fin-{{ f }}">{{ f|slice:":4" }}</span>
+                  {% empty %}
+                  <span class="text-xs text-slate-400 italic">{% if item.educador.acceso_global %}Todos{% else %}Ninguno{% endif %}</span>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </td>
+            <td class="px-4 py-3 text-center">
+              {% if item.educador and item.educador.acceso_global %}
+              <i class="fa-solid fa-check text-emerald-500"></i>
+              {% else %}
+              <i class="fa-solid fa-minus text-slate-300"></i>
+              {% endif %}
+            </td>
+            <td class="px-4 py-3 text-center">
+              {% if item.educador and item.educador.is_active %}
+              <span class="inline-block h-2 w-2 rounded-full bg-emerald-500"></span>
+              {% else %}
+              <span class="inline-block h-2 w-2 rounded-full bg-slate-300"></span>
+              {% endif %}
+            </td>
+            <td class="px-5 py-3 text-center">
+              <button type="button"
+                class="rounded-[5px] border border-slate-300 bg-white px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50 transition"
+                onclick="openModal({{ item.user.id }}, '{{ item.user.get_full_name|escapejs }}',
+                  '{{ item.educador.rol|default:"ADMIN_SECCION" }}',
+                  {{ item.educador.acceso_global|default:False|yesno:'true,false' }},
+                  {{ item.educador.is_active|default:True|yesno:'true,false' }},
+                  {{ item.educador.fines_educativos|default:'[]'|safe }},
+                  [{% for s in item.educador.secciones.all %}{{ s.id }}{% if not forloop.last %},{% endif %}{% endfor %}]
+                )">
+                <i class="fa-solid fa-pen text-[10px] mr-1"></i>Editar
+              </button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- Modal de edición -->
+<div id="edit-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+  <div class="w-full max-w-lg bg-white rounded-[6px] shadow-2xl overflow-hidden">
+    <div class="flex items-center justify-between bg-[#023059] px-5 py-4">
+      <div>
+        <h3 class="text-base font-semibold text-white">Editar perfil educador</h3>
+        <p id="modal-user-name" class="text-xs text-blue-200"></p>
+      </div>
+      <button onclick="closeModal()" class="rounded-[5px] text-white/60 hover:text-white hover:bg-white/10 p-2 transition">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <form method="post" action="{% url 'acompanamiento:admin_educadores' %}" class="p-5 space-y-4">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="save_educador">
+      <input type="hidden" name="user_id" id="modal-user-id">
+
+      <!-- Rol -->
+      <div class="space-y-1.5">
+        <label class="text-sm font-medium text-slate-700">Rol</label>
+        <select name="rol" id="modal-rol"
+          class="w-full rounded-[5px] border border-slate-300 px-3 py-2 text-sm text-slate-700 focus:border-blue-500 focus:outline-none">
+          {% for key, label in rol_choices %}
+          <option value="{{ key }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Acceso global -->
+      <div class="flex items-center justify-between rounded-[5px] border border-slate-200 px-4 py-3">
+        <div>
+          <p class="text-sm font-medium text-slate-700">Acceso global</p>
+          <p class="text-xs text-slate-500">Ve todas las secciones y fines educativos</p>
+        </div>
+        <label class="relative inline-flex cursor-pointer items-center">
+          <input type="checkbox" name="acceso_global" id="modal-global" value="1" class="sr-only peer">
+          <div class="peer h-5 w-9 rounded-full bg-slate-200 after:absolute after:left-[2px] after:top-[2px] after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all peer-checked:bg-blue-600 peer-checked:after:translate-x-4"></div>
+        </label>
+      </div>
+
+      <!-- Secciones -->
+      <div class="space-y-2" id="secciones-wrap">
+        <label class="text-sm font-medium text-slate-700">Secciones asignadas</label>
+        <div class="grid grid-cols-2 gap-2">
+          {% for sec in sections %}
+          <label class="flex items-center gap-2 rounded-[5px] border border-slate-200 px-3 py-2 cursor-pointer hover:border-blue-400 transition">
+            <input type="checkbox" name="secciones" value="{{ sec.id }}" class="modal-sec-check accent-blue-600">
+            <span class="text-sm text-slate-700">{{ sec.name }}</span>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Fines educativos -->
+      <div class="space-y-2" id="fines-wrap">
+        <label class="text-sm font-medium text-slate-700">Fines educativos</label>
+        <div class="grid grid-cols-2 gap-2">
+          {% for key, label in fines %}
+          <label class="flex items-center gap-2 rounded-[5px] border border-slate-200 px-3 py-2 cursor-pointer hover:border-blue-400 transition">
+            <input type="checkbox" name="fines_educativos" value="{{ key }}" class="modal-fin-check accent-blue-600">
+            <span class="text-sm text-slate-700">{{ label }}</span>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Activo -->
+      <div class="flex items-center justify-between rounded-[5px] border border-slate-200 px-4 py-3">
+        <div>
+          <p class="text-sm font-medium text-slate-700">Usuario activo</p>
+          <p class="text-xs text-slate-500">Puede acceder al sistema</p>
+        </div>
+        <label class="relative inline-flex cursor-pointer items-center">
+          <input type="checkbox" name="is_active" id="modal-active" value="1" class="sr-only peer">
+          <div class="peer h-5 w-9 rounded-full bg-slate-200 after:absolute after:left-[2px] after:top-[2px] after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all peer-checked:bg-emerald-500 peer-checked:after:translate-x-4"></div>
+        </label>
+      </div>
+
+      <!-- Botones -->
+      <div class="flex justify-end gap-3 pt-2 border-t border-slate-100">
+        <button type="button" onclick="closeModal()"
+          class="rounded-[5px] border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 transition">
+          Cancelar
+        </button>
+        <button type="submit"
+          class="rounded-[5px] bg-[#2563eb] px-5 py-2 text-sm font-semibold text-white hover:bg-[#1d4ed8] transition">
+          Guardar cambios
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Búsqueda en tabla
+  document.getElementById('search-ed').addEventListener('input', function() {
+    const q = this.value.toLowerCase();
+    document.querySelectorAll('#ed-tbody tr').forEach(tr => {
+      tr.style.display = tr.dataset.name.includes(q) ? '' : 'none';
+    });
+  });
+
+  function openModal(userId, name, rol, global_, active, fines, secIds) {
+    document.getElementById('modal-user-id').value = userId;
+    document.getElementById('modal-user-name').textContent = name;
+    document.getElementById('modal-rol').value = rol;
+    document.getElementById('modal-global').checked = global_;
+    document.getElementById('modal-active').checked = active;
+
+    // Fines
+    document.querySelectorAll('.modal-fin-check').forEach(cb => {
+      cb.checked = fines.includes(cb.value);
+    });
+
+    // Secciones
+    document.querySelectorAll('.modal-sec-check').forEach(cb => {
+      cb.checked = secIds.includes(parseInt(cb.value));
+    });
+
+    document.getElementById('edit-modal').style.display = 'flex';
+  }
+
+  function closeModal() {
+    document.getElementById('edit-modal').style.display = 'none';
+  }
+
+  // Cerrar al click fuera
+  document.getElementById('edit-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+</script>
+{% endblock %}

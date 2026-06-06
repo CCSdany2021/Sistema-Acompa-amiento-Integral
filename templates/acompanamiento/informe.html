@@ -1,0 +1,367 @@
+{% load i18n %}<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Informe SAI {{ anio }}</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#f1f5f9;color:#0f172a;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+
+.page{width:210mm;min-height:297mm;background:#fff;margin:0 auto;padding:0;position:relative;overflow:hidden}
+.page+.page{margin-top:6mm}
+
+/* ── Botones pantalla ── */
+.screen-bar{position:fixed;top:0;left:0;right:0;z-index:999;background:#0f172a;padding:10px 20px;
+            display:flex;align-items:center;justify-content:space-between}
+.screen-bar a,.screen-bar button{font-family:'Inter',sans-serif;font-size:13px;font-weight:500;
+  border-radius:6px;padding:6px 16px;cursor:pointer;text-decoration:none}
+.btn-back{background:rgba(255,255,255,.08);color:#e2e8f0;border:1px solid rgba(255,255,255,.12)}
+.btn-pdf{background:#f59e0b;color:#0f172a;border:none;font-weight:700}
+@media screen{body{padding-top:52px}}
+@media print{
+  .screen-bar{display:none!important}
+  body{background:#fff;padding-top:0}
+  .page{margin:0;page-break-after:always}
+  .page:last-child{page-break-after:avoid}
+  @page{size:A4;margin:0}
+}
+
+/* ══ HEADER ══ */
+.hd{background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 100%);padding:22px 24px 18px;color:#fff}
+.hd-label{font-size:8px;font-weight:600;letter-spacing:2.5px;color:#94a3b8;text-transform:uppercase;margin-bottom:10px}
+.hd-row{display:flex;justify-content:space-between;align-items:flex-end}
+.hd-title{font-size:23px;font-weight:800;letter-spacing:-0.6px;line-height:1.1}
+.hd-sub{font-size:10px;color:#94a3b8;margin-top:5px;font-weight:400}
+.hd-badge{background:#f59e0b;color:#0f172a;font-size:16px;font-weight:800;
+          padding:7px 16px;border-radius:6px;letter-spacing:-0.3px}
+.accent-bar{height:3px;background:linear-gradient(90deg,#f59e0b 0%,#fbbf24 60%,transparent 100%)}
+
+/* ══ CUERPO ══ */
+.body{padding:18px 24px 50px}
+
+/* ── Títulos de sección ── */
+.stitle{font-size:8.5px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;
+        color:#64748b;margin:16px 0 10px;display:flex;align-items:center;gap:8px}
+.stitle::after{content:'';flex:1;height:1px;background:#e2e8f0}
+
+/* ── KPI strip ── */
+.kpi-strip{display:grid;grid-template-columns:repeat(6,1fr);border:1px solid #e2e8f0;border-radius:8px;overflow:hidden}
+.kpi-cell{padding:12px 8px;text-align:center;border-right:1px solid #e2e8f0}
+.kpi-cell:last-child{border-right:none}
+.kpi-n{font-size:22px;font-weight:800;line-height:1;letter-spacing:-0.5px}
+.kpi-l{font-size:8px;color:#94a3b8;margin-top:4px;font-weight:500;text-transform:uppercase;letter-spacing:0.5px}
+
+/* ── Barras distribución ── */
+.drow{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+.ddot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dinfo{flex:1}
+.dline{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px}
+.dname{font-size:11px;font-weight:600;color:#1e293b}
+.dpct{font-size:12px;font-weight:800}
+.dtrack{height:5px;background:#f1f5f9;border-radius:999px;overflow:hidden}
+.dfill{height:5px;border-radius:999px}
+.dmeta{font-size:8px;color:#94a3b8;margin-top:2px}
+
+/* ── Estado cards ── */
+.est-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.est-card{border-radius:7px;padding:12px 14px;border:1px solid}
+.est-n{font-size:22px;font-weight:800;letter-spacing:-0.5px;line-height:1}
+.est-l{font-size:8.5px;font-weight:600;margin-top:3px;text-transform:uppercase;letter-spacing:0.5px}
+.est-pct{font-size:10px;font-weight:400;margin-top:1px;opacity:.75}
+
+/* ── Tabla ── */
+table{width:100%;border-collapse:collapse;font-size:10px}
+thead tr{background:#f8fafc}
+th{padding:7px 10px;text-align:left;font-weight:700;font-size:8.5px;color:#64748b;
+   text-transform:uppercase;letter-spacing:0.8px;border-bottom:2px solid #e2e8f0}
+td{padding:8px 10px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+.rank{width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;
+      justify-content:center;font-size:9px;font-weight:700;background:#f1f5f9;color:#475569}
+.rank-top{background:#fef3c7;color:#92400e}
+.fin-pill{display:inline-block;border-radius:3px;padding:1px 5px;font-size:8px;font-weight:600;margin:1px}
+.fp-ac{background:#dbeafe;color:#1d4ed8}
+.fp-co{background:#fef3c7;color:#92400e}
+.fp-es{background:#ede9fe;color:#5b21b6}
+.fp-ps{background:#fce7f3;color:#9d174d}
+
+/* ── Bar chart CSS ── */
+.chart{display:flex;align-items:flex-end;gap:5px;height:90px;padding:0 2px;
+       border-bottom:1px solid #e2e8f0}
+.bc{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:2px}
+.bbar{width:100%;border-radius:3px 3px 0 0;min-height:3px;transition:none}
+.bval{font-size:7.5px;font-weight:700;color:#334155}
+.blbl{font-size:7.5px;color:#94a3b8}
+.legend{display:flex;gap:12px;margin-top:7px;flex-wrap:wrap}
+.li{display:flex;align-items:center;gap:4px;font-size:8.5px;color:#475569}
+.ld{width:8px;height:8px;border-radius:2px}
+
+/* ── Indicadores tabla ── */
+.badge-g{border-radius:999px;padding:2px 8px;font-size:8px;font-weight:700;background:#dcfce7;color:#166534;white-space:nowrap}
+.badge-y{border-radius:999px;padding:2px 8px;font-size:8px;font-weight:700;background:#fef9c3;color:#854d0e;white-space:nowrap}
+.badge-r{border-radius:999px;padding:2px 8px;font-size:8px;font-weight:700;background:#fee2e2;color:#991b1b;white-space:nowrap}
+.big-pct{font-size:16px;font-weight:800;letter-spacing:-0.3px}
+
+/* ── Nota ── */
+.nota{margin-top:14px;padding:10px 12px;background:#f8fafc;border-left:3px solid #f59e0b;border-radius:0 5px 5px 0}
+.nota p{font-size:8.5px;color:#64748b;line-height:1.6}
+.nota strong{color:#334155}
+
+/* ── Mini header p2 ── */
+.mini-hd{display:flex;justify-content:space-between;align-items:center;
+          padding:12px 24px 0;margin-bottom:2px}
+.mini-hd-label{font-size:8px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#64748b}
+.mini-accent{height:2px;background:linear-gradient(90deg,#f59e0b,transparent);margin:0 24px}
+
+/* ── Footer ── */
+.footer{position:absolute;bottom:14px;left:24px;right:24px;
+        display:flex;justify-content:space-between;align-items:center;
+        padding-top:8px;border-top:1px solid #e2e8f0}
+.ftxt{font-size:8px;color:#94a3b8}
+</style>
+</head>
+<body>
+
+<div class="screen-bar">
+  <a class="btn-back" href="{% url 'acompanamiento:indicadores' %}?anio={{ anio }}{% if periodo %}&periodo={{ periodo }}{% endif %}{% if seccion %}&seccion={{ seccion }}{% endif %}{% if fin %}&fin={{ fin }}{% endif %}">← Indicadores</a>
+  <span style="font-size:12px;color:#94a3b8;font-family:Inter,sans-serif">Informe de Acompañamiento · {{ anio }}</span>
+  <button class="btn-pdf" onclick="window.print()">⬇ Guardar PDF</button>
+</div>
+
+<!-- ══════════════════════════ PÁGINA 1 ══════════════════════════ -->
+<div class="page">
+
+  <div class="hd">
+    <div class="hd-label">Colegio Calasanz Suba &nbsp;·&nbsp; Sistema de Acompañamiento Integral</div>
+    <div class="hd-row">
+      <div>
+        <div class="hd-title">INFORME DE ACOMPAÑAMIENTO</div>
+        <div class="hd-sub">Gestión del Acompañamiento Integral{% if periodo %} &nbsp;·&nbsp; {{ periodo }}{% endif %}{% if seccion %} &nbsp;·&nbsp; {{ seccion }}{% endif %}</div>
+      </div>
+      <div class="hd-badge">{{ anio }}</div>
+    </div>
+  </div>
+  <div class="accent-bar"></div>
+
+  <div class="body">
+
+    <!-- INDICADORES CLAVE -->
+    <div class="stitle">Indicadores Clave</div>
+    <div class="kpi-strip">
+      <div class="kpi-cell">
+        <div class="kpi-n" style="color:#0f172a">{{ stats.total }}</div>
+        <div class="kpi-l">Total Casos</div>
+      </div>
+      <div class="kpi-cell">
+        <div class="kpi-n" style="color:#16a34a">{{ stats.atendidos }}</div>
+        <div class="kpi-l">Atendidos</div>
+      </div>
+      <div class="kpi-cell">
+        <div class="kpi-n" style="color:#d97706">{{ estados.1.valor }}</div>
+        <div class="kpi-l">Seguimiento</div>
+      </div>
+      <div class="kpi-cell">
+        <div class="kpi-n" style="color:#dc2626">{{ estados.2.valor }}</div>
+        <div class="kpi-l">Programados</div>
+      </div>
+      <div class="kpi-cell" style="background:#f0fdf4">
+        <div class="kpi-n" style="color:{% if stats.cumple_ef %}#16a34a{% elif stats.eficiencia >= 60 %}#d97706{% else %}#dc2626{% endif %}">{{ stats.eficiencia }}%</div>
+        <div class="kpi-l">Eficiencia</div>
+      </div>
+      <div class="kpi-cell" style="background:#f0fdf4">
+        <div class="kpi-n" style="color:{% if stats.cumple_ec %}#16a34a{% elif stats.eficacia >= 60 %}#d97706{% else %}#dc2626{% endif %}">{{ stats.eficacia }}%</div>
+        <div class="kpi-l">Eficacia</div>
+      </div>
+    </div>
+
+    <!-- DISTRIBUCIÓN POR FIN EDUCATIVO -->
+    <div class="stitle">Distribución por Fin Educativo</div>
+    {% for row in por_fin_dist %}
+    <div class="drow">
+      <span class="ddot" style="background:{{ row.color }}"></span>
+      <div class="dinfo">
+        <div class="dline">
+          <span class="dname">{{ row.fin }}</span>
+          <span class="dpct" style="color:{{ row.color }}">{{ row.pct }}%</span>
+        </div>
+        <div class="dtrack"><div class="dfill" style="width:{{ row.pct }}%;background:{{ row.color }}"></div></div>
+        <div class="dmeta">{{ row.total }} casos &nbsp;·&nbsp; {{ row.atendidos }} atendidos &nbsp;·&nbsp; Eficiencia {{ row.eficiencia }}% &nbsp;·&nbsp; Eficacia {{ row.eficacia }}%</div>
+      </div>
+    </div>
+    {% empty %}<p style="color:#94a3b8;font-size:10px">Sin datos.</p>{% endfor %}
+
+    <!-- ESTADO DE CASOS -->
+    <div class="stitle">Estado de Casos</div>
+    <div class="est-row">
+      <div class="est-card" style="background:#f0fdf4;border-color:#bbf7d0">
+        <div class="est-n" style="color:#16a34a">{{ estados.0.valor }}</div>
+        <div class="est-l" style="color:#16a34a">Atendidos</div>
+        <div class="est-pct" style="color:#16a34a">{{ estados.0.pct }}% del total</div>
+      </div>
+      <div class="est-card" style="background:#fffbeb;border-color:#fde68a">
+        <div class="est-n" style="color:#d97706">{{ estados.1.valor }}</div>
+        <div class="est-l" style="color:#d97706">En Seguimiento</div>
+        <div class="est-pct" style="color:#d97706">{{ estados.1.pct }}% del total</div>
+      </div>
+      <div class="est-card" style="background:#fff1f2;border-color:#fecdd3">
+        <div class="est-n" style="color:#dc2626">{{ estados.2.valor }}</div>
+        <div class="est-l" style="color:#dc2626">Programados</div>
+        <div class="est-pct" style="color:#dc2626">{{ estados.2.pct }}% del total</div>
+      </div>
+    </div>
+
+    <!-- TOP 5 EDUCADORES -->
+    <div class="stitle">Top 5 Educadores — Mayor Carga de Casos</div>
+    <table>
+      <thead>
+        <tr><th>#</th><th>Educador</th><th style="text-align:center">Casos</th><th style="text-align:center">Atendidos</th><th style="text-align:center">Eficiencia</th><th>Fines</th></tr>
+      </thead>
+      <tbody>
+        {% for ed in top_eds %}
+        <tr>
+          <td><span class="rank {% if forloop.counter <= 3 %}rank-top{% endif %}">{{ ed.rank }}</span></td>
+          <td style="font-weight:{% if forloop.counter <= 3 %}600{% else %}400{% endif %}">{{ ed.nombre }}</td>
+          <td style="text-align:center;font-weight:700;color:#0f172a">{{ ed.total }}</td>
+          <td style="text-align:center;font-weight:700;color:#16a34a">{{ ed.atendidos }}</td>
+          <td style="text-align:center;font-size:11px;color:#64748b">
+            {% if ed.total %}{% widthratio ed.atendidos ed.total 100 %}%{% else %}—{% endif %}
+          </td>
+          <td>
+            {% for f in ed.fines %}
+            <span class="fin-pill {% if f == 'ACADEMICO' %}fp-ac{% elif f == 'CONVIVENCIA' %}fp-co{% elif f == 'ESPIRITUAL' %}fp-es{% else %}fp-ps{% endif %}">
+              {{ f|slice:":4" }}
+            </span>
+            {% endfor %}
+          </td>
+        </tr>
+        {% empty %}<tr><td colspan="5" style="text-align:center;color:#94a3b8;padding:12px">Sin datos de educadores.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+
+  </div><!-- /body -->
+
+  <div class="footer">
+    <span class="ftxt">CONFIDENCIAL · Sistema SAI Calasanz Suba</span>
+    <span class="ftxt">{{ fecha|date:"d/m/Y" }}</span>
+    <span class="ftxt">Pág 1 / 2</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════ PÁGINA 2 ══════════════════════════ -->
+<div class="page">
+
+  <div class="mini-hd">
+    <span class="mini-hd-label">Informe de Acompañamiento Integral &nbsp;·&nbsp; {{ anio }} &nbsp;·&nbsp; Análisis Complementario</span>
+    <span style="font-size:9px;font-weight:700;color:#f59e0b">{{ anio }}</span>
+  </div>
+  <div class="mini-accent"></div>
+
+  <div class="body" style="padding-top:12px">
+
+    <!-- TENDENCIA MENSUAL -->
+    <div class="stitle">Tendencia Mensual — Casos Registrados</div>
+    {% if monthly %}
+    <div class="chart">
+      {% for m in monthly %}
+      <div class="bc">
+        <span class="bval">{{ m.total }}</span>
+        <div class="bbar" style="height:{% widthratio m.total monthly_max 76 %}px;background:linear-gradient(180deg,#3b82f6,#1d4ed8)"></div>
+        <span class="blbl">{{ m.mes }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="legend">
+      <span class="li"><span class="ld" style="background:#2563eb"></span>Académico</span>
+      <span class="li"><span class="ld" style="background:#f59e0b"></span>Convivencia</span>
+      <span class="li"><span class="ld" style="background:#7c3aed"></span>Espiritual</span>
+      <span class="li"><span class="ld" style="background:#db2777"></span>Psicoafectivo</span>
+    </div>
+    {% else %}
+    <p style="color:#94a3b8;font-size:10px;padding:6px 0">Sin datos de tendencia mensual.</p>
+    {% endif %}
+
+    <!-- DISTRIBUCIÓN POR SECCIÓN -->
+    <div class="stitle">Distribución por Sección Institucional</div>
+    {% for row in stats.por_seccion %}
+    <div class="drow">
+      <span class="ddot" style="background:#334155"></span>
+      <div class="dinfo">
+        <div class="dline">
+          <span class="dname">{{ row.seccion }}</span>
+          <span style="font-size:12px;font-weight:800;color:#334155">{{ row.total }} <span style="font-size:9px;font-weight:400;color:#94a3b8">({% widthratio row.total stats.total 100 %}%)</span></span>
+        </div>
+        <div class="dtrack">
+          <div class="dfill" style="width:{% widthratio row.total stats.total 100 %}%;background:#334155"></div>
+        </div>
+        <div class="dmeta">{{ row.total }} casos &nbsp;·&nbsp; {{ row.atendidos }} atendidos &nbsp;·&nbsp; Eficiencia {{ row.eficiencia }}% &nbsp;·&nbsp; Eficacia {{ row.eficacia }}%</div>
+      </div>
+    </div>
+    {% empty %}<p style="color:#94a3b8;font-size:10px">Sin datos por sección.</p>{% endfor %}
+
+    <!-- INDICADORES DE CUMPLIMIENTO -->
+    <div class="stitle">Indicadores de Cumplimiento — Meta ≥ 80%</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Indicador</th>
+          <th style="width:130px">Fórmula</th>
+          <th style="width:55px;text-align:center">Num.</th>
+          <th style="width:55px;text-align:center">Den.</th>
+          <th style="width:75px;text-align:center">Resultado</th>
+          <th style="width:50px;text-align:center">Meta</th>
+          <th style="width:90px;text-align:center">Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="font-weight:500;color:#1e293b">Atención de Casos de<br>Acompañamiento Integral</td>
+          <td style="color:#94a3b8;font-size:9px">Atendidos / Total × 100</td>
+          <td style="text-align:center;color:#64748b">{{ stats.atendidos }}</td>
+          <td style="text-align:center;color:#64748b">{{ stats.total }}</td>
+          <td style="text-align:center">
+            <span class="big-pct" style="color:{% if stats.cumple_ef %}#16a34a{% elif stats.eficiencia >= 60 %}#d97706{% else %}#dc2626{% endif %}">{{ stats.eficiencia }}%</span>
+          </td>
+          <td style="text-align:center;color:#94a3b8;font-size:9px">≥ 80%</td>
+          <td style="text-align:center">
+            {% if stats.cumple_ef %}<span class="badge-g">✓ Cumple</span>
+            {% elif stats.eficiencia >= 60 %}<span class="badge-y">⚠ En riesgo</span>
+            {% else %}<span class="badge-r">✗ No cumple</span>{% endif %}
+          </td>
+        </tr>
+        <tr>
+          <td style="font-weight:500;color:#1e293b">Eficacia del<br>Acompañamiento</td>
+          <td style="color:#94a3b8;font-size:9px">Logró objetivo / Atendidos × 100</td>
+          <td style="text-align:center;color:#64748b">{{ stats.eficacia_num }}</td>
+          <td style="text-align:center;color:#64748b">{{ stats.atendidos }}</td>
+          <td style="text-align:center">
+            <span class="big-pct" style="color:{% if stats.cumple_ec %}#16a34a{% elif stats.eficacia >= 60 %}#d97706{% else %}#dc2626{% endif %}">{{ stats.eficacia }}%</span>
+          </td>
+          <td style="text-align:center;color:#94a3b8;font-size:9px">≥ 80%</td>
+          <td style="text-align:center">
+            {% if stats.cumple_ec %}<span class="badge-g">✓ Cumple</span>
+            {% elif stats.eficacia >= 60 %}<span class="badge-y">⚠ En riesgo</span>
+            {% else %}<span class="badge-r">✗ No cumple</span>{% endif %}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- NOTA METODOLÓGICA -->
+    <div class="nota">
+      <p><strong>Eficiencia:</strong> (Σ casos atendidos / Σ casos requeridos) × 100. Meta anual ≥ 80%. Seguimiento mensual y por período académico.</p>
+      <p><strong>Eficacia:</strong> (Σ casos donde se logró el objetivo / Σ casos atendidos) × 100. Meta anual ≥ 80%. Periodicidad anual.</p>
+      <p><strong>Fuente:</strong> Sistema SAI — Colegio Calasanz Suba. &nbsp;<strong>Responsables:</strong> Líder del proceso de acompañamiento y Coordinador Académico. Información cargada al SGI / sección de indicadores del proceso.</p>
+    </div>
+
+  </div><!-- /body -->
+
+  <div class="footer">
+    <span class="ftxt">CONFIDENCIAL · Sistema SAI Calasanz Suba</span>
+    <span class="ftxt">{{ fecha|date:"d/m/Y" }}</span>
+    <span class="ftxt">Pág 2 / 2</span>
+  </div>
+</div>
+
+</body>
+</html>

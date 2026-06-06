@@ -5,16 +5,38 @@
 {% block breadcrumb %}Estudiantes{% endblock %}
 
 {% block extra_head %}
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
-  body { font-family: 'Outfit', sans-serif; }
+  body { font-family: 'Roboto', sans-serif; }
   .soft-shell { box-shadow: 0 20px 50px rgba(59, 91, 219, 0.08); }
+  /* Avatar colors - paleta pastel variada */
+  .avatar-color-0 { background: #60a5fa; display:flex; }
+  .avatar-color-1 { background: #a78bfa; display:flex; }
+  .avatar-color-2 { background: #34d399; display:flex; }
+  .avatar-color-3 { background: #fb923c; display:flex; }
+  .avatar-color-4 { background: #f472b6; display:flex; }
+  .avatar-color-5 { background: #4ade80; display:flex; }
+  .avatar-color-6 { background: #38bdf8; display:flex; }
+  .avatar-color-7 { background: #fbbf24; display:flex; }
+  .avatar-color-8 { background: #c084fc; display:flex; }
+  .avatar-color-9 { background: #2dd4bf; display:flex; }
   
-  .student-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-  .student-card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(37, 99, 235, 0.15); }
+  .student-card {
+    transition: transform .2s ease, box-shadow .2s ease;
+    box-shadow:
+      0 1px 2px rgba(15,23,42,.05),
+      0 2px 6px rgba(15,23,42,.07),
+      0 4px 10px rgba(15,23,42,.04);
+  }
+  .student-card:hover {
+    transform: translateY(-5px);
+    box-shadow:
+      0 2px 4px rgba(15,23,42,.05),
+      0 8px 18px rgba(15,23,42,.10),
+      0 18px 28px rgba(15,23,42,.06);
+  }
+  .student-card:active { transform: translateY(-2px); }
+  .student-card:focus-within { outline: 2px solid #3b82f6; outline-offset: 2px; }
   
   .avatar-placeholder {
     background: linear-gradient(135deg, var(--avatar-color-1) 0%, var(--avatar-color-2) 100%);
@@ -76,7 +98,7 @@
     color: white;
     padding: 6px 10px;
     border-radius: 6px;
-    font-size: 11px;
+    font-size: var(--text-xs);
     white-space: nowrap;
     opacity: 0;
     pointer-events: none;
@@ -89,145 +111,80 @@
 {% endblock %}
 
 {% block content %}
-<!-- HEADER MEJORADO -->
-<section id="course-header-section" class="mb-6 -mt-4 rounded-2xl bg-white border border-slate-200 p-6 shadow-sm">
-  <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-    <div class="flex items-center gap-4">
-      <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-slate-700">
-        <i class="fa-solid fa-user-graduate text-2xl"></i>
-      </div>
-      <div>
-        <h2 class="text-2xl font-bold leading-tight text-slate-900">Gestión de Reportes</h2>
-        <p class="mt-1 text-sm text-slate-600">
-          {% if selected_course %}
-            <span class="font-semibold text-slate-900">{{ selected_course }}</span>
-            {% if selected_section %} <span class="mx-1">•</span> Sección: <span class="font-semibold text-slate-900">{{ selected_section }}</span>{% endif %}
-          {% else %}
-            Selecciona un curso desde el menú lateral
-          {% endif %}
-        </p>
-      </div>
+<!-- Barra de búsqueda superior -->
+<div id="course-header-section" class="mb-6 -mt-4">
+  <div class="flex items-center gap-3">
+    <div class="relative flex-1 max-w-lg">
+      <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+      <input type="text" id="student-search" placeholder="Buscar estudiante..."
+        class="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-11 pr-5 text-sm text-slate-800 placeholder-slate-400 shadow-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 transition-all">
     </div>
+    <button id="filter-toggle-btn" class="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 shadow-sm transition-all">
+      <i class="fa-solid fa-sliders text-slate-400"></i>
+      <span>Filtros</span>
+    </button>
+    <a href="{% url 'estudiantes:sync' %}" class="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 transition-all">
+      <i class="fa-solid fa-arrows-rotate"></i>
+      <span class="hidden sm:inline">Sincronizar</span>
+    </a>
+  </div>
 
-    <div class="flex flex-wrap items-center gap-3">
-      <div class="flex items-center gap-2 rounded-xl bg-slate-100 px-4 py-2.5">
-        <i class="fa-solid fa-users text-slate-600"></i>
-        <span class="text-slate-900 font-semibold">{{ students_count }}</span>
-        <span class="text-xs text-slate-500">estudiantes</span>
-      </div>
-
-      <div class="relative">
-        <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-        <input type="text" id="student-search" placeholder="Buscar estudiante..."
-          class="w-56 rounded-xl border border-slate-200 bg-white py-2.5 pl-9 pr-4 text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 transition-all">
-      </div>
-
-      <button id="filter-toggle-btn" class="flex items-center gap-2 rounded-xl bg-slate-100 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-200 transition-all">
-        <i class="fa-solid fa-filter"></i>
-        <span>Filtros</span>
-        <span id="active-filters-count" class="hidden rounded-full bg-blue-500 text-white px-1.5 py-0.5 text-xs font-bold"></span>
-      </button>
-
-      <a href="{% url 'estudiantes:sync' %}" class="flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 transition-all">
-        <i class="fa-solid fa-arrows-rotate"></i>
-        <span>Sincronizar</span>
-      </a>
+  <!-- Chips de filtro -->
+  <div id="filter-chips" class="mt-3 hidden">
+    <div class="flex flex-wrap gap-2">
+      <button class="filter-chip rounded-full bg-white border border-slate-200 px-3 py-1 text-xs font-medium text-slate-600 hover:border-blue-400 hover:text-blue-600 shadow-sm" data-filter="all">Todos</button>
+      <button class="filter-chip rounded-full bg-white border border-slate-200 px-3 py-1 text-xs font-medium text-slate-600 hover:border-blue-400 hover:text-blue-600 shadow-sm" data-filter="with-reports">Con reportes</button>
+      <button class="filter-chip rounded-full bg-white border border-slate-200 px-3 py-1 text-xs font-medium text-slate-600 hover:border-blue-400 hover:text-blue-600 shadow-sm" data-filter="without-reports">Sin reportes</button>
+      <button class="filter-chip rounded-full bg-blue-50 border border-blue-200 px-3 py-1 text-xs font-medium text-blue-700 hover:bg-blue-100 shadow-sm" data-filter="ACADEMICO">Académico</button>
+      <button class="filter-chip rounded-full bg-amber-50 border border-amber-200 px-3 py-1 text-xs font-medium text-amber-700 hover:bg-amber-100 shadow-sm" data-filter="CONVIVENCIA">Convivencia</button>
+      <button class="filter-chip rounded-full bg-violet-50 border border-violet-200 px-3 py-1 text-xs font-medium text-violet-700 hover:bg-violet-100 shadow-sm" data-filter="ESPIRITUAL">Espiritual</button>
+      <button class="filter-chip rounded-full bg-rose-50 border border-rose-200 px-3 py-1 text-xs font-medium text-rose-700 hover:bg-rose-100 shadow-sm" data-filter="PSICOAFECTIVO">Psicoafectivo</button>
     </div>
   </div>
-  
-  <!-- Filtros tipo chips -->
-  <div id="filter-chips" class="mt-4 hidden">
-    <div class="flex flex-wrap items-center gap-2">
-      <span class="text-xs text-slate-600 font-medium">Filtrar por:</span>
-      <button class="filter-chip rounded-full bg-slate-100 px-4 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-200" data-filter="all">
-        Todos
-      </button>
-      <button class="filter-chip rounded-full bg-slate-100 px-4 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-200" data-filter="with-reports">
-        Con reportes
-      </button>
-      <button class="filter-chip rounded-full bg-slate-100 px-4 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-200" data-filter="without-reports">
-        Sin reportes
-      </button>
-      <button class="filter-chip rounded-full bg-slate-100 px-4 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-200" data-filter="ACADEMICO">
-        Académico
-      </button>
-      <button class="filter-chip rounded-full bg-slate-100 px-4 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-200" data-filter="CONVIVENCIA">
-        Convivencia
-      </button>
-      <button class="filter-chip rounded-full bg-slate-100 px-4 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-200" data-filter="ESPIRITUAL">
-        Espiritual
-      </button>
-      <button class="filter-chip rounded-full bg-slate-100 px-4 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-200" data-filter="PSICOAFECTIVO">
-        Psicoafectivo
-      </button>
-    </div>
-  </div>
-</section>
+</div>
 
-<!-- GRID DE TARJETAS MEJORADO -->
+<!-- GRID DE TARJETAS -->
 <section id="students-table-section" class="pb-10 w-full">
-  <div id="students-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 w-full">
+  <div id="students-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 w-full">
     {% for student in students %}
-    <div class="student-card animate-fade-in-up group relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm hover:shadow-xl" 
-         style="animation-delay: {{ forloop.counter0 }}0ms"
+    {% with initial=student.full_name|slice:":1"|upper %}
+    <div class="student-card flex flex-col rounded-[4px] bg-white border border-slate-200 overflow-hidden cursor-default border-t-4"
+         style="border-top-color:#cbd5e1"
          data-student-name="{{ student.full_name|lower }}"
          data-student-code="{{ student.code }}"
          data-reports-count="{{ student.reports.count }}"
-         data-report-purposes="{% for r in student.reports.all %}{{ r.purpose }}{% if not forloop.last %},{% endif %}{% endfor %}">
-      
-      <!-- Header con avatar mejorado -->
-      <div class="relative border-b border-slate-100 bg-gradient-to-br from-slate-50 to-white p-4">
-        <button type="button" class="absolute right-3 top-3 rounded-full bg-slate-100 p-1.5 text-slate-400 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-slate-200 hover:text-slate-600">
-          <i class="fa-solid fa-ellipsis text-sm"></i>
-        </button>
-        
-        <div class="mb-3 flex justify-center">
-          {% if student.code %}
-          <img 
-            src="/archivos/registro_fotografico/{{ student.code }}.jpg" 
-            class="avatar-placeholder h-20 w-20 rounded-full object-cover shadow-lg ring-4 ring-white"
-            alt="{{ student.full_name }}"
-            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
-          >
-          <div class="avatar-placeholder hidden h-20 w-20 items-center justify-center rounded-full shadow-lg ring-4 ring-white" 
-               style="--avatar-color-1: #3b82f6; --avatar-color-2: #2563eb;">
-            <span class="text-2xl font-bold text-white">{{ student.full_name|slice:":1"|upper }}</span>
-          </div>
-          {% else %}
-          <div class="avatar-placeholder flex h-20 w-20 items-center justify-center rounded-full shadow-lg ring-4 ring-white" 
-               style="--avatar-color-1: #3b82f6; --avatar-color-2: #2563eb;">
-            <span class="text-2xl font-bold text-white">{{ student.full_name|slice:":1"|upper }}</span>
-          </div>
-          {% endif %}
-        </div>
-        
-        <div class="text-center">
-          <h3 class="text-base font-bold text-slate-900 line-clamp-2 leading-tight">{{ student.full_name }}</h3>
-          <p class="mt-1 text-xs font-medium text-slate-500">Código: {{ student.code }}</p>
-          <div class="mt-2 inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
-            <i class="fa-solid fa-graduation-cap text-[10px]"></i>
-            {{ student.course.name|default:student.section|default:"-" }}
-          </div>
-        </div>
-      </div>
+         data-report-purposes="{% for r in student.reports.all %}{{ r.purpose }}{% if not forloop.last %},{% endif %}{% endfor %}"
+         data-report-statuses="{% for r in student.reports.all %}{{ r.status }}{% if not forloop.last %},{% endif %}{% endfor %}">
 
-      <!-- Body - Reportes -->
-      <div class="p-4">
-        <div class="mb-3 flex items-center justify-between">
-          <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Reportes</p>
-          <span id="report-count-{{ student.id }}" class="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-600">
-            {{ student.reports.count }}
-          </span>
+      <!-- Avatar + info horizontal -->
+      <div class="flex items-start gap-3 px-4 pt-4 pb-3">
+        <!-- Avatar con dot de estado -->
+        <div class="relative flex-shrink-0">
+          <img src="/archivos/registro_fotografico/{{ student.code }}.jpg"
+               class="h-12 w-12 rounded-full object-cover"
+               alt="{{ student.full_name }}"
+               onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+          <div class="hidden h-12 w-12 items-center justify-center rounded-full avatar-color-{{ forloop.counter0|add:0|stringformat:'s'|slice:'-1' }}">
+            <span class="text-xl font-bold text-white">{{ initial }}</span>
+          </div>
+          <span class="status-dot absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full ring-2 ring-white bg-slate-300"></span>
         </div>
-<div class="flex flex-wrap gap-1">
-          {% for report in student.reports.all %}
-            <button type="button" 
-              class="report-badge inline-flex items-center gap-1 rounded-lg border px-2 py-1 text-[9px] shadow-sm transition-all hover:scale-105 hover:shadow-md
-              {% if report.purpose == 'ACADEMICO' %}border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100
-              {% elif report.purpose == 'CONVIVENCIA' %}border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100
-              {% elif report.purpose == 'ESPIRITUAL' %}border-violet-200 bg-violet-50 text-violet-700 hover:bg-violet-100
-              {% elif report.purpose == 'PSICOAFECTIVO' %}border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100
-              {% else %}border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100{% endif %}"
+
+        <!-- Nombre + código + badges -->
+        <div class="min-w-0 flex-1 pt-0.5">
+          <h3 class="text-sm font-bold text-slate-900 leading-tight" title="{{ student.full_name }}">{{ student.full_name }}</h3>
+          <p class="text-[11px] text-slate-400 mt-0.5 font-medium">{{ student.code }} · {{ student.course.name|default:student.section|default:"Sin curso" }}</p>
+
+          <!-- Badges de reporte -->
+          <div class="mt-2 flex flex-wrap gap-1 min-h-[18px]">
+            {% for report in student.reports.all %}
+            <button type="button"
+              class="inline-flex h-5 items-center rounded-[4px] px-1.5 text-[9px] font-bold border cursor-pointer hover:opacity-75 transition-opacity
+              {% if report.purpose == 'ACADEMICO' %}bg-blue-50 text-blue-700 border-blue-200
+              {% elif report.purpose == 'CONVIVENCIA' %}bg-amber-50 text-amber-700 border-amber-200
+              {% elif report.purpose == 'ESPIRITUAL' %}bg-violet-50 text-violet-700 border-violet-200
+              {% elif report.purpose == 'PSICOAFECTIVO' %}bg-rose-50 text-rose-700 border-rose-200
+              {% else %}bg-slate-50 text-slate-500 border-slate-200{% endif %}"
               data-workspace-open="1"
               data-report-id="{{ report.id }}"
               data-report-purpose="{{ report.get_purpose_display }}"
@@ -239,51 +196,68 @@
               data-student-name="{{ student.full_name|default:'-'|escapejs }}"
               data-student-code="{{ student.code }}"
               data-student-course="{{ student.course.name|default:student.section|default:'-'|escapejs }}"
-              data-obs-items="{% for obs in report.observations.all %}{{ obs.followup_date|date:'d/m/Y'|default:obs.date_log|date:'d/m/Y' }}|| {{ obs.content|escapejs }}|| {{ obs.created_by.get_full_name|default:obs.created_by.username|default:'Usuario'|escapejs }}{% if not forloop.last %}##{% endif %}{% endfor %}"
-              data-rec-items="{% for rec in report.recommendations.all %}{{ rec.followup_date|date:'d/m/Y'|default:rec.date_log|date:'d/m/Y' }}|| {{ rec.content|escapejs }}|| {{ rec.created_by.get_full_name|default:rec.created_by.username|default:'Usuario'|escapejs }}{% if not forloop.last %}##{% endif %}{% endfor %}"
-              data-tooltip="{{ report.get_purpose_display }} - {{ report.get_status_display }}">
-              <i class="fa-solid fa-{% if report.purpose == 'ACADEMICO' %}book{% elif report.purpose == 'CONVIVENCIA' %}users{% elif report.purpose == 'ESPIRITUAL' %}heart{% elif report.purpose == 'PSICOAFECTIVO' %}brain{% else %}file{% endif %} text-[8px]"></i>
-              <span class="
-                {% if report.status == 'ATENDIDO' %}text-green-600
-                {% elif report.status == 'SEGUIMIENTO' %}text-amber-600
-                {% else %}text-blue-600{% endif %}">
-                {% if report.status == 'ATENDIDO' %}✓
-                {% elif report.status == 'SEGUIMIENTO' %}⟳
-                {% else %}○{% endif %}
-              </span>
+              data-obs-items="{% for obs in report.observations.all %}{{ obs.followup_date|date:'d/m/Y'|default:obs.date_log|date:'d/m/Y' }}|| {{ obs.content|escapejs }}|| {{ obs.created_by.get_full_name|default:obs.created_by.username|default:'Usuario'|escapejs }}|| {{ obs.date_log|date:'d/m/Y H:i' }}{% if not forloop.last %}##{% endif %}{% endfor %}"
+              data-rec-items="{% for rec in report.recommendations.all %}{{ rec.followup_date|date:'d/m/Y'|default:rec.date_log|date:'d/m/Y' }}|| {{ rec.content|escapejs }}|| {{ rec.created_by.get_full_name|default:rec.created_by.username|default:'Usuario'|escapejs }}|| {{ rec.date_log|date:'d/m/Y H:i' }}{% if not forloop.last %}##{% endif %}{% endfor %}"
+              title="{{ report.get_purpose_display }} · {{ report.get_status_display }}">
+              {{ report.get_purpose_display|slice:":3" }}
             </button>
-          {% empty %}
-            <span class="flex w-full items-center justify-center rounded-lg border border-dashed border-slate-200 bg-slate-50 py-3 text-center text-xs font-medium text-slate-400">
-              <i class="fa-regular fa-circle-check mr-1.5"></i>
-              Sin reportes
-            </span>
-          {% endfor %}
+            {% endfor %}
+          </div>
         </div>
       </div>
-      
-      <!-- Footer con botón mejorado -->
-      <div class="border-t border-slate-100 bg-gradient-to-r from-slate-50 to-white p-3">
+
+      <!-- Stats compactas -->
+      <div class="mx-4 mb-3 grid grid-cols-3 divide-x divide-slate-100 rounded-[4px] border border-slate-100 bg-slate-50 overflow-hidden">
+        <div class="py-2 text-center">
+          <p class="text-sm font-bold text-slate-800 leading-none">{{ student.reports.count }}</p>
+          <p class="mt-0.5 text-[9px] font-semibold uppercase tracking-wider text-slate-400">Rep.</p>
+        </div>
+        <div class="py-2 text-center">
+          <p class="text-sm font-bold text-emerald-600 leading-none stat-atendidos">0</p>
+          <p class="mt-0.5 text-[9px] font-semibold uppercase tracking-wider text-slate-400">Atend.</p>
+        </div>
+        <div class="py-2 text-center">
+          <p class="text-sm font-bold text-amber-500 leading-none stat-proceso">0</p>
+          <p class="mt-0.5 text-[9px] font-semibold uppercase tracking-wider text-slate-400">Proceso</p>
+        </div>
+      </div>
+
+      <!-- Progress bar compacta -->
+      <div class="px-4 pb-3">
+        <div class="flex items-center gap-2">
+          <div class="flex-1 h-1.5 rounded-full bg-slate-100 overflow-hidden">
+            <div class="h-full rounded-full bg-emerald-500 stat-progress-bar transition-all duration-700" style="width:0%"></div>
+          </div>
+          <span class="text-[10px] font-bold text-slate-400 stat-progress-text w-7 text-right">0%</span>
+        </div>
+      </div>
+
+      <!-- CTA -->
+      <div class="px-4 pb-4">
         <button type="button"
-          class="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md hover:bg-blue-700"
+          class="flex w-full items-center justify-center gap-2 rounded-lg bg-[#023059] py-2.5 text-xs font-bold text-white hover:bg-[#034078] transition-colors focus:outline-none focus:ring-2 focus:ring-[#023059] focus:ring-offset-1"
           data-modal-target="create-report-modal"
           data-student-id="{{ student.id }}"
           data-student-name="{{ student.full_name|escapejs }}"
           data-student-code="{{ student.code }}"
           data-student-course="{{ student.course.name|default:student.section|default:'Sin curso'|escapejs }}"
-          data-student-section="{{ student.course.section.name|default:student.section|default:'Sin seccion'|escapejs }}">
-          <i class="fa-solid fa-plus-circle text-lg"></i>
-          <span>Nuevo reporte</span>
+          data-student-section="{{ student.course.section.name|default:student.section|default:'Sin seccion'|escapejs }}"
+          data-report-purposes="{% for r in student.reports.all %}{{ r.purpose }}{% if not forloop.last %},{% endif %}{% endfor %}"
+          data-report-info="{% for r in student.reports.all %}{% if r.status != 'ATENDIDO' %}{{ r.purpose }}|{{ r.created_at|date:'d/m/Y' }}|{{ r.created_by.get_full_name|default:r.created_by.username|default:'Sistema'|escapejs }};;{% endif %}{% endfor %}">
+          <i class="fa-solid fa-plus" style="font-size:9px"></i>
+          Nuevo Reporte
         </button>
       </div>
-
     </div>
+    {% endwith %}
+
     {% empty %}
     <div class="col-span-full flex flex-col items-center justify-center py-20 text-center">
-      <div class="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-slate-100 text-4xl text-slate-300">
+      <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 text-3xl text-slate-300">
         <i class="fa-solid fa-users"></i>
       </div>
-      <h3 class="text-lg font-semibold text-slate-700">No hay estudiantes</h3>
-      <p class="mt-2 max-w-md text-sm text-slate-500">No hay estudiantes registrados para este curso.</p>
+      <h3 class="text-base font-medium text-slate-700">No hay estudiantes</h3>
+      <p class="mt-1 text-sm text-slate-400">No hay estudiantes registrados para este curso.</p>
     </div>
     {% endfor %}
   </div>
@@ -525,120 +499,97 @@
 <!-- ============================================ -->
 <!-- MODAL CERRAR CASO -->
 <!-- ============================================ -->
-<div id="close-case-modal" class="fixed inset-0 z-[70] hidden items-center justify-center bg-slate-900/60 backdrop-blur-md p-4">
-  <div class="w-full max-w-4xl transform transition-all">
+<div id="close-case-modal" class="fixed inset-0 z-[70] hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+  <div class="w-full max-w-lg flex flex-col max-h-[88vh] bg-white rounded-xl shadow-2xl overflow-hidden">
     <!-- Header -->
-    <div class="relative overflow-hidden rounded-t-3xl bg-gradient-to-r from-[#e11d48] via-[#be123c] to-[#9f1239] px-8 py-6 shadow-xl shadow-rose-500/20">
-      <div class="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
-      <div class="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-8 -translate-x-8"></div>
-      
-      <div class="relative flex items-start justify-between">
-        <div class="flex items-center gap-4">
-          <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm shadow-lg">
-            <i class="fa-solid fa-check-circle text-xl text-white" aria-hidden="true"></i>
-          </div>
-          <div>
-            <h3 class="text-2xl font-extrabold text-white tracking-tight">Cerrar Caso de Acompañamiento</h3>
-            <p class="mt-1 text-base text-rose-100 font-medium">Completa los datos para finalizar el acompañamiento</p>
-          </div>
+    <div class="flex items-center justify-between bg-rose-600 px-5 py-4 shrink-0">
+      <div class="flex items-center gap-3">
+        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-white/20">
+          <i class="fa-solid fa-check-circle text-white text-sm"></i>
         </div>
-        <button type="button" data-close-modal="close-case-modal" class="flex h-10 w-10 items-center justify-center rounded-xl border-2 border-white/30 text-white/80 transition hover:bg-white/20 hover:text-white backdrop-blur-sm">
-          <i class="fa-solid fa-xmark text-xl" aria-hidden="true"></i>
-        </button>
+        <div>
+          <h3 class="text-base font-medium text-white">Cerrar Caso de Acompañamiento</h3>
+          <p class="text-xs text-rose-100">Finaliza el seguimiento del estudiante</p>
+        </div>
       </div>
+      <button type="button" data-close-modal="close-case-modal" class="flex h-8 w-8 items-center justify-center rounded-lg text-white/70 hover:bg-white/20 hover:text-white transition">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
     </div>
 
-    <!-- Body -->
-    <div class="rounded-b-3xl border-x-2 border-b-2 border-rose-200/50 bg-white px-8 py-6 shadow-2xl shadow-rose-200/30">
-      <form method="post" id="workspace-close-case-form" class="space-y-6">
+    <!-- Body scrollable -->
+    <div class="overflow-y-auto flex-1 p-5">
+      <form method="post" id="workspace-close-case-form" class="space-y-4">
         {% csrf_token %}
         <input type="hidden" name="action" value="close_report">
         <input type="hidden" name="report_id" id="close-case-report-id">
-        
-        <!-- Header del formulario -->
-        <div class="flex items-center gap-4 mb-6 pb-4 border-b-2 border-rose-200">
-          <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-rose-100 text-rose-700">
-            <i class="fa-solid fa-check-circle text-xl" aria-hidden="true"></i>
+
+        <!-- Info del estudiante -->
+        <div class="rounded-lg bg-slate-50 border border-slate-200 p-3.5">
+          <p class="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+            <i class="fa-solid fa-user-graduate text-slate-400"></i> Estudiante
+          </p>
+          <div class="grid grid-cols-3 gap-3 text-sm">
+            <div>
+              <p class="text-[11px] text-slate-400 uppercase">Nombre</p>
+              <p id="close-form-student-name" class="font-medium text-slate-800 text-sm">-</p>
+            </div>
+            <div>
+              <p class="text-[11px] text-slate-400 uppercase">Código</p>
+              <p id="close-form-student-code" class="font-medium text-slate-800 text-sm">-</p>
+            </div>
+            <div>
+              <p class="text-[11px] text-slate-400 uppercase">Curso</p>
+              <p id="close-form-student-course" class="font-medium text-slate-800 text-sm">-</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Datos del reporte -->
+        <div class="rounded-lg bg-slate-50 border border-slate-200 p-3.5">
+          <p class="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+            <i class="fa-solid fa-file-lines text-slate-400"></i> Datos del reporte
+          </p>
+          <div class="grid grid-cols-3 gap-3 text-sm mb-2">
+            <div>
+              <p class="text-[11px] text-slate-400 uppercase">Fecha</p>
+              <p id="close-form-report-date" class="font-medium text-slate-800">-</p>
+            </div>
+            <div>
+              <p class="text-[11px] text-slate-400 uppercase">Fin educativo</p>
+              <p id="close-form-purpose" class="font-medium text-slate-800">-</p>
+            </div>
+            <div>
+              <p class="text-[11px] text-slate-400 uppercase">Remitente</p>
+              <p id="close-form-created-by" class="font-medium text-slate-800">-</p>
+            </div>
           </div>
           <div>
-            <h5 class="text-xl font-extrabold text-rose-800">Cerrar Caso de Acompañamiento</h5>
-            <p class="text-base font-medium text-rose-600">Completa los datos para finalizar el acompañamiento</p>
+            <p class="text-[11px] text-slate-400 uppercase">Objetivo</p>
+            <p id="close-form-objective" class="text-sm text-slate-700 leading-relaxed mt-0.5">-</p>
           </div>
         </div>
 
-        <!-- Información del estudiante - Solo lectura -->
-        <div class="mb-6 p-4 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200">
-          <div class="flex items-center gap-3 mb-3">
-            <i class="fa-solid fa-user-graduate text-blue-600 text-lg"></i>
-            <span class="text-base font-bold text-blue-800 uppercase">Información del Estudiante</span>
-          </div>
-          <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-            <div>
-              <p class="text-xs font-semibold text-blue-500 uppercase">Nombre</p>
-              <p id="close-form-student-name" class="text-base font-bold text-slate-800">-</p>
-            </div>
-            <div>
-              <p class="text-xs font-semibold text-blue-500 uppercase">Código</p>
-              <p id="close-form-student-code" class="text-base font-bold text-slate-800">-</p>
-            </div>
-            <div>
-              <p class="text-xs font-semibold text-blue-500 uppercase">Curso</p>
-              <p id="close-form-student-course" class="text-base font-bold text-slate-800">-</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Datos del reporte - Solo lectura -->
-        <div class="mb-6 p-4 rounded-lg bg-slate-50 border border-slate-200">
-          <div class="flex items-center gap-3 mb-3">
-            <i class="fa-solid fa-file-lines text-slate-600 text-lg"></i>
-            <span class="text-base font-bold text-slate-700 uppercase">Datos del Reporte</span>
-          </div>
-          <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-            <div>
-              <p class="text-xs font-semibold text-slate-500 uppercase">Fecha inicial</p>
-              <p id="close-form-report-date" class="text-base font-semibold text-slate-800">-</p>
-            </div>
-            <div>
-              <p class="text-xs font-semibold text-slate-500 uppercase">Fin educativo</p>
-              <p id="close-form-purpose" class="text-base font-semibold text-slate-800">-</p>
-            </div>
-            <div>
-              <p class="text-xs font-semibold text-slate-500 uppercase">Remitente</p>
-              <p id="close-form-created-by" class="text-base font-semibold text-slate-800">-</p>
-            </div>
-            <div class="md:col-span-3">
-              <p class="text-xs font-semibold text-slate-500 uppercase">Objetivo</p>
-              <p id="close-form-objective" class="text-base font-medium text-slate-800 leading-relaxed">-</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Campos de cierre - Editables -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 p-5 rounded-lg bg-rose-50 border-2 border-rose-200">
-          <!-- Estado del caso -->
-          <div class="space-y-2">
-            <label class="flex items-center gap-2 text-base font-bold text-slate-800">
-              <i class="fa-solid fa-flag text-rose-600" aria-hidden="true"></i>
-              Estado del caso
+        <!-- Campos editables -->
+        <div class="grid grid-cols-1 gap-4">
+          <div class="space-y-1.5">
+            <label class="text-sm font-medium text-slate-700 flex items-center gap-1.5">
+              <i class="fa-solid fa-flag text-rose-500 text-xs"></i> Estado del caso
             </label>
             <select name="close_status" id="close-status-select" required
-              class="w-full rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-base font-semibold text-slate-800 focus:border-rose-500 focus:outline-none focus:ring-4 focus:ring-rose-100/50 transition-all cursor-pointer">
+              class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 focus:border-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-100 transition cursor-pointer">
               <option value="">Selecciona el estado</option>
               <option value="PROGRAMADO">Programado</option>
               <option value="SEGUIMIENTO">En Seguimiento</option>
               <option value="ATENDIDO">Atendido</option>
             </select>
           </div>
-
-          <!-- ¿Cumplió con el objetivo? -->
-          <div class="space-y-2">
-            <label class="flex items-center gap-2 text-base font-bold text-slate-800">
-              <i class="fa-solid fa-circle-check text-rose-600" aria-hidden="true"></i>
-              ¿Cumplió con el objetivo de acompañamiento?
+          <div class="space-y-1.5">
+            <label class="text-sm font-medium text-slate-700 flex items-center gap-1.5">
+              <i class="fa-solid fa-circle-check text-rose-500 text-xs"></i> ¿Cumplió el objetivo de acompañamiento?
             </label>
             <select name="cumple_acompanamiento" id="cumple-select" required
-              class="w-full rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-base font-semibold text-slate-800 focus:border-rose-500 focus:outline-none focus:ring-4 focus:ring-rose-100/50 transition-all cursor-pointer">
+              class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 focus:border-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-100 transition cursor-pointer">
               <option value="">Selecciona una opción</option>
               <option value="true">Sí</option>
               <option value="false">No</option>
@@ -647,12 +598,14 @@
         </div>
 
         <!-- Botones -->
-        <div class="flex items-center justify-end gap-4 pt-4 border-t border-slate-200">
-          <button type="button" data-close-modal="close-case-modal" class="rounded-xl border-2 border-slate-300 bg-white px-6 py-3 text-base font-bold text-slate-700 hover:bg-slate-100 hover:border-slate-400 transition-all cursor-pointer shadow-sm">
+        <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
+          <button type="button" data-close-modal="close-case-modal"
+            class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 transition cursor-pointer">
             Cancelar
           </button>
-          <button type="submit" class="flex items-center gap-3 rounded-xl bg-gradient-to-r from-rose-600 to-rose-700 px-8 py-3 text-base font-bold text-white shadow-lg shadow-rose-500/30 hover:shadow-xl hover:translate-y-[-2px] transition-all cursor-pointer">
-            <i class="fa-solid fa-lock" aria-hidden="true"></i>
+          <button type="submit"
+            class="flex items-center gap-2 rounded-lg bg-rose-600 px-5 py-2 text-sm font-medium text-white hover:bg-rose-700 transition cursor-pointer">
+            <i class="fa-solid fa-lock text-xs"></i>
             Cerrar Caso
           </button>
         </div>
@@ -679,67 +632,57 @@
 <!-- ============================================ -->
 <!-- MODAL EDITAR OBSERVACIÓN - DISEÑO MODERNO -->
 <!-- ============================================ -->
-<div id="edit-observation-modal" class="fixed inset-0 z-[70] hidden items-center justify-center bg-slate-900/60 backdrop-blur-md p-4">
-  <div class="w-full max-w-4xl transform transition-all">
-    <!-- Header con gradiente -->
-    <div class="relative overflow-hidden rounded-t-l bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6 shadow-xl">
-      <div class="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
-      <div class="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-8 -translate-x-8"></div>
-      
-      <div class="relative flex items-start justify-between">
-        <div class="flex items-center gap-4">
-          <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm shadow-lg">
-            <i class="fa-solid fa-magnifying-glass text-xl text-white" aria-hidden="true"></i>
-          </div>
-          <div>
-            <h3 class="text-2xl font-extrabold text-white tracking-tight">Nueva Observación</h3>
-            <p class="mt-1 text-base text-blue-100 font-medium">Registra el seguimiento y evolución del estudiante</p>
-          </div>
+<div id="edit-observation-modal" class="fixed inset-0 z-[70] hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+  <div class="w-full max-w-lg flex flex-col max-h-[88vh] bg-white rounded-xl shadow-2xl overflow-hidden">
+    <!-- Header -->
+    <div class="flex items-center justify-between bg-blue-600 px-5 py-4 shrink-0">
+      <div class="flex items-center gap-3">
+        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-white/20">
+          <i class="fa-solid fa-magnifying-glass text-white text-sm"></i>
         </div>
-        <button type="button" data-close-modal="edit-observation-modal" class="flex h-10 w-10 items-center justify-center rounded-xl border-2 border-white/30 text-white/80 transition hover:bg-white/20 hover:text-white backdrop-blur-sm">
-          <i class="fa-solid fa-xmark text-xl" aria-hidden="true"></i>
-        </button>
+        <div>
+          <h3 class="text-base font-medium text-white">Nueva Observación</h3>
+          <p class="text-xs text-blue-200">Seguimiento y evolución del estudiante</p>
+        </div>
       </div>
+      <button type="button" data-close-modal="edit-observation-modal" class="flex h-8 w-8 items-center justify-center rounded-lg text-white/70 hover:bg-white/20 hover:text-white transition">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
     </div>
 
-    <!-- Body -->
-    <div class="rounded-b-3xl border-x-2 border-b-2 border-blue-200/50 bg-white px-8 py-6 shadow-2xl shadow-blue-200/30">
-      <form method="post" class="space-y-6">
+    <!-- Body scrollable -->
+    <div class="overflow-y-auto flex-1 p-5">
+      <form method="post" class="space-y-4">
         {% csrf_token %}
         <input type="hidden" name="action" value="add_observation">
         <input type="hidden" name="report_id" id="obs-modal-report-id">
-        
-        <!-- Campo Fecha -->
-        <div class="space-y-2">
-          <label class="flex items-center gap-2 text-base font-bold text-slate-800">
-            <i class="fa-regular fa-calendar-check text-[#3b82f6]" aria-hidden="true"></i>
-            Fecha de seguimiento
+
+        <div class="space-y-1.5">
+          <label class="text-sm font-medium text-slate-700 flex items-center gap-1.5">
+            <i class="fa-regular fa-calendar-check text-blue-500 text-xs"></i> Fecha de seguimiento
           </label>
           <input type="date" name="observation_followup_date" required
-            class="w-full rounded-xl border-2 border-slate-300 px-5 py-3.5 text-lg font-semibold text-slate-800 focus:border-[#3b82f6] focus:outline-none focus:ring-4 focus:ring-blue-100/50 transition-all bg-slate-50">
+            class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 transition bg-white">
         </div>
 
-        <!-- Campo Contenido -->
-        <div class="space-y-2">
-          <label class="flex items-center gap-2 text-base font-bold text-slate-800">
-            <i class="fa-solid fa-pen-nib text-[#3b82f6]" aria-hidden="true"></i>
-            Descripción de la observación
+        <div class="space-y-1.5">
+          <label class="text-sm font-medium text-slate-700 flex items-center gap-1.5">
+            <i class="fa-solid fa-pen-nib text-blue-500 text-xs"></i> Descripción de la observación
           </label>
-          <textarea name="observation_content" rows="6" required
+          <textarea name="observation_content" rows="5" required
             placeholder="Describe los hallazgos, evolución y aspectos relevantes del estudiante..."
-            class="w-full rounded-xl border-2 border-slate-300 px-5 py-4 text-lg font-medium text-slate-800 placeholder:text-slate-400 focus:border-[#3b82f6] focus:outline-none focus:ring-4 focus:ring-blue-100/50 transition-all bg-slate-50 resize-none leading-relaxed"></textarea>
-          <p class="text-sm text-slate-500 font-medium">Incluye observaciones sobre comportamiento, rendimiento académico, relaciones con compañeros, etc.</p>
+            class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 transition bg-white resize-none leading-relaxed"></textarea>
+          <p class="text-xs text-slate-500">Comportamiento, rendimiento académico, relaciones con compañeros, etc.</p>
         </div>
 
-        <!-- Botones -->
-        <div class="flex items-center justify-end gap-4 pt-4 border-t border-slate-200">
+        <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
           <button type="button" data-close-modal="edit-observation-modal"
-            class="rounded-xl border-2 border-slate-300 bg-white px-6 py-3 text-base font-bold text-slate-700 hover:bg-slate-100 hover:border-slate-400 transition-all cursor-pointer shadow-sm">
+            class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 transition cursor-pointer">
             Cancelar
           </button>
           <button type="submit"
-            class="flex items-center gap-3 rounded-xl bg-gradient-to-r from-[#3b82f6] to-[#2563eb] px-8 py-3 text-base font-bold text-white shadow-lg shadow-blue-500/30 hover:shadow-xl hover:translate-y-[-2px] transition-all cursor-pointer">
-            <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>
+            class="flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2 text-sm font-medium text-white hover:bg-blue-700 transition cursor-pointer">
+            <i class="fa-solid fa-floppy-disk text-xs"></i>
             Guardar observación
           </button>
         </div>
@@ -751,67 +694,57 @@
 <!-- ============================================ -->
 <!-- MODAL EDITAR RECOMENDACIÓN - DISEÑO MODERNO -->
 <!-- ============================================ -->
-<div id="edit-recommendation-modal" class="fixed inset-0 z-[70] hidden items-center justify-center bg-slate-900/60 backdrop-blur-md p-4">
-  <div class="w-full max-w-4xl transform transition-all">
-    <!-- Header con gradiente verde -->
-    <div class="relative overflow-hidden rounded-t-3xl bg-gradient-to-r from-emerald-600 to-emerald-700 px-8 py-6 shadow-xl">
-      <div class="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
-      <div class="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-8 -translate-x-8"></div>
-      
-      <div class="relative flex items-start justify-between">
-        <div class="flex items-center gap-4">
-          <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm shadow-lg">
-            <i class="fa-solid fa-lightbulb text-xl text-white" aria-hidden="true"></i>
-          </div>
-          <div>
-            <h3 class="text-2xl font-extrabold text-white tracking-tight">Nueva Recomendación</h3>
-            <p class="mt-1 text-base text-green-100 font-medium">Registra las acciones sugeridas para el estudiante</p>
-          </div>
+<div id="edit-recommendation-modal" class="fixed inset-0 z-[70] hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+  <div class="w-full max-w-lg flex flex-col max-h-[88vh] bg-white rounded-xl shadow-2xl overflow-hidden">
+    <!-- Header -->
+    <div class="flex items-center justify-between bg-emerald-600 px-5 py-4 shrink-0">
+      <div class="flex items-center gap-3">
+        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-white/20">
+          <i class="fa-solid fa-lightbulb text-white text-sm"></i>
         </div>
-        <button type="button" data-close-modal="edit-recommendation-modal" class="flex h-10 w-10 items-center justify-center rounded-xl border-2 border-white/30 text-white/80 transition hover:bg-white/20 hover:text-white backdrop-blur-sm">
-          <i class="fa-solid fa-xmark text-xl" aria-hidden="true"></i>
-        </button>
+        <div>
+          <h3 class="text-base font-medium text-white">Nueva Recomendación</h3>
+          <p class="text-xs text-emerald-100">Acciones sugeridas para el estudiante</p>
+        </div>
       </div>
+      <button type="button" data-close-modal="edit-recommendation-modal" class="flex h-8 w-8 items-center justify-center rounded-lg text-white/70 hover:bg-white/20 hover:text-white transition">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
     </div>
 
-    <!-- Body -->
-    <div class="rounded-b-3xl border-x-2 border-b-2 border-green-200/50 bg-white px-8 py-6 shadow-2xl shadow-green-200/30">
-      <form method="post" class="space-y-6">
+    <!-- Body scrollable -->
+    <div class="overflow-y-auto flex-1 p-5">
+      <form method="post" class="space-y-4">
         {% csrf_token %}
         <input type="hidden" name="action" value="add_recommendation">
         <input type="hidden" name="report_id" id="rec-modal-report-id">
-        
-        <!-- Campo Fecha -->
-        <div class="space-y-2">
-          <label class="flex items-center gap-2 text-base font-bold text-slate-800">
-            <i class="fa-regular fa-calendar-check text-[#55a630]" aria-hidden="true"></i>
-            Fecha de seguimiento
+
+        <div class="space-y-1.5">
+          <label class="text-sm font-medium text-slate-700 flex items-center gap-1.5">
+            <i class="fa-regular fa-calendar-check text-emerald-600 text-xs"></i> Fecha de seguimiento
           </label>
           <input type="date" name="recommendation_followup_date" required
-            class="w-full rounded-xl border-2 border-slate-300 px-5 py-3.5 text-lg font-semibold text-slate-800 focus:border-[#55a630] focus:outline-none focus:ring-4 focus:ring-green-100/50 transition-all bg-slate-50">
+            class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-800 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100 transition bg-white">
         </div>
 
-        <!-- Campo Recomendaciones -->
-        <div class="space-y-2">
-          <label class="flex items-center gap-2 text-base font-bold text-slate-800">
-            <i class="fa-solid fa-bullseye text-[#55a630]" aria-hidden="true"></i>
-            Recomendaciones
+        <div class="space-y-1.5">
+          <label class="text-sm font-medium text-slate-700 flex items-center gap-1.5">
+            <i class="fa-solid fa-lightbulb text-emerald-600 text-xs"></i> Recomendaciones
           </label>
-          <textarea name="recommendation_content" rows="6" required
+          <textarea name="recommendation_content" rows="5" required
             placeholder="Describe las acciones, estrategias y recomendaciones para apoyar al estudiante..."
-            class="w-full rounded-xl border-2 border-slate-300 px-5 py-4 text-lg font-medium text-slate-800 placeholder:text-slate-400 focus:border-[#55a630] focus:outline-none focus:ring-4 focus:ring-green-100/50 transition-all bg-slate-50 resize-none leading-relaxed"></textarea>
-          <p class="text-sm text-slate-500 font-medium">Incluye estrategias pedagógicas, acciones de apoyo, recursos recomendados, etc.</p>
+            class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100 transition bg-white resize-none leading-relaxed"></textarea>
+          <p class="text-xs text-slate-500">Estrategias pedagógicas, acciones de apoyo, recursos recomendados, etc.</p>
         </div>
 
-        <!-- Botones -->
-        <div class="flex items-center justify-end gap-4 pt-4 border-t border-slate-200">
+        <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
           <button type="button" data-close-modal="edit-recommendation-modal"
-            class="rounded-xl border-2 border-slate-300 bg-white px-6 py-3 text-base font-bold text-slate-700 hover:bg-slate-100 hover:border-slate-400 transition-all cursor-pointer shadow-sm">
+            class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 transition cursor-pointer">
             Cancelar
           </button>
           <button type="submit"
-            class="flex items-center gap-3 rounded-xl bg-gradient-to-r from-[#55a630] to-[#4a8f2a] px-8 py-3 text-base font-bold text-white shadow-lg shadow-green-500/30 hover:shadow-xl hover:translate-y-[-2px] transition-all cursor-pointer">
-            <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>
+            class="flex items-center gap-2 rounded-lg bg-emerald-600 px-5 py-2 text-sm font-medium text-white hover:bg-emerald-700 transition cursor-pointer">
+            <i class="fa-solid fa-floppy-disk text-xs"></i>
             Guardar recomendación
           </button>
         </div>
@@ -823,147 +756,134 @@
 <!-- ============================================ -->
 <!-- MODAL CREAR REPORTE - UX MEJORADO -->
 <!-- ============================================ -->
-<div id="create-report-modal" class="fixed inset-0 z-[60] hidden items-center justify-center bg-slate-900/60 backdrop-blur-md p-4 ">
-  <div class="w-full max-w-6xl transform transition-all">
-    <!-- Header con diseño moderno -->
-    <div class="relative overflow-hidden rounded-t-l bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6 shadow-xl">
-      <div class="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full -translate-y-20 translate-x-20"></div>
-      <div class="absolute bottom-0 left-0 w-28 h-28 bg-white/5 rounded-full translate-y-10 -translate-x-10"></div>
-      
-      <div class="relative flex items-start justify-between">
-        <div class="flex items-center gap-4">
-          <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm shadow-lg ring-2 ring-white/20">
-            <i class="fa-solid fa-file-circle-plus text-2xl text-white" aria-hidden="true"></i>
-          </div>
-          <div>
-            <h3 class="text-2xl font-extrabold text-white tracking-tight">Nuevo Reporte</h3>
-            <p class="mt-1 text-base text-blue-100 font-medium">Crea un nuevo acompañamiento para el estudiante</p>
-          </div>
+<div id="create-report-modal" class="fixed inset-0 z-[60] hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+  <div class="w-full max-w-xl flex flex-col max-h-[92vh] bg-white rounded-[5px] shadow-2xl overflow-hidden">
+    <!-- Header -->
+    <div class="flex items-center justify-between bg-[#023059] px-5 py-4 shrink-0">
+      <div class="flex items-center gap-3">
+        <div class="flex h-9 w-9 items-center justify-center rounded-[5px] bg-white/20">
+          <i class="fa-solid fa-file-circle-plus text-white text-sm"></i>
         </div>
-        <button type="button" data-close-modal="create-report-modal" class="flex h-10 w-10 items-center justify-center rounded-xl border-2 border-white/30 text-white/80 transition hover:bg-white/20 hover:text-white backdrop-blur-sm">
-          <i class="fa-solid fa-xmark text-xl" aria-hidden="true"></i>
+        <div>
+          <h3 class="text-base font-medium text-white leading-tight">Nuevo Reporte</h3>
+          <p id="modal-student-name" class="text-sm text-blue-200 font-normal">-</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3 ml-4 shrink-0">
+        <div class="text-right">
+          <p class="text-[10px] text-blue-300 uppercase tracking-wide">Código</p>
+          <p id="modal-student-code" class="text-sm font-medium text-white">-</p>
+        </div>
+        <div class="text-right">
+          <p class="text-[10px] text-blue-300 uppercase tracking-wide">Curso</p>
+          <p id="modal-student-course" class="text-sm font-medium text-white">-</p>
+        </div>
+        <button type="button" data-close-modal="create-report-modal" class="ml-2 flex h-8 w-8 items-center justify-center rounded-[5px] text-white/70 hover:bg-white/20 hover:text-white transition">
+          <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
     </div>
 
-    <!-- Body con diseño mejorado -->
-    <div class="rounded-b-l border-x-2 border-b-2 border-blue-200/50 bg-white shadow-2xl shadow-blue-200/30">
-      <!-- Info del estudiante destacada -->
-      <div class="bg-gradient-to-r from-blue-50 to-indigo-50 px-8 py-5 border-b border-blue-100">
-        <div class="flex items-center gap-4">
-          <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-[#2252F7] shadow-md ring-2 ring-blue-200">
-            <i class="fa-solid fa-user-graduate text-lg text-white" aria-hidden="true"></i>
-          </div>
-          <div>
-            <p class="text-sm font-bold text-[#2252F7] uppercase tracking-wide">Estudiante</p>
-            <p id="modal-student-name" class="text-xl font-extrabold text-slate-900">-</p>
-          </div>
-          <div class="ml-auto flex gap-6">
-            <div class="text-center">
-              <p class="text-xs font-bold text-blue-500 uppercase">Código</p>
-              <p id="modal-student-code" class="text-base font-bold text-slate-800">-</p>
-            </div>
-            <div class="text-center">
-              <p class="text-xs font-bold text-blue-500 uppercase">Curso</p>
-              <p id="modal-student-course" class="text-base font-bold text-slate-800">-</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Formulario -->
-      <form method="post" class="p-8 space-y-6">
+    <!-- Body scrollable -->
+    <div class="overflow-y-auto flex-1">
+      <form method="post" class="p-5 space-y-5">
         {% csrf_token %}
         <input type="hidden" name="student_id" id="modal-student-id">
-        
-        <!-- Sección: Tipo de reporte -->
-        <div class="space-y-4">
-          <div class="flex items-center gap-3">
-            <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-700">
-              <i class="fa-solid fa-tag text-sm" aria-hidden="true"></i>
-            </div>
-            <h4 class="text-lg font-extrabold text-slate-900">Tipo de acompañamiento</h4>
-          </div>
-          <div class="grid grid-cols-2 gap-4">
-            <label class="relative cursor-pointer group">
+
+        <!-- Tipo de acompañamiento -->
+        <div class="space-y-2">
+          <label class="text-sm font-medium text-slate-700 flex items-center gap-2">
+            <i class="fa-solid fa-tag text-slate-400 text-xs"></i> Tipo de acompañamiento
+          </label>
+          <div class="grid grid-cols-2 gap-2">
+            <label class="cursor-pointer">
               <input type="radio" name="fines_educativos" value="ACADEMICO" class="peer sr-only">
-              <div class="academico rounded-2xl border-2 border-slate-200 p-4 text-center transition-all hover:border-blue-300 bg-hover:blue-300 hover:shadow-md">
-                <i class="fa-solid fa-graduation-cap text-2xl text-blue-500 mb-2 transition-all" aria-hidden="true"></i>
-                <p class="text-base font-bold text-slate-800">Académico</p>
-                <p class="text-xs text-slate-500">Rendimiento escolar</p>
+              <div class="academico rounded-[5px] border border-slate-200 p-3 text-center transition-all hover:border-blue-400 peer-checked:border-blue-500 peer-checked:bg-blue-50">
+                <i class="fa-solid fa-graduation-cap text-lg text-blue-500 mb-1 block"></i>
+                <p class="text-sm font-medium text-slate-700">Académico</p>
+                <p class="text-[11px] text-slate-500">Rendimiento escolar</p>
               </div>
             </label>
-            <label class="relative cursor-pointer group">
+            <label class="cursor-pointer">
               <input type="radio" name="fines_educativos" value="CONVIVENCIA" class="peer sr-only">
-              <div class="convivencia rounded-2xl border-2 border-slate-200 p-4 text-center transition-all hover:border-amber-300 hover:shadow-md">
-                <i class="fa-solid fa-users text-2xl text-amber-500 mb-2 transition-all" aria-hidden="true"></i>
-                <p class="text-base font-bold text-slate-800">Convivencia</p>
-                <p class="text-xs text-slate-500">Relaciones interpersonales</p>
+              <div class="convivencia rounded-[5px] border border-slate-200 p-3 text-center transition-all hover:border-amber-400 peer-checked:border-amber-500 peer-checked:bg-amber-50">
+                <i class="fa-solid fa-users text-lg text-amber-500 mb-1 block"></i>
+                <p class="text-sm font-medium text-slate-700">Convivencia</p>
+                <p class="text-[11px] text-slate-500">Relaciones interpersonales</p>
               </div>
             </label>
-            <label class="relative cursor-pointer group">
+            <label class="cursor-pointer">
               <input type="radio" name="fines_educativos" value="ESPIRITUAL" class="peer sr-only">
-              <div class="espiritual rounded-2xl border-2 border-slate-200 p-4 text-center transition-all hover:border-violet-300 hover:shadow-md">
-                <i class="fa-solid fa-heart text-2xl text-violet-500 mb-2 transition-all" aria-hidden="true"></i>
-                <p class="text-base font-bold text-slate-800">Espiritual</p>
-                <p class="text-xs text-slate-500">Desarrollo moral y ético</p>
+              <div class="espiritual rounded-[5px] border border-slate-200 p-3 text-center transition-all hover:border-violet-400 peer-checked:border-violet-500 peer-checked:bg-violet-50">
+                <i class="fa-solid fa-heart text-lg text-violet-500 mb-1 block"></i>
+                <p class="text-sm font-medium text-slate-700">Espiritual</p>
+                <p class="text-[11px] text-slate-500">Desarrollo moral y ético</p>
               </div>
             </label>
-            <label class="relative cursor-pointer group">
+            <label class="cursor-pointer">
               <input type="radio" name="fines_educativos" value="PSICOAFECTIVO" class="peer sr-only">
-              <div class="psicoafectivo rounded-2xl border-2 border-slate-200 p-4 text-center transition-all hover:border-pink-300 hover:shadow-md">
-                <i class="fa-solid fa-brain text-2xl text-pink-500 mb-2 transition-all" aria-hidden="true"></i>
-                <p class="text-base font-bold text-slate-800">Psicoafectivo</p>
-                <p class="text-xs text-slate-500">Estado emocional</p>
+              <div class="psicoafectivo rounded-[5px] border border-slate-200 p-3 text-center transition-all hover:border-pink-400 peer-checked:border-pink-500 peer-checked:bg-pink-50">
+                <i class="fa-solid fa-brain text-lg text-pink-500 mb-1 block"></i>
+                <p class="text-sm font-medium text-slate-700">Psicoafectivo</p>
+                <p class="text-[11px] text-slate-500">Estado emocional</p>
               </div>
             </label>
           </div>
           <input type="hidden" name="purpose" id="purpose-hidden">
         </div>
 
-        <!-- Sección: Equipo -->
-        <div class="grid grid-cols-2 gap-6">
-          <div class="space-y-2">
-            <label class="flex items-center gap-2 text-base font-bold text-slate-800">
-              <i class="fa-solid fa-paper-plane text-slate-600" aria-hidden="true"></i>
-              Quién remite
-            </label>
-            <input type="text" readonly value="{% if request.user.is_authenticated %}{{ request.user.get_full_name|default:request.user.username }}{% else %}Administrador{% endif %}"
-              class="w-full rounded-xl border-2 border-slate-200 bg-slate-100 px-4 py-3 text-base font-semibold text-slate-600 cursor-not-allowed">
+        <!-- Alerta fin ya existente -->
+        <div id="fin-existente-alert" class="hidden rounded-[5px] border border-amber-200 bg-amber-50 p-3">
+          <div class="flex items-start gap-2">
+            <i class="fa-solid fa-triangle-exclamation text-amber-500 mt-0.5 text-sm shrink-0"></i>
+            <div>
+              <p class="text-sm font-semibold text-amber-800">Ya tiene un acompañamiento activo de este fin</p>
+              <p id="fin-existente-info" class="text-xs text-amber-700 mt-0.5"></p>
+              <p class="text-xs text-amber-600 mt-1">Ciérralo como <strong>ATENDIDO</strong> antes de crear uno nuevo del mismo tipo.</p>
+            </div>
           </div>
-          <div class="space-y-2">
-            <label class="flex items-center gap-2 text-base font-bold text-slate-800">
-              <i class="fa-solid fa-user-check text-slate-600" aria-hidden="true"></i>
-              quién atenderá
+        </div>
+
+        <!-- Equipo -->
+        <div class="grid grid-cols-2 gap-3">
+          <div class="space-y-1.5">
+            <label class="text-sm font-medium text-slate-700 flex items-center gap-1.5">
+              <i class="fa-solid fa-paper-plane text-slate-400 text-xs"></i> Quien remite
             </label>
-            <select name="assigned_to" class="w-full rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-base font-semibold text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100/50 transition-all cursor-pointer">
-              {% for staff in staff_users %}
-              <option value="{{ staff.id }}">{{ staff.get_full_name|default:staff.username }}</option>
-              {% endfor %}
+            <select id="modal-remite-select" name="remite_user_id" class="w-full rounded-[5px] border border-slate-300 bg-white px-3 py-2 text-sm text-slate-600 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 transition cursor-pointer">
+              <option value="">— Selecciona —</option>
+            </select>
+          </div>
+          <div class="space-y-1.5">
+            <label class="text-sm font-medium text-slate-700 flex items-center gap-1.5">
+              <i class="fa-solid fa-user-check text-slate-400 text-xs"></i> Quien atenderá
+            </label>
+            <select id="modal-atiende-select" name="assigned_to" class="w-full rounded-[5px] border border-slate-300 bg-white px-3 py-2 text-sm text-slate-600 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 transition cursor-pointer">
+              <option value="">— Selecciona —</option>
             </select>
           </div>
         </div>
 
-        <!-- Sección: Objetivo -->
-        <div class="space-y-2">
-          <label class="flex items-center gap-2 text-base font-bold text-slate-800">
-            <i class="fa-solid fa-bullseye text-slate-600" aria-hidden="true"></i>
-            Objetivo del acompañamiento
+        <!-- Objetivo -->
+        <div class="space-y-1.5">
+          <label class="text-sm font-medium text-slate-700 flex items-center gap-1.5">
+            <i class="fa-solid fa-bullseye text-slate-400 text-xs"></i> Objetivo del acompañamiento
           </label>
-          <textarea name="objective" rows="5" required
-            placeholder="Describe el propósito de este acompañamiento: ¿Qué se espera lograr? ¿Cuáles son las necesidades del estudiante? ¿Qué acciones se realizará?"
-            class="w-full rounded-xl border-2 border-slate-300 px-5 py-4 text-lg font-medium text-slate-800 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100/50 transition-all bg-slate-50 resize-none leading-relaxed"></textarea>
-          <p class="text-sm text-slate-500 font-medium">Sé detallado para que el equipo de atención pueda actuar efectivamente.</p>
+          <textarea name="objective" rows="4" required
+            placeholder="¿Qué se espera lograr? ¿Cuáles son las necesidades del estudiante?"
+            class="w-full rounded-[5px] border border-slate-300 px-3 py-2.5 text-sm text-slate-600 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 transition bg-white resize-none leading-relaxed"></textarea>
         </div>
 
         <!-- Botones -->
-        <div class="flex items-center justify-end gap-4 pt-6 border-t border-slate-200">
+        <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
           <button type="button" data-close-modal="create-report-modal"
-            class="rounded-xl border-2 border-slate-300 bg-white px-7 py-3.5 text-base font-bold text-slate-700 hover:bg-slate-100 hover:border-slate-400 transition-all cursor-pointer shadow-sm">
+            class="rounded-[5px] border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 transition cursor-pointer">
             Cancelar
           </button>
           <button type="submit"
-            class="flex items-center gap-3 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-3.5 text-base font-bold text-white shadow-lg hover:shadow-xl hover:translate-y-[-2px] transition-all cursor-pointer text-white">            
+            class="flex items-center gap-2 rounded-[5px] bg-[#2563eb] px-5 py-2 text-sm font-semibold hover:bg-[#1d4ed8] transition cursor-pointer"
+            style="color:#ffffff">
+            <i class="fa-solid fa-plus text-xs" style="color:#ffffff"></i>
             Crear reporte
           </button>
         </div>
@@ -975,6 +895,61 @@
 
 {% block extra_js %}
 <script>
+  // Datos de educadores para filtrado dinámico
+  const EDUCADORES = {{ educadores_json|safe }};
+
+  function poblarDropdownsPorFin(finSeleccionado) {
+    const remiteSelect  = document.getElementById('modal-remite-select');
+    const atiendeSelect = document.getElementById('modal-atiende-select');
+    [remiteSelect, atiendeSelect].forEach(sel => {
+      const prev = sel.value;
+      sel.innerHTML = '<option value="">— Selecciona —</option>';
+      const filtrados = finSeleccionado
+        ? EDUCADORES.filter(e => e.fines.includes(finSeleccionado))
+        : EDUCADORES;
+      filtrados.forEach(e => {
+        const opt = document.createElement('option');
+        opt.value = e.id;
+        opt.textContent = e.nombre;
+        if (String(e.id) === prev) opt.selected = true;
+        sel.appendChild(opt);
+      });
+    });
+  }
+
+  // Calcular stats + color de estado por card
+  document.querySelectorAll('.student-card').forEach(card => {
+    const raw = card.dataset.reportStatuses || '';
+    const statuses = raw.split(',').filter(Boolean);
+    const total = statuses.length;
+    const atendidos   = statuses.filter(s => s === 'ATENDIDO').length;
+    const proceso     = total - atendidos;
+    const pct         = total > 0 ? Math.round((atendidos / total) * 100) : 0;
+    const hasProg     = statuses.some(s => s === 'PROGRAMADO');
+    const hasSeg      = statuses.some(s => s === 'SEGUIMIENTO');
+
+    // Color del borde superior y dot según estado más urgente
+    let topColor, dotColor;
+    if      (total === 0)  { topColor = '#cbd5e1'; dotColor = '#cbd5e1'; }
+    else if (hasProg)      { topColor = '#ef4444'; dotColor = '#ef4444'; }
+    else if (hasSeg)       { topColor = '#f59e0b'; dotColor = '#f59e0b'; }
+    else                   { topColor = '#22c55e'; dotColor = '#22c55e'; }
+
+    card.style.borderTopColor = topColor;
+    const dot = card.querySelector('.status-dot');
+    if (dot) dot.style.background = dotColor;
+
+    // Stats
+    const atEl  = card.querySelector('.stat-atendidos');
+    const prEl  = card.querySelector('.stat-proceso');
+    const pctEl = card.querySelector('.stat-progress-text');
+    const barEl = card.querySelector('.stat-progress-bar');
+    if (atEl)  atEl.textContent  = atendidos;
+    if (prEl)  prEl.textContent  = proceso;
+    if (pctEl) pctEl.textContent = pct + '%';
+    if (barEl) setTimeout(() => { barEl.style.width = pct + '%'; }, 200);
+  });
+
   function openModal(id){
     const m=document.getElementById(id);
     if(m){m.classList.remove('hidden');m.classList.add('flex');}
@@ -1007,37 +982,41 @@
     
     const items = rawItems.split('##').filter(Boolean).map(item => {
       const parts = item.split('||');
-      return { 
-        date: parts[0] ? parts[0].trim() : '', 
-        content: parts[1] ? parts[1].trim() : '', 
-        author: parts[2] ? parts[2].trim() : 'Usuario', 
-        period: parts[3] ? parts[3].trim() : '' 
+      return {
+        date:       parts[0] ? parts[0].trim() : '',
+        content:    parts[1] ? parts[1].trim() : '',
+        author:     parts[2] ? parts[2].trim() : 'Usuario',
+        created_at: parts[3] ? parts[3].trim() : ''
       };
     });
-    
+
     items.sort((a, b) => {
       const dateA = a.date.split('/').reverse().join('');
       const dateB = b.date.split('/').reverse().join('');
       return dateB.localeCompare(dateA);
     });
-    
+
     const total = items.length;
     const counterDiv = document.createElement('div');
     counterDiv.className = 'mb-5 pb-4 border-b-2 border-slate-200';
     counterDiv.innerHTML = `<span class="text-lg font-extrabold" style="color:${colors.text}">${total} ${typeLabel}${total !== 1 ? 's' : ''}</span> <span class="text-base text-slate-500 font-medium">registrada${total !== 1 ? 's' : ''}</span>`;
     container.appendChild(counterDiv);
-    
+
     items.forEach((item) => {
-      const periodDisplay = item.period ? `<span class="ml-2 text-base font-bold px-3 py-1 rounded-lg bg-amber-100 text-amber-700 border border-amber-200">${item.period}</span>` : '';
+      const createdBadge = item.created_at
+        ? `<span class="inline-flex items-center gap-1 text-xs font-600 px-2 py-1 rounded-md bg-slate-100 text-slate-500 border border-slate-200">
+             <i class="fa-regular fa-clock" style="font-size:10px"></i> Creada: ${item.created_at}
+           </span>`
+        : '';
       const itemDiv = document.createElement('div');
       itemDiv.className = 'mb-5 pl-5 relative';
       itemDiv.innerHTML = `
         <div class="absolute left-0 top-2 w-4 h-4 rounded-full border-2 border-white shadow-md" style="background:${colors.dot}"></div>
         <div class="border-l-4 ml-2 pl-5 pb-4" style="border-color:${colors.dot}">
-          <div class="flex flex-wrap items-center gap-3 mb-3">
+          <div class="flex flex-wrap items-center gap-3 mb-2">
             <span class="text-lg font-extrabold text-slate-900">${item.author}</span>
             <span class="text-lg font-bold px-4 py-1.5 rounded-lg shadow-sm" style="background:${colors.bg};color:${colors.badgeText}">${item.date}</span>
-            ${periodDisplay}
+            ${createdBadge}
           </div>
           <p class="text-lg leading-relaxed text-slate-700 font-medium">${item.content}</p>
         </div>
@@ -1053,20 +1032,64 @@
       document.getElementById('modal-student-name').textContent=this.dataset.studentName||'';
       document.getElementById('modal-student-code').textContent=this.dataset.studentCode||'-';
       document.getElementById('modal-student-course').textContent=this.dataset.studentCourse||'-';
-      
-      // Resetear selección de radio buttons
+      document.getElementById('purpose-hidden').value='';
+      document.getElementById('fin-existente-alert').classList.add('hidden');
+
+      // Metadata de reportes existentes: "PURPOSE|fecha|creador;;..."
+      const reportInfoRaw = this.dataset.reportInfo || '';
+      const reportMeta = {};
+      if(reportInfoRaw) {
+        reportInfoRaw.split(';;').forEach(entry => {
+          const [purpose, fecha, creador] = entry.split('|');
+          if(purpose) reportMeta[purpose.trim()] = {fecha: fecha||'', creador: creador||''};
+        });
+      }
+
+      // Fines ya usados
+      const usedPurposes = Object.keys(reportMeta);
+
+      // Resetear fines educativos
       document.querySelectorAll('input[name="fines_educativos"]').forEach(radio => {
         radio.checked = false;
+        const label = radio.closest('label');
+        const card = radio.nextElementSibling;
+        if(usedPurposes.includes(radio.value)){
+          radio.disabled = true;
+          label.classList.add('opacity-40','cursor-not-allowed');
+          label.classList.remove('cursor-pointer');
+          // Guardar meta para mostrar alerta al click
+          label.dataset.reportMeta = JSON.stringify(reportMeta[radio.value]);
+        } else {
+          radio.disabled = false;
+          label.classList.remove('opacity-40','cursor-not-allowed');
+          label.classList.add('cursor-pointer');
+          delete label.dataset.reportMeta;
+        }
       });
-      
+
+      // Click en fin deshabilitado → mostrar alerta
+      document.querySelectorAll('label[data-report-meta]').forEach(lbl => {
+        lbl.onclick = function() {
+          const meta = JSON.parse(this.dataset.reportMeta||'{}');
+          document.getElementById('fin-existente-info').textContent =
+            `Creado el ${meta.fecha||'—'} por ${meta.creador||'—'}`;
+          document.getElementById('fin-existente-alert').classList.remove('hidden');
+        };
+      });
+
+      // Dropdowns: poblar con todos al abrir (sin fin seleccionado aún)
+      poblarDropdownsPorFin('');
+
       openModal('create-report-modal');
     });
   });
   
-  // Actualizar hidden input cuando se selecciona un radio button
+  // Actualizar hidden input y filtrar dropdowns al seleccionar fin
   document.querySelectorAll('input[name="fines_educativos"]').forEach(radio => {
     radio.addEventListener('change', function(){
       document.getElementById('purpose-hidden').value = this.value;
+      document.getElementById('fin-existente-alert').classList.add('hidden');
+      poblarDropdownsPorFin(this.value);
     });
   });
 
@@ -1178,15 +1201,15 @@
         
         items.forEach((item, index) => {
           const itemDiv = document.createElement('div');
-          itemDiv.className = 'relative flex gap-4 rounded-lg border border-slate-200 bg-slate-50 p-4 hover:bg-slate-100 transition-colors';
+          itemDiv.className = 'relative flex gap-3 rounded-lg border border-slate-200 bg-white p-3.5 hover:bg-slate-50 transition-colors';
           itemDiv.innerHTML = `
-            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[${colors.bg}]">
-              <i class="fa-solid fa-${type === 'recommendation' ? 'lightbulb' : 'magnifying-glass'} text-[${colors.icon}]"></i>
+            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg" style="background:${colors.bg}">
+              <i class="fa-solid fa-${type === 'recommendation' ? 'lightbulb' : 'magnifying-glass'} text-sm" style="color:${colors.icon}"></i>
             </div>
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-2 mb-1">
-                <span class="text-sm font-bold text-slate-900">${item.author}</span>
-                <span class="rounded-full bg-white border border-slate-200 px-2 py-0.5 text-[10px] font-semibold text-slate-500">${item.date}</span>
+                <span class="text-sm font-medium text-slate-900">${item.author}</span>
+                <span class="rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-500">${item.date}</span>
               </div>
               <p class="text-sm text-slate-600 leading-relaxed">${item.content}</p>
             </div>

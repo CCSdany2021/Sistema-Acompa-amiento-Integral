@@ -18,9 +18,16 @@ urlpatterns = [
     # API REST
     path('', include(router.urls)),
 
-    # Vistas HTML (legacy)
+    # Vistas HTML
     path('reportes/', views.ReportListView.as_view(), name='list'),
     path('reportes/create/', views.ReportCreateView.as_view(), name='create'),
     path('reportes/<int:pk>/', views.ReportDetailView.as_view(), name='detail'),
     path('reportes/<int:pk>/cerrar/', views.cerrar_report, name='cerrar'),
+
+    # Módulo de indicadores SGI
+    path('indicadores/', views.indicadores_view, name='indicadores'),
+    path('indicadores/informe/', views.informe_acompanamiento_view, name='informe'),
+
+    # Administración de educadores (roles y permisos)
+    path('admin-sai/educadores/', views.admin_educadores_view, name='admin_educadores'),
 ]
