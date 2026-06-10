@@ -8,6 +8,8 @@ from decouple import config
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-dev-key-change-in-production')
+# Clave del portal gestor educativo para validar tokens SSO
+PORTAL_SECRET_KEY = config('PORTAL_SECRET_KEY', default=SECRET_KEY)
 DEBUG = config('DEBUG', default=True, cast=bool)
 ALLOWED_HOSTS = ['*']
 
@@ -50,6 +52,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "acompanamiento.context_processors.sai_viewer",
             ],
         },
     },

@@ -23,6 +23,7 @@ from django.conf.urls.static import static
 from django.utils import timezone
 from django.db.models import Count
 from acompanamiento.models import Student, Report, Observation, Recommendation
+from acompanamiento.views_sso import sso_login
 import json
 
 def home(request):
@@ -76,21 +77,40 @@ def home(request):
             'sec_data':   list(sec_merged.values()),
         }
 
-    d = build_stats(Report.objects.all())
+    from acompanamiento.permissions import filter_reports_for_user, resolve_viewer, has_global_access
+    viewer = resolve_viewer(request)
+
+    all_reports = filter_reports_for_user(Report.objects.all(), viewer)
+    d = build_stats(all_reports)
 
     return render(request, 'dashboard.html', {
         'today':          timezone.now(),
         'students_count': Student.objects.count(),
         'fines_labels':   json.dumps(FINES_L),
         'j_all':          json.dumps(d),
-        'j_p1':           json.dumps(build_stats(Report.objects.filter(academic_period='Primer Periodo'))),
-        'j_p2':           json.dumps(build_stats(Report.objects.filter(academic_period='Segundo Periodo'))),
-        'recientes':      Report.objects.select_related('student','assigned_to').order_by('-created_at')[:8],
+        'j_p1':           json.dumps(build_stats(all_reports.filter(academic_period='Primer Periodo'))),
+        'j_p2':           json.dumps(build_stats(all_reports.filter(academic_period='Segundo Periodo'))),
+        'recientes':      filter_reports_for_user(
+                              Report.objects.select_related('student', 'assigned_to'), viewer
+                          ).filter(status='PROGRAMADO').order_by('-created_at')[:10],
         'd':              d,
+        'current_user':   viewer,
+        'viewer_is_global': has_global_access(viewer),
     })
+
+def serve_sw(request):
+    """Service worker servido desde la raíz para que el scope sea /"""
+    import os
+    from django.http import HttpResponse
+    sw_path = os.path.join(settings.BASE_DIR, 'static', 'sw.js')
+    with open(sw_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+    return HttpResponse(content, content_type='application/javascript')
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("sw.js", serve_sw, name='sw'),
+    path("auth/sso/", sso_login, name='sso_login'),
     path("", home, name='home'),
     path("reports/", include('acompanamiento.urls')),
     path("students/", include('estudiantes.urls')),
