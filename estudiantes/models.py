@@ -43,10 +43,18 @@ class StudentCache(models.Model):
 
             count = 0
             for student in students_data:
+                p_ap = (student.get('primer_apellido') or '').strip()
+                s_ap = (student.get('segundo_apellido') or '').strip()
+                p_nm = (student.get('primer_nombre') or '').strip()
+                s_nm = (student.get('segundo_nombre') or '').strip()
+                apellidos = ' '.join(filter(None, [p_ap, s_ap]))
+                nombres = ' '.join(filter(None, [p_nm, s_nm]))
+                full_name = f"{apellidos} {nombres}" if apellidos and nombres else student.get('nombre_completo', 'Sin Nombre')
+
                 StudentCache.objects.update_or_create(
                     external_id=str(student.get('uuid', student.get('id', ''))),
                     defaults={
-                        'full_name': student.get('nombre_completo', 'Sin Nombre'),
+                        'full_name': full_name,
                         'code': student.get('codigo_estudiante', ''),
                         'email': student.get('email', ''),
                         'grade': student.get('grado', ''),

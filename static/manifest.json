@@ -1,0 +1,38 @@
+{
+  "name": "SAI — Colegio Calasanz Suba",
+  "short_name": "SAI",
+  "description": "Sistema de Acompañamiento Integral",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#2256F2",
+  "background_color": "#ffffff",
+  "lang": "es",
+  "icons": [
+    {
+      "src": "/static/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/static/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Mis Reportes",
+      "url": "/reports/",
+      "description": "Ver lista de reportes"
+    },
+    {
+      "name": "Estudiantes",
+      "url": "/students/",
+      "description": "Lista de estudiantes"
+    }
+  ]
+}

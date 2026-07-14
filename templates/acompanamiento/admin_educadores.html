@@ -11,6 +11,34 @@
   .fin-CONVIVENCIA  { background:#fef3c7; color:#92400e; }
   .fin-ESPIRITUAL   { background:#ede9fe; color:#5b21b6; }
   .fin-PSICOAFECTIVO{ background:#fce7f3; color:#9d174d; }
+  .fin-ALL, .fin-   { background:#f1f5f9; color:#475569; }
+  .scope-FC { background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; }
+  .scope-SA { background:#fef2f2; color:#dc2626; border:1px solid #fecaca; }
+  .scope-FE { background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe; }
+  .regla-row { display:flex; align-items:center; gap:6px; padding:5px 8px;
+               background:#f8fafc; border:1px solid #e2e8f0; border-radius:5px; margin-bottom:4px; }
+  .regla-pill { border-radius:4px; padding:1px 6px; font-size:10px; font-weight:600; }
+
+  /* Checkbox pills para fins y secciones */
+  .cb-pill { display:inline-flex; align-items:center; gap:5px; border:1px solid #cbd5e1;
+             border-radius:5px; padding:4px 10px; font-size:11px; font-weight:600; cursor:pointer;
+             transition: background .12s, border-color .12s, color .12s; user-select:none; }
+  .cb-pill input[type=checkbox] { display:none; }
+  .cb-pill:hover { border-color:#94a3b8; background:#f1f5f9; }
+  .cb-pill.selected-fin-ACADEMICO    { background:#dbeafe; color:#1d4ed8; border-color:#93c5fd; }
+  .cb-pill.selected-fin-CONVIVENCIA  { background:#fef3c7; color:#92400e; border-color:#fcd34d; }
+  .cb-pill.selected-fin-ESPIRITUAL   { background:#ede9fe; color:#5b21b6; border-color:#c4b5fd; }
+  .cb-pill.selected-fin-PSICOAFECTIVO{ background:#fce7f3; color:#9d174d; border-color:#f9a8d4; }
+  .cb-pill.selected-fin-todos        { background:#f1f5f9; color:#334155; border-color:#64748b; }
+  .cb-pill.selected-sec              { background:#e0f2fe; color:#0369a1; border-color:#7dd3fc; }
+
+  /* Toast */
+  #ajax-toast { position:fixed; bottom:1.5rem; right:1.5rem; z-index:9999;
+                background:#1e293b; color:#fff; padding:.7rem 1.2rem; border-radius:6px;
+                font-size:.8rem; font-weight:500; opacity:0; transition:opacity .25s;
+                max-width:320px; box-shadow:0 4px 12px rgba(0,0,0,.25); }
+  #ajax-toast.show { opacity:1; }
+  #ajax-toast.err  { background:#dc2626; }
 </style>
 {% endblock %}
 
@@ -29,7 +57,7 @@
     </div>
   </div>
 
-  <!-- Mensajes -->
+  <!-- Mensajes Django (solo si no es AJAX) -->
   {% for m in messages %}
   <div class="rounded-[5px] px-4 py-3 text-sm font-medium
               {% if m.tags == 'success' %}bg-emerald-50 text-emerald-800 border border-emerald-200
@@ -37,6 +65,54 @@
     {{ m }}
   </div>
   {% endfor %}
+
+  <!-- Períodos académicos -->
+  <div class="rounded-[6px] border border-slate-200 bg-white overflow-hidden">
+    <div class="border-b border-slate-100 px-5 py-3 flex items-center justify-between flex-wrap gap-2">
+      <h3 class="font-semibold text-slate-800">
+        <i class="fa-regular fa-calendar-days text-slate-400 mr-1"></i>
+        Períodos académicos
+      </h3>
+      <div class="flex items-center gap-1.5 text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 rounded-full px-3 py-1">
+        <i class="fa-solid fa-circle-check text-blue-500"></i>
+        Vigente hoy: {{ periodo_actual }}
+      </div>
+    </div>
+    <div class="px-5 py-4">
+      <p class="text-xs text-slate-500 mb-3">
+        Define el rango de fechas de cada período. El sistema asigna automáticamente el período vigente a cada
+        reporte, observación y recomendación nueva según la fecha del día — nadie lo selecciona manualmente.
+        Si una fecha cae entre dos rangos (ej. vacaciones), se usa el último período que ya empezó.
+      </p>
+      <form method="post" class="space-y-2.5">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="save_periodos">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+          {% for p in periodos %}
+          <div class="rounded-[5px] border border-slate-200 bg-slate-50 p-3 space-y-2">
+            <p class="text-xs font-bold text-slate-700">{{ p.nombre }}</p>
+            <div class="space-y-1">
+              <label class="text-[10px] font-medium text-slate-500 uppercase tracking-wide">Inicio</label>
+              <input type="date" name="{{ p.slug }}_inicio" value="{{ p.fecha_inicio|date:'Y-m-d' }}" required
+                     class="w-full rounded-[4px] border border-slate-300 px-2 py-1.5 text-xs focus:border-blue-500 focus:outline-none">
+            </div>
+            <div class="space-y-1">
+              <label class="text-[10px] font-medium text-slate-500 uppercase tracking-wide">Fin</label>
+              <input type="date" name="{{ p.slug }}_fin" value="{{ p.fecha_fin|date:'Y-m-d' }}" required
+                     class="w-full rounded-[4px] border border-slate-300 px-2 py-1.5 text-xs focus:border-blue-500 focus:outline-none">
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        <div class="flex justify-end pt-1">
+          <button type="submit"
+                  class="rounded-[5px] bg-[#2256F2] px-4 py-2 text-xs font-semibold text-white hover:bg-[#1a45d4] transition">
+            <i class="fa-solid fa-floppy-disk text-[10px] mr-1"></i> Guardar fechas
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <!-- Tabla -->
   <div class="rounded-[6px] border border-slate-200 bg-white overflow-hidden">
@@ -54,11 +130,9 @@
         <thead class="bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500">
           <tr>
             <th class="px-5 py-3 text-left">Usuario</th>
-            <th class="px-4 py-3 text-left">Rol</th>
-            <th class="px-4 py-3 text-left">Secciones</th>
-            <th class="px-4 py-3 text-left">Fines educativos</th>
             <th class="px-4 py-3 text-center">Global</th>
             <th class="px-4 py-3 text-center">Activo</th>
+            <th class="px-4 py-3 text-left">Reglas de acceso</th>
             <th class="px-5 py-3 text-center">Acción</th>
           </tr>
         </thead>
@@ -69,50 +143,11 @@
               <p class="font-medium text-slate-900">{{ item.user.get_full_name|default:item.user.username }}</p>
               <p class="text-xs text-slate-400">{{ item.user.email }}</p>
             </td>
-            <td class="px-4 py-3">
-              {% if item.educador %}
-                <span class="rounded-full px-2 py-0.5 text-xs font-semibold
-                  {% if item.educador.rol == 'ADMIN_GLOBAL' %}bg-blue-100 text-blue-700
-                  {% else %}bg-slate-100 text-slate-600{% endif %}">
-                  {{ item.educador.get_rol_display }}
-                </span>
-              {% else %}
-                <span class="text-slate-400 text-xs italic">Sin perfil</span>
-              {% endif %}
-            </td>
-            <td class="px-4 py-3">
-              {% if item.educador %}
-                {% if item.educador.acceso_global %}
-                  <span class="text-xs text-emerald-600 font-semibold">Todas</span>
-                {% else %}
-                  <div class="flex flex-wrap gap-1">
-                    {% for sec in item.educador.secciones.all %}
-                    <span class="rounded-[3px] bg-slate-100 px-1.5 py-0.5 text-xs text-slate-600">{{ sec.name }}</span>
-                    {% empty %}
-                    {% if item.educador.seccion_asignada %}
-                    <span class="rounded-[3px] bg-slate-100 px-1.5 py-0.5 text-xs text-slate-600">{{ item.educador.seccion_asignada.name }}</span>
-                    {% else %}
-                    <span class="text-slate-400 text-xs italic">Ninguna</span>
-                    {% endif %}
-                    {% endfor %}
-                  </div>
-                {% endif %}
-              {% endif %}
-            </td>
-            <td class="px-4 py-3">
-              {% if item.educador %}
-                <div class="flex flex-wrap gap-1">
-                  {% for f in item.educador.fines_educativos %}
-                  <span class="fin-badge fin-{{ f }}">{{ f|slice:":4" }}</span>
-                  {% empty %}
-                  <span class="text-xs text-slate-400 italic">{% if item.educador.acceso_global %}Todos{% else %}Ninguno{% endif %}</span>
-                  {% endfor %}
-                </div>
-              {% endif %}
-            </td>
             <td class="px-4 py-3 text-center">
               {% if item.educador and item.educador.acceso_global %}
-              <i class="fa-solid fa-check text-emerald-500"></i>
+              <span class="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2 py-0.5">
+                <i class="fa-solid fa-check text-[9px]"></i> Todo
+              </span>
               {% else %}
               <i class="fa-solid fa-minus text-slate-300"></i>
               {% endif %}
@@ -124,15 +159,32 @@
               <span class="inline-block h-2 w-2 rounded-full bg-slate-300"></span>
               {% endif %}
             </td>
+            <td class="px-4 py-3">
+              {% if item.educador and item.educador.acceso_global %}
+                <span class="text-xs text-slate-400 italic">Sin restricción</span>
+              {% elif item.reglas %}
+                <div class="flex flex-wrap gap-1">
+                {% for r in item.reglas %}
+                  <span class="regla-pill
+                    {% if r.scope == 'FIN_COMPLETO' %}scope-FC{% elif r.scope == 'SOLO_ASIGNADO' %}scope-SA{% else %}scope-FE{% endif %}">
+                    {{ r.fin_educativo|default:"*" }}/{{ r.seccion|default:"*" }}
+                    {% if r.scope == 'FIN_COMPLETO' %}FC{% elif r.scope == 'SOLO_ASIGNADO' %}SA{% else %}FE{% endif %}
+                  </span>
+                {% endfor %}
+                </div>
+              {% else %}
+                <span class="text-xs text-amber-600 font-medium">Sin reglas configuradas</span>
+              {% endif %}
+            </td>
             <td class="px-5 py-3 text-center">
               <button type="button"
                 class="rounded-[5px] border border-slate-300 bg-white px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50 transition"
-                onclick="openModal({{ item.user.id }}, '{{ item.user.get_full_name|escapejs }}',
+                onclick="openModal(
+                  {{ item.user.id }},
+                  '{{ item.user.get_full_name|escapejs }}',
                   '{{ item.educador.rol|default:"ADMIN_SECCION" }}',
                   {{ item.educador.acceso_global|default:False|yesno:'true,false' }},
-                  {{ item.educador.is_active|default:True|yesno:'true,false' }},
-                  {{ item.educador.fines_educativos|default:'[]'|safe }},
-                  [{% for s in item.educador.secciones.all %}{{ s.id }}{% if not forloop.last %},{% endif %}{% endfor %}]
+                  {{ item.educador.is_active|default:True|yesno:'true,false' }}
                 )">
                 <i class="fa-solid fa-pen text-[10px] mr-1"></i>Editar
               </button>
@@ -148,10 +200,10 @@
 
 <!-- Modal de edición -->
 <div id="edit-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-  <div class="w-full max-w-lg bg-white rounded-[6px] shadow-2xl overflow-hidden">
-    <div class="flex items-center justify-between bg-[#023059] px-5 py-4">
+  <div class="w-full max-w-xl bg-white rounded-[6px] shadow-2xl overflow-hidden flex flex-col" style="max-height:90vh">
+    <div class="flex items-center justify-between bg-[#023059] px-5 py-4 flex-shrink-0">
       <div>
-        <h3 class="text-base font-semibold text-white">Editar perfil educador</h3>
+        <h3 class="text-base font-semibold text-white">Perfil del educador</h3>
         <p id="modal-user-name" class="text-xs text-blue-200"></p>
       </div>
       <button onclick="closeModal()" class="rounded-[5px] text-white/60 hover:text-white hover:bg-white/10 p-2 transition">
@@ -159,125 +211,443 @@
       </button>
     </div>
 
-    <form method="post" action="{% url 'acompanamiento:admin_educadores' %}" class="p-5 space-y-4">
-      {% csrf_token %}
-      <input type="hidden" name="action" value="save_educador">
-      <input type="hidden" name="user_id" id="modal-user-id">
+    <div class="overflow-y-auto flex-1 p-5 space-y-5">
 
-      <!-- Rol -->
-      <div class="space-y-1.5">
-        <label class="text-sm font-medium text-slate-700">Rol</label>
-        <select name="rol" id="modal-rol"
-          class="w-full rounded-[5px] border border-slate-300 px-3 py-2 text-sm text-slate-700 focus:border-blue-500 focus:outline-none">
-          {% for key, label in rol_choices %}
-          <option value="{{ key }}">{{ label }}</option>
+      <!-- Perfil básico -->
+      <form id="form-perfil" class="space-y-4">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="save_educador">
+        <input type="hidden" name="user_id" id="modal-user-id">
+
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Configuración general</p>
+
+        <div class="grid grid-cols-2 gap-3">
+          <!-- Acceso global -->
+          <div class="flex items-center justify-between col-span-2 rounded-[5px] border border-slate-200 px-4 py-3">
+            <div>
+              <p class="text-sm font-medium text-slate-700">Acceso global</p>
+              <p class="text-xs text-slate-500">Ve todo sin restricción (ignora las reglas)</p>
+            </div>
+            <label class="relative inline-flex cursor-pointer items-center">
+              <input type="checkbox" name="acceso_global" id="modal-global" value="1" class="sr-only peer">
+              <div class="peer h-5 w-9 rounded-full bg-slate-200 after:absolute after:left-[2px] after:top-[2px] after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all peer-checked:bg-blue-600 peer-checked:after:translate-x-4"></div>
+            </label>
+          </div>
+          <!-- Activo -->
+          <div class="flex items-center justify-between col-span-2 rounded-[5px] border border-slate-200 px-4 py-3">
+            <div>
+              <p class="text-sm font-medium text-slate-700">Usuario activo</p>
+              <p class="text-xs text-slate-500">Puede acceder al sistema</p>
+            </div>
+            <label class="relative inline-flex cursor-pointer items-center">
+              <input type="checkbox" name="is_active" id="modal-active" value="1" class="sr-only peer">
+              <div class="peer h-5 w-9 rounded-full bg-slate-200 after:absolute after:left-[2px] after:top-[2px] after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all peer-checked:bg-emerald-500 peer-checked:after:translate-x-4"></div>
+            </label>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-3 pt-1">
+          <span id="save-status" class="text-xs font-semibold text-emerald-600 hidden">
+            <i class="fa-solid fa-check mr-1"></i>¡Guardado!
+          </span>
+          <button type="submit" id="btn-guardar"
+            class="rounded-[5px] bg-[#2563eb] px-5 py-2 text-sm font-semibold text-white hover:bg-[#1d4ed8] transition disabled:opacity-50">
+            <i class="fa-solid fa-floppy-disk mr-1.5 text-xs"></i>Guardar
+          </button>
+        </div>
+      </form>
+
+      <hr class="border-slate-100">
+
+      <!-- Reglas de permiso -->
+      <div>
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">
+          Reglas de acceso
+        </p>
+        <p class="text-xs text-slate-400 mb-3">
+          Cada regla define qué puede ver el educador. Si hay varias, se combinan (OR).
+          <span class="text-emerald-700 font-medium">Verde = todo el fin</span> ·
+          <span class="text-red-600 font-medium">Rojo = solo asignado</span> ·
+          <span class="text-blue-600 font-medium">Azul = equipo</span>
+        </p>
+
+        <!-- Lista de reglas actuales -->
+        <div id="reglas-lista" class="space-y-1 mb-3">
+          <!-- Se carga dinámicamente al abrir el modal -->
+        </div>
+
+        <!-- Templates de reglas por usuario (fuente de datos del modal) -->
+        {% for item in educadores_data %}
+        <template data-user-id="{{ item.user.id }}">
+          {% for r in item.reglas %}
+          <div class="regla-row" id="regla-{{ r.id }}">
+            <span class="regla-pill fin-{{ r.fin_educativo|default:'ALL' }} {% if not r.fin_educativo %}bg-slate-100 text-slate-600{% endif %}">
+              {{ r.fin_educativo|default:"Todos los fines" }}
+            </span>
+            <span class="text-slate-400 text-xs">/</span>
+            <span class="text-xs text-slate-600 font-medium">
+              {% if r.seccion == 'preescolar' %}Jardín–Tercero
+              {% elif r.seccion == 'basica_primaria' %}Cuarto–Séptimo
+              {% elif r.seccion == 'basica_secundaria' %}Octavo–Undécimo
+              {% elif r.seccion %}{{ r.seccion }}
+              {% else %}Todas las secciones{% endif %}
+            </span>
+            <span class="text-slate-400 text-xs">/</span>
+            <span class="regla-pill {% if r.scope == 'FIN_COMPLETO' %}scope-FC{% elif r.scope == 'SOLO_ASIGNADO' %}scope-SA{% else %}scope-FE{% endif %}">
+              {{ r.get_scope_display }}
+            </span>
+            <div class="flex-1"></div>
+            <button type="button" class="text-red-400 hover:text-red-600 transition btn-del-regla"
+                    data-id="{{ r.id }}" title="Eliminar regla">
+              <i class="fa-solid fa-trash-can text-[11px]"></i>
+            </button>
+          </div>
+          {% empty %}
+          <p class="text-xs text-slate-400 italic py-2">Sin reglas — si no es global, no verá nada.</p>
           {% endfor %}
-        </select>
+        </template>
+        {% endfor %}
+
+        <!-- Agregar nueva regla -->
+        <form id="form-add-regla" class="bg-slate-50 border border-slate-200 rounded-[5px] p-3 space-y-3">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="add_regla">
+          <input type="hidden" name="user_id" id="regla-user-id">
+          <p class="text-xs font-semibold text-slate-600">Agregar regla</p>
+
+          <!-- Fins educativos -->
+          <div>
+            <label class="text-xs text-slate-500 mb-1.5 block">
+              Fin educativo <span class="text-slate-400 font-normal">(uno o varios)</span>
+            </label>
+            <div class="flex flex-wrap gap-1.5" id="fin-pills">
+              <label class="cb-pill selected-fin-todos">
+                <input type="checkbox" name="fin_educativo" value="" class="fin-cb fin-todos-cb" checked>
+                <i class="fa-solid fa-globe text-[9px]"></i> Todos
+              </label>
+              {% for key, label in fines %}
+              <label class="cb-pill fin-{{ key }}-pill">
+                <input type="checkbox" name="fin_educativo" value="{{ key }}" class="fin-cb fin-spec-cb">
+                {{ label }}
+              </label>
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- Secciones -->
+          <div>
+            <label class="text-xs text-slate-500 mb-1.5 block">
+              Sección <span class="text-slate-400 font-normal">(una o varias)</span>
+            </label>
+            <div class="flex flex-wrap gap-1.5" id="sec-pills">
+              <label class="cb-pill selected-sec">
+                <input type="checkbox" name="seccion" value="" class="sec-cb sec-todos-cb" checked>
+                <i class="fa-solid fa-globe text-[9px]"></i> Todas
+              </label>
+              <label class="cb-pill sec-spec-lbl">
+                <input type="checkbox" name="seccion" value="preescolar" class="sec-cb sec-spec-cb">
+                Jardín–Tercero
+              </label>
+              <label class="cb-pill sec-spec-lbl">
+                <input type="checkbox" name="seccion" value="basica_primaria" class="sec-cb sec-spec-cb">
+                Cuarto–Séptimo
+              </label>
+              <label class="cb-pill sec-spec-lbl">
+                <input type="checkbox" name="seccion" value="basica_secundaria" class="sec-cb sec-spec-cb">
+                Octavo–Undécimo
+              </label>
+            </div>
+          </div>
+
+          <!-- Scope -->
+          <div>
+            <label class="text-xs text-slate-500 mb-1 block">Visibilidad (scope)</label>
+            <select name="scope" class="w-full rounded-[4px] border border-slate-300 px-2 py-1.5 text-xs focus:outline-none focus:border-blue-500">
+              <option value="SOLO_ASIGNADO">Solo asignado — ve únicamente los reportes asignados a él/ella</option>
+              <option value="FIN_COMPLETO">Todo el fin — ve todos los reportes del fin/sección seleccionado</option>
+              <option value="FIN_EQUIPO">Equipo — ve los reportes de todo el equipo que trabaja el mismo fin</option>
+            </select>
+          </div>
+
+          <div class="flex justify-end">
+            <button type="submit"
+              class="rounded-[4px] bg-slate-700 px-4 py-1.5 text-xs font-semibold text-white hover:bg-slate-900 transition">
+              <i class="fa-solid fa-plus text-[10px] mr-1"></i>Agregar regla
+            </button>
+          </div>
+        </form>
       </div>
 
-      <!-- Acceso global -->
-      <div class="flex items-center justify-between rounded-[5px] border border-slate-200 px-4 py-3">
-        <div>
-          <p class="text-sm font-medium text-slate-700">Acceso global</p>
-          <p class="text-xs text-slate-500">Ve todas las secciones y fines educativos</p>
-        </div>
-        <label class="relative inline-flex cursor-pointer items-center">
-          <input type="checkbox" name="acceso_global" id="modal-global" value="1" class="sr-only peer">
-          <div class="peer h-5 w-9 rounded-full bg-slate-200 after:absolute after:left-[2px] after:top-[2px] after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all peer-checked:bg-blue-600 peer-checked:after:translate-x-4"></div>
-        </label>
-      </div>
+    </div>
 
-      <!-- Secciones -->
-      <div class="space-y-2" id="secciones-wrap">
-        <label class="text-sm font-medium text-slate-700">Secciones asignadas</label>
-        <div class="grid grid-cols-2 gap-2">
-          {% for sec in sections %}
-          <label class="flex items-center gap-2 rounded-[5px] border border-slate-200 px-3 py-2 cursor-pointer hover:border-blue-400 transition">
-            <input type="checkbox" name="secciones" value="{{ sec.id }}" class="modal-sec-check accent-blue-600">
-            <span class="text-sm text-slate-700">{{ sec.name }}</span>
-          </label>
-          {% endfor %}
-        </div>
-      </div>
-
-      <!-- Fines educativos -->
-      <div class="space-y-2" id="fines-wrap">
-        <label class="text-sm font-medium text-slate-700">Fines educativos</label>
-        <div class="grid grid-cols-2 gap-2">
-          {% for key, label in fines %}
-          <label class="flex items-center gap-2 rounded-[5px] border border-slate-200 px-3 py-2 cursor-pointer hover:border-blue-400 transition">
-            <input type="checkbox" name="fines_educativos" value="{{ key }}" class="modal-fin-check accent-blue-600">
-            <span class="text-sm text-slate-700">{{ label }}</span>
-          </label>
-          {% endfor %}
-        </div>
-      </div>
-
-      <!-- Activo -->
-      <div class="flex items-center justify-between rounded-[5px] border border-slate-200 px-4 py-3">
-        <div>
-          <p class="text-sm font-medium text-slate-700">Usuario activo</p>
-          <p class="text-xs text-slate-500">Puede acceder al sistema</p>
-        </div>
-        <label class="relative inline-flex cursor-pointer items-center">
-          <input type="checkbox" name="is_active" id="modal-active" value="1" class="sr-only peer">
-          <div class="peer h-5 w-9 rounded-full bg-slate-200 after:absolute after:left-[2px] after:top-[2px] after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all peer-checked:bg-emerald-500 peer-checked:after:translate-x-4"></div>
-        </label>
-      </div>
-
-      <!-- Botones -->
-      <div class="flex justify-end gap-3 pt-2 border-t border-slate-100">
-        <button type="button" onclick="closeModal()"
-          class="rounded-[5px] border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 transition">
-          Cancelar
-        </button>
-        <button type="submit"
-          class="rounded-[5px] bg-[#2563eb] px-5 py-2 text-sm font-semibold text-white hover:bg-[#1d4ed8] transition">
-          Guardar cambios
-        </button>
-      </div>
-    </form>
+    <!-- Pie del modal -->
+    <div class="flex-shrink-0 px-5 py-3 border-t border-slate-100 flex justify-end">
+      <button type="button" onclick="closeModal()"
+        class="rounded-[5px] border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 transition">
+        Cerrar
+      </button>
+    </div>
   </div>
 </div>
+
+<!-- Toast de confirmación -->
+<div id="ajax-toast"></div>
+
 {% endblock %}
 
 {% block extra_js %}
 <script>
-  // Búsqueda en tabla
-  document.getElementById('search-ed').addEventListener('input', function() {
-    const q = this.value.toLowerCase();
-    document.querySelectorAll('#ed-tbody tr').forEach(tr => {
-      tr.style.display = tr.dataset.name.includes(q) ? '' : 'none';
-    });
+// CSRF: primero desde el formulario (más fiable), fallback a cookie
+function getCsrf() {
+  const inp = document.querySelector('[name=csrfmiddlewaretoken]');
+  if (inp) return inp.value;
+  return document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
+}
+const ACTION_URL = "{% url 'acompanamiento:admin_educadores' %}";
+
+const FIN_LABEL   = {'ACADEMICO':'Académico','PSICOAFECTIVO':'Psicoafectivo','ESPIRITUAL':'Espiritual','CONVIVENCIA':'Convivencia','':'Todos los fines'};
+const SEC_LABEL   = {'preescolar':'Jardín–Tercero','basica_primaria':'Cuarto–Séptimo','basica_secundaria':'Octavo–Undécimo','':'Todas las secciones'};
+const SCOPE_LABEL = {'FIN_COMPLETO':'Todo el fin','FIN_EQUIPO':'Equipo','SOLO_ASIGNADO':'Solo asignado'};
+const SCOPE_CLASS = {'FIN_COMPLETO':'scope-FC','FIN_EQUIPO':'scope-FE','SOLO_ASIGNADO':'scope-SA'};
+const FIN_CLASS   = {'ACADEMICO':'fin-ACADEMICO','PSICOAFECTIVO':'fin-PSICOAFECTIVO','ESPIRITUAL':'fin-ESPIRITUAL','CONVIVENCIA':'fin-CONVIVENCIA','':'fin-ALL'};
+
+// ── Toast ──────────────────────────────────────────────────────────────────────
+let _toastTimer;
+function toast(msg, isErr) {
+  const el = document.getElementById('ajax-toast');
+  el.textContent = msg;
+  el.className = 'show' + (isErr ? ' err' : '');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => { el.className = ''; }, 3500);
+}
+
+// ── Búsqueda en tabla ─────────────────────────────────────────────────────────
+document.getElementById('search-ed').addEventListener('input', function() {
+  const q = this.value.toLowerCase();
+  document.querySelectorAll('#ed-tbody tr').forEach(tr => {
+    tr.style.display = tr.dataset.name.includes(q) ? '' : 'none';
   });
+});
 
-  function openModal(userId, name, rol, global_, active, fines, secIds) {
-    document.getElementById('modal-user-id').value = userId;
-    document.getElementById('modal-user-name').textContent = name;
-    document.getElementById('modal-rol').value = rol;
-    document.getElementById('modal-global').checked = global_;
-    document.getElementById('modal-active').checked = active;
-
-    // Fines
-    document.querySelectorAll('.modal-fin-check').forEach(cb => {
-      cb.checked = fines.includes(cb.value);
-    });
-
-    // Secciones
-    document.querySelectorAll('.modal-sec-check').forEach(cb => {
-      cb.checked = secIds.includes(parseInt(cb.value));
-    });
-
-    document.getElementById('edit-modal').style.display = 'flex';
+// ── Render de reglas en el modal ──────────────────────────────────────────────
+function renderReglas(reglas) {
+  const lista = document.getElementById('reglas-lista');
+  if (!reglas || !reglas.length) {
+    lista.innerHTML = '<p class="text-xs text-slate-400 italic py-2">Sin reglas — si no es global, no verá nada.</p>';
+    return;
   }
+  lista.innerHTML = reglas.map(r => {
+    const finCls  = FIN_CLASS[r.fin_educativo] || 'fin-ALL';
+    const scopeCls = SCOPE_CLASS[r.scope] || '';
+    return `<div class="regla-row" id="regla-${r.id}">
+      <span class="regla-pill ${finCls}">${FIN_LABEL[r.fin_educativo] ?? r.fin_educativo ?? 'Todos los fines'}</span>
+      <span class="text-slate-400 text-xs">/</span>
+      <span class="text-xs text-slate-600 font-medium">${SEC_LABEL[r.seccion] ?? r.seccion ?? 'Todas'}</span>
+      <span class="text-slate-400 text-xs">/</span>
+      <span class="regla-pill ${scopeCls}">${SCOPE_LABEL[r.scope] ?? r.scope}</span>
+      <div class="flex-1"></div>
+      <button type="button" class="text-red-400 hover:text-red-600 transition btn-del-regla"
+              data-id="${r.id}" title="Eliminar regla">
+        <i class="fa-solid fa-trash-can text-[11px]"></i>
+      </button>
+    </div>`;
+  }).join('');
+  attachDeleteListeners();
+}
 
-  function closeModal() {
-    document.getElementById('edit-modal').style.display = 'none';
+// ── Abrir modal ───────────────────────────────────────────────────────────────
+function openModal(userId, name, rol, global_, active) {
+  document.getElementById('modal-user-id').value = userId;
+  document.getElementById('regla-user-id').value = userId;
+  document.getElementById('modal-user-name').textContent = name;
+  document.getElementById('modal-global').checked = global_;
+  document.getElementById('modal-active').checked = active;
+
+  // Cargar reglas desde el <template> del usuario
+  const lista = document.getElementById('reglas-lista');
+  const tpl = document.querySelector('template[data-user-id="' + userId + '"]');
+  lista.innerHTML = tpl ? tpl.innerHTML : '<p class="text-xs text-slate-400 italic py-2">Sin reglas configuradas.</p>';
+  attachDeleteListeners();
+
+  // Resetear pills de fins y secciones
+  resetPills();
+
+  document.getElementById('edit-modal').style.display = 'flex';
+}
+
+function closeModal() {
+  document.getElementById('edit-modal').style.display = 'none';
+}
+
+document.getElementById('edit-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// ── Checkbox pills: fins ──────────────────────────────────────────────────────
+document.getElementById('fin-pills').addEventListener('change', function(e) {
+  const cb = e.target;
+  if (cb.classList.contains('fin-todos-cb')) {
+    // "Todos" seleccionado → deseleccionar específicos
+    if (cb.checked) {
+      document.querySelectorAll('.fin-spec-cb').forEach(c => {
+        c.checked = false;
+        c.closest('label').className = 'cb-pill fin-' + c.value + '-pill';
+      });
+      cb.closest('label').className = 'cb-pill selected-fin-todos';
+    } else {
+      // No permitir deseleccionar "Todos" si no hay otro seleccionado
+      cb.checked = true;
+    }
+  } else {
+    // Específico seleccionado → deseleccionar "Todos"
+    document.querySelector('.fin-todos-cb').checked = false;
+    document.querySelector('.fin-todos-cb').closest('label').className = 'cb-pill';
+    // Actualizar clase del pill actual
+    const lbl = cb.closest('label');
+    lbl.className = cb.checked ? `cb-pill selected-fin-${cb.value}` : `cb-pill fin-${cb.value}-pill`;
+    // Si ninguno queda seleccionado, re-activar "Todos"
+    const anySpec = Array.from(document.querySelectorAll('.fin-spec-cb')).some(c => c.checked);
+    if (!anySpec) {
+      document.querySelector('.fin-todos-cb').checked = true;
+      document.querySelector('.fin-todos-cb').closest('label').className = 'cb-pill selected-fin-todos';
+    }
   }
+});
 
-  // Cerrar al click fuera
-  document.getElementById('edit-modal').addEventListener('click', function(e) {
-    if (e.target === this) closeModal();
+// ── Checkbox pills: secciones ─────────────────────────────────────────────────
+document.getElementById('sec-pills').addEventListener('change', function(e) {
+  const cb = e.target;
+  if (cb.classList.contains('sec-todos-cb')) {
+    if (cb.checked) {
+      document.querySelectorAll('.sec-spec-cb').forEach(c => {
+        c.checked = false;
+        c.closest('label').className = 'cb-pill sec-spec-lbl';
+      });
+      cb.closest('label').className = 'cb-pill selected-sec';
+    } else {
+      cb.checked = true;
+    }
+  } else {
+    document.querySelector('.sec-todos-cb').checked = false;
+    document.querySelector('.sec-todos-cb').closest('label').className = 'cb-pill';
+    const lbl = cb.closest('label');
+    lbl.className = cb.checked ? 'cb-pill selected-sec sec-spec-lbl' : 'cb-pill sec-spec-lbl';
+    const anySpec = Array.from(document.querySelectorAll('.sec-spec-cb')).some(c => c.checked);
+    if (!anySpec) {
+      document.querySelector('.sec-todos-cb').checked = true;
+      document.querySelector('.sec-todos-cb').closest('label').className = 'cb-pill selected-sec';
+    }
+  }
+});
+
+function resetPills() {
+  // Fins: activar "Todos", limpiar específicos
+  document.querySelector('.fin-todos-cb').checked = true;
+  document.querySelector('.fin-todos-cb').closest('label').className = 'cb-pill selected-fin-todos';
+  document.querySelectorAll('.fin-spec-cb').forEach(c => {
+    c.checked = false;
+    c.closest('label').className = 'cb-pill fin-' + c.value + '-pill';
   });
+  // Secciones: activar "Todas", limpiar específicas
+  document.querySelector('.sec-todos-cb').checked = true;
+  document.querySelector('.sec-todos-cb').closest('label').className = 'cb-pill selected-sec';
+  document.querySelectorAll('.sec-spec-cb').forEach(c => {
+    c.checked = false;
+    c.closest('label').className = 'cb-pill sec-spec-lbl';
+  });
+}
+
+// ── AJAX: eliminar regla ──────────────────────────────────────────────────────
+function attachDeleteListeners() {
+  document.querySelectorAll('#reglas-lista .btn-del-regla').forEach(btn => {
+    btn.onclick = function() {
+      const id = this.dataset.id;
+      const row = document.getElementById('regla-' + id);
+      const fd = new FormData();
+      fd.append('csrfmiddlewaretoken', getCsrf());
+      fd.append('action', 'delete_regla');
+      fd.append('regla_id', id);
+      fetch(ACTION_URL, {
+        method: 'POST',
+        headers: {'X-Requested-With': 'XMLHttpRequest'},
+        body: fd,
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data.ok) {
+          if (row) row.remove();
+          const lista = document.getElementById('reglas-lista');
+          if (!lista.querySelector('.regla-row')) {
+            lista.innerHTML = '<p class="text-xs text-slate-400 italic py-2">Sin reglas — si no es global, no verá nada.</p>';
+          }
+          toast('Regla eliminada.');
+        } else {
+          toast(data.error || 'Error al eliminar.', true);
+        }
+      })
+      .catch(() => toast('Error de conexión.', true));
+    };
+  });
+}
+
+// ── AJAX: agregar regla ───────────────────────────────────────────────────────
+document.getElementById('form-add-regla').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const fd = new FormData(this);
+  // Forzar al menos uno de fin y sección
+  const fins = fd.getAll('fin_educativo');
+  const secs = fd.getAll('seccion');
+  if (!fins.length) fd.append('fin_educativo', '');
+  if (!secs.length) fd.append('seccion', '');
+
+  fetch(ACTION_URL, {
+    method: 'POST',
+    headers: {'X-Requested-With': 'XMLHttpRequest'},
+    body: fd,
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.ok) {
+      renderReglas(data.reglas);
+      toast(data.msg || 'Regla agregada.');
+      resetPills();
+    } else {
+      toast(data.error || 'Error al agregar regla.', true);
+    }
+  })
+  .catch(() => toast('Error de conexión.', true));
+});
+
+// ── AJAX: guardar perfil educador ─────────────────────────────────────────────
+document.getElementById('form-perfil').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const btn    = document.getElementById('btn-guardar');
+  const status = document.getElementById('save-status');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1.5 text-xs"></i>Guardando…';
+  status.classList.add('hidden');
+
+  const fd = new FormData(this);
+  fetch(ACTION_URL, {
+    method: 'POST',
+    headers: {'X-Requested-With': 'XMLHttpRequest'},
+    body: fd,
+  })
+  .then(r => r.ok ? r.json() : Promise.reject('HTTP ' + r.status))
+  .then(data => {
+    if (data.ok) {
+      status.classList.remove('hidden');
+      toast(data.msg || 'Perfil actualizado.');
+      setTimeout(() => status.classList.add('hidden'), 4000);
+    } else {
+      toast(data.error || 'Error al guardar.', true);
+    }
+  })
+  .catch(err => toast('Error al guardar: ' + err, true))
+  .finally(() => {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-floppy-disk mr-1.5 text-xs"></i>Guardar';
+  });
+});
 </script>
 {% endblock %}

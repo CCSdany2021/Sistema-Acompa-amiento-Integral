@@ -8,11 +8,11 @@
 <div class="max-w-3xl  border border-slate-200 bg-white p-6 shadow-soft">
     <form method="post" class="space-y-4">
         {% csrf_token %}
-        <div class="space-y-4 [&_input]:mt-1 [&_input]:w-full [&_input]:rounded-xl [&_input]:border-slate-300 [&_input]:px-3 [&_input]:py-2 [&_select]:mt-1 [&_select]:w-full [&_select]:rounded-xl [&_select]:border-slate-300 [&_select]:px-3 [&_select]:py-2 [&_textarea]:mt-1 [&_textarea]:w-full [&_textarea]:rounded-xl [&_textarea]:border-slate-300 [&_textarea]:px-3 [&_textarea]:py-2">
+        <div class="space-y-4 [&_input]:mt-1 [&_input]:w-full [&_input]:rounded-[5px] [&_input]:border-slate-300 [&_input]:px-3 [&_input]:py-2 [&_select]:mt-1 [&_select]:w-full [&_select]:rounded-[5px] [&_select]:border-slate-300 [&_select]:px-3 [&_select]:py-2 [&_textarea]:mt-1 [&_textarea]:w-full [&_textarea]:rounded-[5px] [&_textarea]:border-slate-300 [&_textarea]:px-3 [&_textarea]:py-2">
             {{ form.as_p }}
         </div>
         <div class="flex items-center gap-3">
-            <button type="submit" class="rounded-xl bg-ink px-4 py-2 text-white hover:bg-slate-800">Guardar Reporte</button>
+            <button type="submit" class="rounded-[5px] bg-ink px-4 py-2 text-white hover:bg-slate-800">Guardar Reporte</button>
             <a href="{% url 'acompanamiento:list' %}" class="text-slate-500 hover:underline">Cancelar</a>
         </div>
     </form>

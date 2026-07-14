@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Section, Course, Student, Report, Observation, Recommendation, Educador
+from .models import Section, Course, Student, Report, Observation, Recommendation, Educador, AuditoriaAccion
 
 @admin.register(Section)
 class SectionAdmin(admin.ModelAdmin):
@@ -43,3 +43,21 @@ class EducadorAdmin(admin.ModelAdmin):
     list_display = ('user', 'rol', 'seccion_asignada', 'is_active', 'created_at')
     list_filter = ('rol', 'is_active', 'seccion_asignada')
     search_fields = ('user__username', 'user__first_name', 'user__last_name', 'user__email')
+
+
+@admin.register(AuditoriaAccion)
+class AuditoriaAccionAdmin(admin.ModelAdmin):
+    list_display = ('creado_en', 'accion', 'actor', 'autor_original', 'estudiante_nombre', 'report')
+    list_filter = ('accion', 'creado_en')
+    search_fields = ('estudiante_nombre', 'actor__username', 'actor__email', 'autor_original__email', 'detalle')
+    readonly_fields = ('report', 'accion', 'actor', 'autor_original', 'estudiante_nombre', 'detalle', 'creado_en')
+    ordering = ('-creado_en',)
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False

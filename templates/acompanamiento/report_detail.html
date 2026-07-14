@@ -1,304 +1,716 @@
 {% extends 'base.html' %}
 
-{% block title %}Detalle de Reporte - SAI{% endblock %}
+{% block title %}Detalle de Reporte – SAI{% endblock %}
+{% block breadcrumb %}Detalle del Reporte{% endblock %}
 
 {% block extra_head %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
-  .info-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(0,0,0,.06)}
-  .info-row:last-child{border-bottom:none}
-  .info-label{font-size:12px;font-weight:600;color:#64748b}
-  .info-value{font-size:13px;font-weight:700;color:#0f172a;text-align:right}
-  .card-title{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;display:flex;align-items:center;gap:8px;padding-bottom:12px;margin-bottom:12px}
-  /* Timeline items */
-  .tl-item{background:#fff;border-radius:5px;padding:12px 14px;box-shadow:0 1px 3px rgba(0,0,0,.06);border:1px solid}
-  .tl-badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:5px}
-  .tl-created{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;padding:2px 8px;border-radius:5px;background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0}
+  :root {
+    --c-primary:#2256F2; --c-primary-h:#1a45d4;
+    --c-bg:#F8FAFC; --c-surface:#FFFFFF; --c-border:#E2E8F0;
+    --c-text:#0F172A; --c-muted:#64748B;
+    --r-card:5px; --r-input:3px;
+  }
+  body { font-family:'Inter',sans-serif; background:var(--c-bg); }
+
+  .badge-prog { background:#FEF2F2; color:#DC2626; border:1px solid #FECACA; }
+  .badge-seg  { background:#FFFBEB; color:#D97706; border:1px solid #FDE68A; }
+  .badge-aten { background:#F0FDF4; color:#16A34A; border:1px solid #BBF7D0; }
+
+  .pill-acad { background:#EFF6FF; color:#1D4ED8; border:1px solid #BFDBFE; }
+  .pill-conv { background:#FFFBEB; color:#B45309; border:1px solid #FDE68A; }
+  .pill-espi { background:#F5F3FF; color:#7C3AED; border:1px solid #DDD6FE; }
+  .pill-psic { background:#FFF1F2; color:#BE185D; border:1px solid #FBCFE8; }
+
+  .sai-label  { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.06em; color:#64748B; }
+  .sai-value  { font-size:12px; font-weight:600; color:#0F172A; }
+
+  .sai-input {
+    border:1px solid var(--c-border); border-radius:var(--r-input);
+    padding:7px 10px; font-size:12px; font-family:'Inter',sans-serif;
+    width:100%; outline:none; background:#F8FAFC; color:#64748B;
+  }
+  .sai-input:focus { border-color:var(--c-primary); background:#fff; color:#0F172A; }
+
+  /* timeline */
+  .tl-dot { width:18px; height:18px; border-radius:50%; border:2px solid white; box-shadow:0 0 0 2px #E2E8F0; flex-shrink:0; margin-top:2px; }
+
+  /* item actions — aparecen al hacer hover sobre el item */
+  .item-card { position:relative; }
+  .item-actions {
+    position:absolute; top:6px; right:6px;
+    display:flex; align-items:center; gap:4px;
+    opacity:0; transition:opacity .15s ease;
+  }
+  .item-card:hover .item-actions { opacity:1; }
+  .action-btn {
+    display:flex; align-items:center; justify-content:center;
+    width:26px; height:26px; border-radius:4px;
+    border:1px solid #E2E8F0; background:#fff;
+    cursor:pointer; transition:all .15s ease;
+    font-size:11px; color:#94A3B8;
+  }
+  .action-btn:hover.edit-btn  { background:#EFF6FF; border-color:#BFDBFE; color:#2256F2; }
+  .action-btn:hover.del-btn   { background:#FEF2F2; border-color:#FECACA; color:#DC2626; }
+
+  /* modal backdrop */
+  .sai-modal {
+    position:fixed; inset:0; z-index:60;
+    display:none; align-items:center; justify-content:center;
+    background:rgba(15,23,42,.5); backdrop-filter:blur(4px); padding:16px;
+  }
+  .sai-modal.open { display:flex; }
+  .modal-box {
+    background:#fff; border-radius:6px; box-shadow:0 20px 60px rgba(0,0,0,.2);
+    width:100%; max-width:480px; overflow:hidden;
+  }
+  .modal-header {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 16px; border-bottom:1px solid #E2E8F0;
+  }
+  .modal-title { font-size:13px; font-weight:700; color:#0F172A; }
+  .modal-body  { padding:16px; }
+  .modal-footer { display:flex; justify-content:flex-end; gap:8px; padding:12px 16px; border-top:1px solid #E2E8F0; }
+
+  .btn-cancel {
+    padding:6px 14px; border-radius:3px; border:1px solid #E2E8F0;
+    background:#fff; font-size:11px; font-weight:600; color:#64748B;
+    cursor:pointer; transition:all .15s;
+  }
+  .btn-cancel:hover { background:#F8FAFC; }
+  .btn-primary {
+    padding:6px 14px; border-radius:3px; border:none;
+    background:#2256F2; font-size:11px; font-weight:600; color:#fff;
+    cursor:pointer; display:flex; align-items:center; gap:6px; transition:all .15s;
+  }
+  .btn-primary:hover { background:#1a45d4; }
+  .btn-danger {
+    padding:6px 14px; border-radius:3px; border:none;
+    background:#DC2626; font-size:11px; font-weight:600; color:#fff;
+    cursor:pointer; display:flex; align-items:center; gap:6px; transition:all .15s;
+  }
+  .btn-danger:hover { background:#b91c1c; }
+
+  textarea.sai-input { resize:vertical; min-height:90px; }
+  .field-label { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.06em; color:#64748B; display:block; margin-bottom:4px; }
+
+  /* Closed report banner */
+  .closed-banner {
+    border-radius:5px; border:1px solid #BBF7D0;
+    background:linear-gradient(135deg,#F0FDF4,#DCFCE7);
+    padding:12px 16px; margin-bottom:16px;
+    display:flex; align-items:center; gap:12px;
+  }
+  /* Historial ciclos */
+  .hist-cycle {
+    border-left:3px solid #94A3B8; padding-left:12px; margin-bottom:12px;
+  }
+  .hist-cycle:last-child { margin-bottom:0; }
 </style>
 {% endblock %}
 
 {% block content %}
 
-<!-- Header -->
-<div class="mb-6 rounded-2xl bg-[#023059] text-white p-6 shadow-lg">
-  <div class="flex items-center justify-between">
-    <div class="flex items-center gap-4">
-      <div class="flex h-14 w-14 items-center justify-center rounded-xl bg-white/15 text-2xl font-bold">
-        {{ report.student.full_name|slice:":1"|upper }}
-      </div>
-      <div>
-        <div class="text-xl font-extrabold">{{ report.student.full_name }}</div>
-        <div class="text-blue-200 text-sm font-medium mt-0.5">{{ report.student.code }} · {{ report.student.grado|default:"Sin grado" }}</div>
-      </div>
-    </div>
-    <div class="flex items-center gap-3">
-      <span class="px-4 py-1.5 rounded-full text-xs font-bold
-        {% if report.status == 'ATENDIDO' %}bg-green-500/30 text-green-200 border border-green-400/40
-        {% elif report.status == 'SEGUIMIENTO' %}bg-amber-500/30 text-amber-200 border border-amber-400/40
-        {% else %}bg-red-500/30 text-red-200 border border-red-400/40{% endif %}">
-        {{ report.get_status_display }}
-      </span>
-      <a href="{% url 'acompanamiento:list' %}" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-sm font-semibold text-white transition">
-        <i class="fa-solid fa-arrow-left text-xs"></i> Volver
-      </a>
-    </div>
+<!-- ── BANNER CASO CERRADO ────────────────────────────────── -->
+{% if report.is_closed %}
+<div class="closed-banner">
+  <div style="width:36px;height:36px;border-radius:50%;background:#16A34A;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+    <i class="fa-solid fa-circle-check" style="color:#fff;font-size:16px;"></i>
   </div>
-</div>
-
-<!-- Cards de info -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5">
-
-  <!-- Datos del Estudiante — azul cielo -->
-  <div class="rounded-xl border border-sky-200 bg-gradient-to-br from-sky-50 to-blue-50 p-5 shadow-sm">
-    <div class="card-title border-b border-sky-200 text-sky-700">
-      <i class="fa-solid fa-user-graduate text-sky-500"></i> Datos del Estudiante
-    </div>
-    <div>
-      <div class="info-row">
-        <span class="info-label">Nombre</span>
-        <span class="info-value">{{ report.student.full_name }}</span>
-      </div>
-      <div class="info-row">
-        <span class="info-label">Código</span>
-        <span class="info-value">{{ report.student.code }}</span>
-      </div>
-      <div class="info-row">
-        <span class="info-label">Grado</span>
-        <span class="info-value">{{ report.student.grado|default:"-" }}</span>
-      </div>
-      <div class="info-row">
-        <span class="info-label">Sección</span>
-        <span class="info-value">{{ report.student.section|default:"-" }}</span>
-      </div>
-    </div>
+  <div class="flex-1">
+    <p style="font-size:13px;font-weight:700;color:#15803D;margin:0;">Caso cerrado — Solo lectura</p>
+    <p style="font-size:11px;color:#166534;margin:2px 0 0;">
+      Atendido por <strong>{{ report.assigned_to.get_full_name|default:report.institucional_quien_atiende }}</strong>
+      · Cerrado el {{ report.fecha_cierre|date:"d/m/Y" }}
+      {% if report.cumple_acompanamiento %} · <span style="color:#15803D;font-weight:600;">Cumplió el acompañamiento</span>{% endif %}
+    </p>
   </div>
-
-  <!-- Datos del Reporte — violeta -->
-  <div class="rounded-xl border border-violet-200 bg-gradient-to-br from-violet-50 to-purple-50 p-5 shadow-sm">
-    <div class="card-title border-b border-violet-200 text-violet-700">
-      <i class="fa-solid fa-file-lines text-violet-500"></i> Datos del Reporte
-    </div>
-    <div>
-      <div class="info-row">
-        <span class="info-label">Fin Educativo</span>
-        <span class="info-value">{{ report.get_purpose_display|default:"-" }}</span>
-      </div>
-      <div class="info-row">
-        <span class="info-label">Período</span>
-        <span class="info-value" style="color:#d97706">{{ report.academic_period|default:"-" }}</span>
-      </div>
-      <div class="info-row">
-        <span class="info-label">Creado</span>
-        <span class="info-value">{{ report.created_at|date:"d/m/Y" }}</span>
-      </div>
-      <div class="info-row">
-        <span class="info-label">Cumplió</span>
-        <span class="info-value {% if report.is_accomplished %}text-green-600{% else %}text-red-500{% endif %}">
-          {% if report.is_accomplished %}<i class="fa-solid fa-circle-check"></i> Sí{% else %}<i class="fa-solid fa-circle-xmark"></i> No{% endif %}
-        </span>
-      </div>
-    </div>
-  </div>
-
-  <!-- Equipo — ámbar -->
-  <div class="rounded-xl border border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 p-5 shadow-sm">
-    <div class="card-title border-b border-amber-200 text-amber-700">
-      <i class="fa-solid fa-users text-amber-500"></i> Equipo
-    </div>
-    <div class="space-y-3">
-      <div class="flex items-center gap-3 py-1">
-        <div class="flex h-8 w-8 items-center justify-center rounded-full bg-violet-100 text-violet-600 flex-shrink-0">
-          <i class="fa-solid fa-paper-plane text-xs"></i>
-        </div>
-        <div>
-          <div class="info-label">Remitente</div>
-          <div class="info-value text-left" style="text-align:left">{{ report.created_by.get_full_name|default:report.created_by.username|default:"-" }}</div>
-        </div>
-      </div>
-      <div class="flex items-center gap-3 py-1">
-        <div class="flex h-8 w-8 items-center justify-center rounded-full bg-amber-100 text-amber-600 flex-shrink-0">
-          <i class="fa-solid fa-user-check text-xs"></i>
-        </div>
-        <div>
-          <div class="info-label">Encargado</div>
-          <div class="info-value text-left" style="text-align:left">{{ report.assigned_to.get_full_name|default:report.assigned_to.username|default:"-" }}</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-</div>
-
-<!-- Objetivo -->
-<div class="mb-5 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-  <div class="card-title border-b border-slate-100 text-slate-600">
-    <i class="fa-solid fa-bullseye text-[#023059]"></i> Objetivo del Acompañamiento
-  </div>
-  <p class="text-sm leading-relaxed text-slate-700 font-medium">{{ report.objective|default:"Sin objetivo registrado." }}</p>
-</div>
-
-<!-- Observaciones -->
-<div class="mb-5 rounded-xl border border-blue-200 bg-gradient-to-br from-blue-50/60 to-slate-50 p-5 shadow-sm">
-  <div class="card-title border-b border-blue-100 text-blue-700 mb-4">
-    <i class="fa-solid fa-eye text-blue-500"></i> Observaciones
-    <span class="ml-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-700">{{ report.observations.count }}</span>
-  </div>
-
-  {% if report.observations.all %}
-  <div class="space-y-3">
-    {% for obs in report.observations.all %}
-    <div class="relative pl-5">
-      <div class="absolute left-0 top-3 w-3 h-3 rounded-full bg-blue-500 ring-2 ring-white shadow"></div>
-      <div class="border-l-2 border-blue-200 ml-1 pl-4 pb-1">
-        <div class="tl-item border-blue-100">
-          <div class="flex flex-wrap items-center gap-2 mb-2">
-            <span class="text-sm font-extrabold text-slate-900">{{ obs.created_by.get_full_name|default:obs.created_by.username }}</span>
-            <span class="tl-badge bg-blue-100 text-blue-700">
-              {% if obs.followup_date %}{{ obs.followup_date|date:"d/m/Y" }}{% else %}{{ obs.date_log|date:"d/m/Y" }}{% endif %}
-            </span>
-            <span class="tl-created"><i class="fa-regular fa-clock" style="font-size:9px"></i> Creada: {{ obs.date_log|date:"d/m/Y H:i" }}</span>
-            {% if report.academic_period %}
-            <span class="tl-badge bg-amber-100 text-amber-700">{{ report.academic_period }}</span>
-            {% endif %}
-          </div>
-          <p class="text-sm leading-relaxed text-slate-700">{{ obs.content }}</p>
-        </div>
-      </div>
-    </div>
-    {% endfor %}
-  </div>
-  {% else %}
-  <div class="rounded-[5px] border-2 border-dashed border-blue-200 bg-blue-50/50 p-6 text-center">
-    <p class="text-sm text-slate-500 font-medium">Sin observaciones registradas</p>
-  </div>
-  {% endif %}
-</div>
-
-<!-- Recomendaciones -->
-<div class="mb-6 rounded-xl border border-emerald-200 bg-gradient-to-br from-emerald-50/60 to-slate-50 p-5 shadow-sm">
-  <div class="card-title border-b border-emerald-100 text-emerald-700 mb-4">
-    <i class="fa-solid fa-lightbulb text-emerald-500"></i> Recomendaciones
-    <span class="ml-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">{{ report.recommendations.count }}</span>
-  </div>
-
-  {% if report.recommendations.all %}
-  <div class="space-y-3">
-    {% for rec in report.recommendations.all %}
-    <div class="relative pl-5">
-      <div class="absolute left-0 top-3 w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-white shadow"></div>
-      <div class="border-l-2 border-emerald-200 ml-1 pl-4 pb-1">
-        <div class="tl-item border-emerald-100">
-          <div class="flex flex-wrap items-center gap-2 mb-2">
-            <span class="text-sm font-extrabold text-slate-900">{{ rec.created_by.get_full_name|default:rec.created_by.username }}</span>
-            <span class="tl-badge bg-emerald-100 text-emerald-700">
-              {% if rec.followup_date %}{{ rec.followup_date|date:"d/m/Y" }}{% else %}{{ rec.date_log|date:"d/m/Y" }}{% endif %}
-            </span>
-            <span class="tl-created"><i class="fa-regular fa-clock" style="font-size:9px"></i> Creada: {{ rec.date_log|date:"d/m/Y H:i" }}</span>
-            {% if report.academic_period %}
-            <span class="tl-badge bg-amber-100 text-amber-700">{{ report.academic_period }}</span>
-            {% endif %}
-          </div>
-          <p class="text-sm leading-relaxed text-slate-700">{{ rec.content }}</p>
-        </div>
-      </div>
-    </div>
-    {% endfor %}
-  </div>
-  {% else %}
-  <div class="rounded-[5px] border-2 border-dashed border-emerald-200 bg-emerald-50/50 p-6 text-center">
-    <p class="text-sm text-slate-500 font-medium">Sin recomendaciones registradas</p>
-  </div>
-  {% endif %}
-</div>
-
-<!-- Acciones -->
-<div class="flex justify-end gap-4 pt-4 border-t border-slate-200">
-  {% if report.status != 'ATENDIDO' %}
-  <button type="button" id="btn-close-case" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 text-sm font-bold text-white shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all">
-    <i class="fa-solid fa-check-circle mr-2"></i> Cerrar Caso
+  {% if can_reopen %}
+  <button type="button" id="btn-reabrir"
+    style="flex-shrink:0;padding:6px 14px;border-radius:4px;border:none;background:#2256F2;color:#fff;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;">
+    <i class="fa-solid fa-lock-open" style="font-size:10px;"></i> Reabrir caso
   </button>
   {% endif %}
 </div>
+{% endif %}
 
-<!-- Modal Cerrar Caso -->
-<div id="close-case-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/60 backdrop-blur-md p-4">
-  <div class="w-full max-w-3xl transform transition-all">
-    <div class="relative overflow-hidden rounded-t-3xl bg-gradient-to-r from-green-600 to-emerald-500 px-8 py-6 shadow-xl shadow-green-500/20">
-      <div class="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
-      <div class="relative flex items-start justify-between">
-        <div class="flex items-center gap-4">
-          <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
-            <i class="fa-solid fa-check-circle text-2xl text-white"></i>
-          </div>
-          <div>
-            <h3 class="text-2xl font-extrabold text-white">Cerrar Caso</h3>
-            <p class="text-base text-green-100">Finaliza el acompañamiento del estudiante</p>
-          </div>
+<!-- ── PAGE HEADER ────────────────────────────────────────── -->
+<div class="mb-4 flex items-center justify-between rounded-[5px] border border-slate-200 bg-white px-5 py-3.5" style="border-top:4px solid #2256F2">
+  <div class="flex items-center gap-3">
+    <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#2256F2] text-sm font-bold text-white">
+      {{ report.student.full_name|slice:":1"|upper }}
+    </div>
+    <div>
+      <h1 class="text-sm font-bold text-slate-900 leading-tight">{{ report.student.full_name }}</h1>
+      <p class="text-[11px] text-slate-500">{{ report.student.code }}
+        {% with sec=report.student.section %}
+          · {% if sec == 'preescolar' %}Jardín–Tercero
+            {% elif sec == 'basica_primaria' %}Cuarto–Séptimo
+            {% elif sec == 'basica_secundaria' or sec == 'media_academica' %}Octavo–Undécimo
+            {% else %}{{ sec|default:"—" }}{% endif %}
+        {% endwith %}
+      </p>
+    </div>
+  </div>
+  <div class="flex items-center gap-2">
+    <span id="badge-status" class="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold
+      {% if report.status == 'ATENDIDO' %}badge-aten
+      {% elif report.status == 'SEGUIMIENTO' %}badge-seg
+      {% else %}badge-prog{% endif %}">
+      {{ report.get_status_display }}
+    </span>
+    {% if can_edit_all %}
+    <button type="button" id="btn-edit-report"
+      class="flex items-center gap-1.5 rounded-[3px] border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-blue-50 hover:border-[#2256F2] hover:text-[#2256F2] transition-all">
+      <i class="fa-solid fa-pen-to-square text-[10px]"></i> Editar Reporte
+    </button>
+    {% endif %}
+    <a href="{% url 'acompanamiento:list' %}"
+      class="flex items-center gap-1.5 rounded-[3px] border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 hover:border-[#2256F2] hover:text-[#2256F2] transition-all">
+      <i class="fa-solid fa-arrow-left text-[10px]"></i> Volver
+    </a>
+  </div>
+</div>
+
+<!-- ── INFO CARDS ROW ─────────────────────────────────────── -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+
+  <!-- Datos del Estudiante -->
+  <div class="rounded-[5px] border border-slate-200 bg-white p-4">
+    <p class="sai-label mb-3 pb-2 border-b border-slate-100">Datos del Estudiante</p>
+    <div class="space-y-2.5">
+      <div><p class="sai-label">Nombre</p><p class="sai-value mt-0.5">{{ report.student.full_name }}</p></div>
+      <div><p class="sai-label">Código</p><p class="sai-value mt-0.5">{{ report.student.code }}</p></div>
+      <div>
+        <p class="sai-label">Sección</p>
+        <p class="sai-value mt-0.5">
+          {% with sec=report.student.section %}
+            {% if sec == 'preescolar' %}Jardín – Tercero
+            {% elif sec == 'basica_primaria' %}Cuarto – Séptimo
+            {% elif sec == 'basica_secundaria' or sec == 'media_academica' %}Octavo – Undécimo
+            {% else %}{{ sec|default:"—" }}{% endif %}
+          {% endwith %}
+        </p>
+      </div>
+      <div><p class="sai-label">Curso</p><p class="sai-value mt-0.5">{{ report.student.course.name|default:"—" }}</p></div>
+    </div>
+  </div>
+
+  <!-- Datos del Reporte -->
+  <div class="rounded-[5px] border border-slate-200 bg-white p-4">
+    <p class="sai-label mb-3 pb-2 border-b border-slate-100">Datos del Reporte</p>
+    <div class="space-y-2.5">
+      <div>
+        <p class="sai-label">Fin Educativo</p>
+        <span id="badge-purpose" class="inline-flex items-center rounded-full px-2 py-0.5 mt-0.5 text-[10px] font-semibold
+          {% if report.purpose == 'ACADEMICO' %}pill-acad
+          {% elif report.purpose == 'CONVIVENCIA' %}pill-conv
+          {% elif report.purpose == 'ESPIRITUAL' %}pill-espi
+          {% elif report.purpose == 'PSICOAFECTIVO' %}pill-psic
+          {% else %}bg-slate-100 text-slate-500 border border-slate-200{% endif %}">
+          {{ report.get_purpose_display }}
+        </span>
+      </div>
+      <div><p class="sai-label">Período</p><p id="val-period" class="sai-value mt-0.5 text-amber-600">{{ report.academic_period|default:"—" }}</p></div>
+      <div><p class="sai-label">Creado</p><p class="sai-value mt-0.5">{{ report.created_at|date:"d/m/Y" }}</p></div>
+      {% if report.status == 'ATENDIDO' %}
+      <div>
+        <p class="sai-label">Cumplió objetivo</p>
+        <p class="sai-value mt-0.5 {% if report.is_accomplished %}text-emerald-600{% else %}text-slate-500{% endif %}">
+          {% if report.is_accomplished %}Sí{% else %}No{% endif %}
+        </p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Equipo -->
+  <div class="rounded-[5px] border border-slate-200 bg-white p-4">
+    <p class="sai-label mb-3 pb-2 border-b border-slate-100">Equipo</p>
+    <div class="space-y-3">
+      <div class="flex items-center gap-2.5 rounded-[3px] bg-slate-50 p-2.5">
+        <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-[3px] bg-violet-50">
+          <i class="fa-solid fa-paper-plane text-violet-600 text-xs"></i>
         </div>
-        <button type="button" onclick="closeModal('close-case-modal')" class="flex h-10 w-10 items-center justify-center rounded-xl border-2 border-white/30 text-white/80 transition hover:bg-white/20">
-          <i class="fa-solid fa-xmark text-xl"></i>
-        </button>
+        <div class="min-w-0">
+          <p class="sai-label">Remitente</p>
+          <p class="text-xs font-semibold text-slate-800 truncate mt-0.5">{{ report.created_by_display }}</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2.5 rounded-[3px] bg-slate-50 p-2.5">
+        <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-[3px] bg-amber-50">
+          <i class="fa-solid fa-user-check text-amber-600 text-xs"></i>
+        </div>
+        <div class="min-w-0">
+          <p class="sai-label">Encargado</p>
+          <p class="text-xs font-semibold text-slate-800 truncate mt-0.5">{{ report.assigned_to_display }}</p>
+        </div>
       </div>
     </div>
-    <div class="rounded-b-3xl border-x-2 border-b-2 border-green-200 bg-white px-8 py-6 shadow-2xl">
-      <form method="post" action="{% url 'acompanamiento:cerrar' report.pk %}" class="space-y-5">
+  </div>
+
+</div>
+
+<!-- ── OBJETIVO ───────────────────────────────────────────── -->
+<div class="mb-4 rounded-[5px] border border-slate-200 bg-white p-4">
+  <p class="sai-label mb-2.5 pb-2 border-b border-slate-100">Objetivo del Acompañamiento</p>
+  <div class="rounded-[3px] bg-[#F8FAFC] p-3" style="border-left:4px solid #2256F2">
+    <p id="val-objetivo" class="text-xs text-slate-700 leading-relaxed">{{ report.objective|default:"Sin objetivo registrado." }}</p>
+  </div>
+</div>
+
+<!-- ── OBSERVACIONES ──────────────────────────────────────── -->
+<div class="mb-4 rounded-[5px] border border-slate-200 bg-white p-4">
+  <div class="flex items-center justify-between pb-2.5 mb-3 border-b border-slate-100">
+    <div class="flex items-center gap-2">
+      <div class="flex h-6 w-6 items-center justify-center rounded-[3px] bg-blue-50">
+        <i class="fa-solid fa-eye text-[#2256F2] text-xs"></i>
+      </div>
+      <p class="sai-label" style="margin:0">Observaciones</p>
+    </div>
+    <span id="obs-count" class="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-bold text-blue-700">{{ report.observations.count }}</span>
+  </div>
+
+  <div id="obs-list">
+  {% if report.observations.all %}
+    {% for obs in report.observations.all %}
+    <div class="relative flex gap-3 {% if not forloop.last %}mb-4{% endif %}" id="obs-item-{{ obs.id }}">
+      <div class="flex flex-col items-center shrink-0" style="width:18px">
+        <div class="tl-dot" style="background:#2256F2"></div>
+        {% if not forloop.last %}<div style="width:2px;flex:1;min-height:12px;background:#E2E8F0"></div>{% endif %}
+      </div>
+      <div class="flex-1 min-w-0 {% if not forloop.last %}pb-4{% endif %}">
+        <div class="flex flex-wrap items-center gap-2 mb-1.5">
+          <div class="flex h-5 w-5 items-center justify-center rounded-full bg-[#2256F2] text-white text-[9px] font-bold shrink-0">
+            {{ obs.created_by_display|slice:":1"|upper }}
+          </div>
+          <span class="text-[11px] font-semibold text-slate-900">{{ obs.created_by_display }}</span>
+          <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium bg-[#EFF6FF] text-[#1D4ED8]">
+            <i class="fa-regular fa-calendar" style="font-size:8px"></i>
+            <span class="obs-fdate-{{ obs.id }}">{% if obs.followup_date %}{{ obs.followup_date|date:"d/m/Y" }}{% else %}{{ obs.date_log|date:"d/m/Y" }}{% endif %}</span>
+          </span>
+          <span class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] text-slate-500">
+            <i class="fa-regular fa-clock" style="font-size:8px"></i> {{ obs.date_log|date:"d/m/Y H:i" }}
+          </span>
+          {% if obs.academic_period %}
+          <span class="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-700">{{ obs.academic_period }}</span>
+          {% endif %}
+        </div>
+        <!-- Card con acciones -->
+        <div class="item-card rounded-[3px] bg-white border border-slate-200 p-2.5 pr-16" style="border-left:3px solid #2256F2">
+          <p class="obs-content-{{ obs.id }} text-xs text-slate-700 leading-relaxed">{{ obs.content }}</p>
+          {% if not report.is_closed %}
+          {% if can_edit_all or viewer == obs.created_by %}
+          <div class="item-actions">
+            <button class="action-btn edit-btn" title="Editar observación"
+              onclick="openEditObs({{ obs.id }}, this)">
+              <i class="fa-solid fa-pen-to-square"></i>
+            </button>
+            <button class="action-btn del-btn" title="Eliminar observación"
+              onclick="openDeleteObs({{ obs.id }})">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </div>
+          {% endif %}
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  {% else %}
+  <div class="rounded-[5px] border-2 border-dashed border-slate-200 bg-slate-50 p-6 text-center" id="obs-empty">
+    <p class="text-xs text-slate-500">Sin observaciones registradas</p>
+  </div>
+  {% endif %}
+  </div>
+</div>
+
+<!-- ── RECOMENDACIONES ────────────────────────────────────── -->
+<div class="mb-4 rounded-[5px] border border-slate-200 bg-white p-4">
+  <div class="flex items-center justify-between pb-2.5 mb-3 border-b border-slate-100">
+    <div class="flex items-center gap-2">
+      <div class="flex h-6 w-6 items-center justify-center rounded-[3px] bg-emerald-50">
+        <i class="fa-solid fa-lightbulb text-emerald-600 text-xs"></i>
+      </div>
+      <p class="sai-label" style="margin:0">Recomendaciones</p>
+    </div>
+    <span id="rec-count" class="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700">{{ report.recommendations.count }}</span>
+  </div>
+
+  <div id="rec-list">
+  {% if report.recommendations.all %}
+    {% for rec in report.recommendations.all %}
+    <div class="relative flex gap-3 {% if not forloop.last %}mb-4{% endif %}" id="rec-item-{{ rec.id }}">
+      <div class="flex flex-col items-center shrink-0" style="width:18px">
+        <div class="tl-dot" style="background:#22C55E"></div>
+        {% if not forloop.last %}<div style="width:2px;flex:1;min-height:12px;background:#E2E8F0"></div>{% endif %}
+      </div>
+      <div class="flex-1 min-w-0 {% if not forloop.last %}pb-4{% endif %}">
+        <div class="flex flex-wrap items-center gap-2 mb-1.5">
+          <div class="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-white text-[9px] font-bold shrink-0">
+            {{ rec.created_by_display|slice:":1"|upper }}
+          </div>
+          <span class="text-[11px] font-semibold text-slate-900">{{ rec.created_by_display }}</span>
+          <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium bg-[#F0FDF4] text-[#16A34A]">
+            <i class="fa-regular fa-calendar" style="font-size:8px"></i>
+            <span class="rec-fdate-{{ rec.id }}">{% if rec.followup_date %}{{ rec.followup_date|date:"d/m/Y" }}{% else %}{{ rec.date_log|date:"d/m/Y" }}{% endif %}</span>
+          </span>
+          <span class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] text-slate-500">
+            <i class="fa-regular fa-clock" style="font-size:8px"></i> {{ rec.date_log|date:"d/m/Y H:i" }}
+          </span>
+          {% if rec.academic_period %}
+          <span class="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-700">{{ rec.academic_period }}</span>
+          {% endif %}
+        </div>
+        <!-- Card con acciones -->
+        <div class="item-card rounded-[3px] bg-white border border-slate-200 p-2.5 pr-16" style="border-left:3px solid #22C55E">
+          <p class="rec-content-{{ rec.id }} text-xs text-slate-700 leading-relaxed">{{ rec.content }}</p>
+          {% if not report.is_closed %}
+          {% if can_edit_all or viewer == rec.created_by %}
+          <div class="item-actions">
+            <button class="action-btn edit-btn" title="Editar recomendación"
+              onclick="openEditRec({{ rec.id }}, this)">
+              <i class="fa-solid fa-pen-to-square"></i>
+            </button>
+            <button class="action-btn del-btn" title="Eliminar recomendación"
+              onclick="openDeleteRec({{ rec.id }})">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </div>
+          {% endif %}
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  {% else %}
+  <div class="rounded-[5px] border-2 border-dashed border-slate-200 bg-slate-50 p-6 text-center" id="rec-empty">
+    <p class="text-xs text-slate-500">Sin recomendaciones registradas</p>
+  </div>
+  {% endif %}
+  </div>
+</div>
+
+<!-- ── HISTORIAL DE ATENCIONES ANTERIORES ─────────────────── -->
+{% if historial %}
+<div class="mb-4 rounded-[5px] border border-slate-200 bg-white p-4">
+  <div class="flex items-center gap-2 pb-2.5 mb-3 border-b border-slate-100">
+    <div class="flex h-6 w-6 items-center justify-center rounded-[3px] bg-purple-50">
+      <i class="fa-solid fa-clock-rotate-left text-purple-600 text-xs"></i>
+    </div>
+    <p class="sai-label" style="margin:0">Historial de ciclos anteriores</p>
+    <span class="rounded-full bg-purple-100 px-2 py-0.5 text-[10px] font-bold text-purple-700">{{ historial.count }}</span>
+  </div>
+  {% for ciclo in historial %}
+  <div class="hist-cycle">
+    <div class="flex items-center gap-2 mb-1">
+      <span class="text-[10px] font-bold text-slate-500 uppercase">Ciclo {{ forloop.counter }}</span>
+      <span class="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] text-slate-500">
+        {{ ciclo.fecha_inicio|date:"d/m/Y" }} – {{ ciclo.fecha_cierre|date:"d/m/Y" }}
+      </span>
+      {% if ciclo.cumple %}
+      <span class="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">Cumplido</span>
+      {% else %}
+      <span class="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] text-slate-500">No cumplido</span>
+      {% endif %}
+    </div>
+    <p class="text-xs text-slate-700 mb-1"><strong>Atendido por:</strong> {{ ciclo.atendido_por.get_full_name|default:"—" }}</p>
+    {% if ciclo.objetivo %}<p class="text-xs text-slate-600 mb-1"><strong>Objetivo:</strong> {{ ciclo.objetivo }}</p>{% endif %}
+    {% if ciclo.periodo %}<p class="text-xs text-slate-500 mb-1"><strong>Período:</strong> {{ ciclo.periodo }}</p>{% endif %}
+    <p class="text-[10px] text-slate-400">
+      Reabierto por {{ ciclo.reabierto_por.get_full_name|default:"—" }} el {{ ciclo.fecha_reapertura|date:"d/m/Y H:i" }}
+      {% if ciclo.notas_reapertura %} · <em>{{ ciclo.notas_reapertura }}</em>{% endif %}
+    </p>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- ── ACCIONES ───────────────────────────────────────────── -->
+{% if not report.is_closed %}
+<div class="flex justify-end gap-2 pt-4 border-t border-slate-200 mb-6">
+  {% if can_edit_all %}
+  <button type="button" id="btn-close-case"
+    class="flex items-center gap-1.5 rounded-[3px] bg-rose-600 px-4 py-2 text-xs font-semibold text-white hover:bg-rose-700 transition-all">
+    <i class="fa-solid fa-lock text-[9px]"></i> Cerrar Caso
+  </button>
+  {% endif %}
+</div>
+{% endif %}
+
+
+<!-- ══════════════════════════════════════════════════════════
+     MODAL — EDITAR OBSERVACIÓN
+══════════════════════════════════════════════════════════ -->
+<div id="modal-edit-obs" class="sai-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="flex items-center gap-2.5">
+        <div class="flex h-7 w-7 items-center justify-center rounded-[3px] bg-blue-50">
+          <i class="fa-solid fa-pen-to-square text-[#2256F2] text-xs"></i>
+        </div>
+        <p class="modal-title">Editar Observación</p>
+      </div>
+      <button onclick="closeModal('modal-edit-obs')" class="action-btn" style="opacity:1;position:static">
+        <i class="fa-solid fa-xmark text-slate-500"></i>
+      </button>
+    </div>
+    <div class="modal-body space-y-3">
+      <input type="hidden" id="edit-obs-id" value="">
+      <div>
+        <label class="field-label">Texto de la Observación</label>
+        <textarea id="edit-obs-content" class="sai-input" placeholder="Escribe la observación..."></textarea>
+      </div>
+      <div>
+        <label class="field-label">Fecha de Seguimiento</label>
+        <input type="date" id="edit-obs-date" class="sai-input">
+      </div>
+      <div id="edit-obs-error" class="hidden rounded-[3px] bg-red-50 border border-red-200 px-3 py-2 text-xs text-red-600"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal('modal-edit-obs')">Cancelar</button>
+      <button class="btn-primary" onclick="submitEditObs()">
+        <i class="fa-solid fa-check text-[10px]"></i> Guardar cambios
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     MODAL — EDITAR RECOMENDACIÓN
+══════════════════════════════════════════════════════════ -->
+<div id="modal-edit-rec" class="sai-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="flex items-center gap-2.5">
+        <div class="flex h-7 w-7 items-center justify-center rounded-[3px] bg-emerald-50">
+          <i class="fa-solid fa-pen-to-square text-emerald-600 text-xs"></i>
+        </div>
+        <p class="modal-title">Editar Recomendación</p>
+      </div>
+      <button onclick="closeModal('modal-edit-rec')" class="action-btn" style="opacity:1;position:static">
+        <i class="fa-solid fa-xmark text-slate-500"></i>
+      </button>
+    </div>
+    <div class="modal-body space-y-3">
+      <input type="hidden" id="edit-rec-id" value="">
+      <div>
+        <label class="field-label">Texto de la Recomendación</label>
+        <textarea id="edit-rec-content" class="sai-input" placeholder="Escribe la recomendación..."></textarea>
+      </div>
+      <div>
+        <label class="field-label">Fecha de Seguimiento</label>
+        <input type="date" id="edit-rec-date" class="sai-input">
+      </div>
+      <div id="edit-rec-error" class="hidden rounded-[3px] bg-red-50 border border-red-200 px-3 py-2 text-xs text-red-600"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal('modal-edit-rec')">Cancelar</button>
+      <button class="btn-primary" onclick="submitEditRec()">
+        <i class="fa-solid fa-check text-[10px]"></i> Guardar cambios
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     MODAL — CONFIRMAR ELIMINAR OBSERVACIÓN
+══════════════════════════════════════════════════════════ -->
+<div id="modal-del-obs" class="sai-modal">
+  <div class="modal-box" style="max-width:380px">
+    <div class="modal-header" style="background:#FEF2F2; border-bottom:1px solid #FECACA;">
+      <div class="flex items-center gap-2.5">
+        <div class="flex h-7 w-7 items-center justify-center rounded-[3px] bg-red-100">
+          <i class="fa-solid fa-triangle-exclamation text-red-600 text-xs"></i>
+        </div>
+        <p class="modal-title" style="color:#DC2626">Eliminar Observación</p>
+      </div>
+      <button onclick="closeModal('modal-del-obs')" class="action-btn" style="opacity:1;position:static">
+        <i class="fa-solid fa-xmark text-slate-500"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="del-obs-id" value="">
+      <p class="text-xs text-slate-600 leading-relaxed">¿Estás seguro de que deseas eliminar esta observación? Esta acción no se puede deshacer.</p>
+      <div class="mt-3 rounded-[3px] bg-slate-50 border border-slate-200 p-2.5">
+        <p class="text-[10px] text-slate-500 font-semibold uppercase mb-1">Contenido a eliminar</p>
+        <p id="del-obs-preview" class="text-xs text-slate-700 line-clamp-3"></p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal('modal-del-obs')">Cancelar</button>
+      <button class="btn-danger" onclick="submitDeleteObs()">
+        <i class="fa-solid fa-trash text-[10px]"></i> Eliminar
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     MODAL — CONFIRMAR ELIMINAR RECOMENDACIÓN
+══════════════════════════════════════════════════════════ -->
+<div id="modal-del-rec" class="sai-modal">
+  <div class="modal-box" style="max-width:380px">
+    <div class="modal-header" style="background:#FEF2F2; border-bottom:1px solid #FECACA;">
+      <div class="flex items-center gap-2.5">
+        <div class="flex h-7 w-7 items-center justify-center rounded-[3px] bg-red-100">
+          <i class="fa-solid fa-triangle-exclamation text-red-600 text-xs"></i>
+        </div>
+        <p class="modal-title" style="color:#DC2626">Eliminar Recomendación</p>
+      </div>
+      <button onclick="closeModal('modal-del-rec')" class="action-btn" style="opacity:1;position:static">
+        <i class="fa-solid fa-xmark text-slate-500"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="del-rec-id" value="">
+      <p class="text-xs text-slate-600 leading-relaxed">¿Estás seguro de que deseas eliminar esta recomendación? Esta acción no se puede deshacer.</p>
+      <div class="mt-3 rounded-[3px] bg-slate-50 border border-slate-200 p-2.5">
+        <p class="text-[10px] text-slate-500 font-semibold uppercase mb-1">Contenido a eliminar</p>
+        <p id="del-rec-preview" class="text-xs text-slate-700 line-clamp-3"></p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal('modal-del-rec')">Cancelar</button>
+      <button class="btn-danger" onclick="submitDeleteRec()">
+        <i class="fa-solid fa-trash text-[10px]"></i> Eliminar
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     MODAL — EDITAR REPORTE
+══════════════════════════════════════════════════════════ -->
+{% if can_edit_all %}
+<div id="modal-edit-report" class="sai-modal">
+  <div class="modal-box" style="max-width:520px">
+    <div class="modal-header">
+      <div class="flex items-center gap-2.5">
+        <div class="flex h-7 w-7 items-center justify-center rounded-[3px] bg-blue-50">
+          <i class="fa-solid fa-file-pen text-[#2256F2] text-xs"></i>
+        </div>
+        <div>
+          <p class="modal-title">Editar Reporte</p>
+          <p class="text-[10px] text-slate-500 mt-0.5">{{ report.student.full_name }}</p>
+        </div>
+      </div>
+      <button onclick="closeModal('modal-edit-report')" class="action-btn" style="opacity:1;position:static">
+        <i class="fa-solid fa-xmark text-slate-500"></i>
+      </button>
+    </div>
+    <div class="modal-body space-y-3">
+      <div>
+        <label class="field-label">Objetivo del Acompañamiento</label>
+        <textarea id="edit-report-objetivo" class="sai-input" style="min-height:80px">{{ report.objective }}</textarea>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="field-label">Estado</label>
+          <select id="edit-report-status" class="sai-input" style="cursor:pointer">
+            {% for val, lbl in report.status.choices|default:"" %}{% endfor %}
+            <option value="PROGRAMADO" {% if report.status == 'PROGRAMADO' %}selected{% endif %}>Programado</option>
+            <option value="SEGUIMIENTO" {% if report.status == 'SEGUIMIENTO' %}selected{% endif %}>En Seguimiento</option>
+            <option value="ATENDIDO" {% if report.status == 'ATENDIDO' %}selected{% endif %}>Atendido</option>
+          </select>
+        </div>
+        <div>
+          <label class="field-label">Fin Educativo</label>
+          <select id="edit-report-purpose" class="sai-input" style="cursor:pointer">
+            <option value="ACADEMICO" {% if report.purpose == 'ACADEMICO' %}selected{% endif %}>Académico</option>
+            <option value="CONVIVENCIA" {% if report.purpose == 'CONVIVENCIA' %}selected{% endif %}>Convivencia</option>
+            <option value="ESPIRITUAL" {% if report.purpose == 'ESPIRITUAL' %}selected{% endif %}>Espiritual</option>
+            <option value="PSICOAFECTIVO" {% if report.purpose == 'PSICOAFECTIVO' %}selected{% endif %}>Psicoafectivo</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label class="field-label">Período Académico</label>
+        <input type="text" id="edit-report-period" class="sai-input" placeholder="Ej: 2026-1" value="{{ report.academic_period }}">
+      </div>
+      <div id="edit-report-error" class="hidden rounded-[3px] bg-red-50 border border-red-200 px-3 py-2 text-xs text-red-600"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal('modal-edit-report')">Cancelar</button>
+      <button class="btn-primary" onclick="submitEditReport()">
+        <i class="fa-solid fa-check text-[10px]"></i> Guardar cambios
+      </button>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+
+<!-- ── MODAL CERRAR CASO ──────────────────────────────────── -->
+<div id="close-case-modal" class="sai-modal">
+  <div class="modal-box" style="max-width:520px">
+    <div class="modal-header" style="background:#DC2626">
+      <div class="flex items-center gap-2.5">
+        <div class="flex h-7 w-7 items-center justify-center rounded-[3px] bg-white/20">
+          <i class="fa-solid fa-lock text-white text-xs"></i>
+        </div>
+        <div>
+          <p class="modal-title" style="color:#fff">Cerrar Caso</p>
+          <p class="text-[11px]" style="color:#fca5a5">Finaliza el acompañamiento del estudiante</p>
+        </div>
+      </div>
+      <button type="button" onclick="closeModal('close-case-modal')" class="action-btn" style="opacity:1;position:static;background:transparent;border-color:transparent">
+        <i class="fa-solid fa-xmark text-white"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <form method="post" action="{% url 'acompanamiento:cerrar' report.pk %}" class="space-y-3">
         {% csrf_token %}
-        <div class="p-4 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100">
-          <div class="flex items-center gap-4">
-            <div class="flex h-12 w-12 items-center justify-center rounded-full bg-[#2256F2] text-xl font-bold text-white">
+        <div class="rounded-[3px] border border-slate-200 bg-slate-50 p-3">
+          <div class="flex items-center gap-2.5">
+            <div class="flex h-8 w-8 items-center justify-center rounded-full bg-[#2256F2] text-xs font-bold text-white shrink-0">
               {{ report.student.full_name|slice:":1"|upper }}
             </div>
             <div>
-              <p class="text-xs font-bold text-blue-600 uppercase">Estudiante</p>
-              <p class="text-lg font-extrabold text-slate-900">{{ report.student.full_name }}</p>
-            </div>
-            <div class="ml-auto text-right">
-              <p class="text-xs font-bold text-blue-500 uppercase">Código</p>
-              <p class="text-base font-bold text-slate-800">{{ report.student.code }}</p>
+              <p class="text-xs font-bold text-slate-900">{{ report.student.full_name }}</p>
+              <p class="text-[10px] text-slate-500">{{ report.student.code }}</p>
             </div>
           </div>
         </div>
-        <div class="grid grid-cols-2 gap-4">
-          <div class="space-y-2">
-            <label class="flex items-center gap-2 text-sm font-bold text-slate-700"><i class="fa-solid fa-calendar text-green-600"></i> Fecha Inicial</label>
-            <input type="text" value="{{ report.created_at|date:'d/m/Y' }}" readonly class="w-full rounded-lg border-2 border-slate-200 bg-slate-100 px-4 py-2.5 text-base font-medium text-slate-600">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="field-label">Fecha inicial</label>
+            <input type="text" value="{{ report.created_at|date:'d/m/Y' }}" readonly class="sai-input">
           </div>
-          <div class="space-y-2">
-            <label class="flex items-center gap-2 text-sm font-bold text-slate-700"><i class="fa-solid fa-tag text-green-600"></i> Fin Educativo</label>
-            <input type="text" value="{{ report.get_purpose_display|default:'Sin especificar' }}" readonly class="w-full rounded-lg border-2 border-slate-200 bg-slate-100 px-4 py-2.5 text-base font-medium text-slate-600">
-          </div>
-        </div>
-        <div class="grid grid-cols-2 gap-4">
-          <div class="space-y-2">
-            <label class="flex items-center gap-2 text-sm font-bold text-slate-700"><i class="fa-solid fa-paper-plane text-green-600"></i> Quién Remite</label>
-            <input type="text" value="{{ report.created_by.get_full_name|default:report.created_by.username }}" readonly class="w-full rounded-lg border-2 border-slate-200 bg-slate-100 px-4 py-2.5 text-base font-medium text-slate-600">
-          </div>
-          <div class="space-y-2">
-            <label class="flex items-center gap-2 text-sm font-bold text-slate-700"><i class="fa-solid fa-user-check text-green-600"></i> Quién Atiende</label>
-            <input type="text" value="{{ report.assigned_to.get_full_name|default:report.assigned_to.username|default:'Sin asignar' }}" readonly class="w-full rounded-lg border-2 border-slate-200 bg-slate-100 px-4 py-2.5 text-base font-medium text-slate-600">
+          <div>
+            <label class="field-label">Fin Educativo</label>
+            <input type="text" value="{{ report.get_purpose_display|default:'Sin especificar' }}" readonly class="sai-input">
           </div>
         </div>
-        <div class="grid grid-cols-2 gap-4">
-          <div class="space-y-2">
-            <label class="flex items-center gap-2 text-sm font-bold text-slate-700"><i class="fa-solid fa-circle-check text-green-600"></i> Estado Final</label>
-            <select name="status" required class="w-full rounded-xl border-2 border-slate-300 px-4 py-3 text-base font-semibold text-slate-800 focus:border-green-500 focus:outline-none focus:ring-4 focus:ring-green-100/50">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="field-label">Estado final</label>
+            <select name="status" required class="sai-input" style="cursor:pointer">
               <option value="ATENDIDO" selected>Atendido</option>
               <option value="SEGUIMIENTO">En Seguimiento</option>
               <option value="PROGRAMADO">Programado</option>
             </select>
           </div>
-          <div class="space-y-2">
-            <label class="flex items-center gap-2 text-sm font-bold text-slate-700"><i class="fa-solid fa-bullseye text-green-600"></i> ¿Cumplió objetivo?</label>
-            <select name="is_accomplished" required class="w-full rounded-xl border-2 border-slate-300 px-4 py-3 text-base font-semibold text-slate-800 focus:border-green-500 focus:outline-none focus:ring-4 focus:ring-green-100/50">
+          <div>
+            <label class="field-label">¿Cumplió objetivo?</label>
+            <select name="cumple_acompanamiento" required class="sai-input" style="cursor:pointer">
               <option value="true">Sí</option>
               <option value="false">No</option>
             </select>
           </div>
         </div>
-        <div class="flex items-center justify-end gap-4 pt-4 border-t border-slate-200">
-          <button type="button" onclick="closeModal('close-case-modal')" class="px-6 py-3 rounded-xl border-2 border-slate-300 bg-white text-base font-bold text-slate-700 hover:bg-slate-100 transition-all">Cancelar</button>
-          <button type="submit" class="px-8 py-3 rounded-xl bg-gradient-to-r from-green-600 to-emerald-500 text-base font-bold text-white shadow-lg shadow-green-500/30 hover:shadow-xl hover:-translate-y-0.5 transition-all">
-            <i class="fa-solid fa-check mr-2"></i> Confirmar Cierre
+        <div class="modal-footer" style="padding:0;border:none;margin-top:8px">
+          <button type="button" onclick="closeModal('close-case-modal')" class="btn-cancel">Cancelar</button>
+          <button type="submit" class="btn-danger">
+            <i class="fa-solid fa-lock text-[10px]"></i> Confirmar Cierre
           </button>
         </div>
       </form>
@@ -306,14 +718,352 @@
   </div>
 </div>
 
+
+<!-- ══════════════════════════════════════════════════════════
+     MODAL — REABRIR CASO
+══════════════════════════════════════════════════════════ -->
+{% if can_reopen %}
+<div id="modal-reabrir" class="sai-modal">
+  <div class="modal-box" style="max-width:500px">
+    <div class="modal-header" style="background:#2256F2">
+      <div class="flex items-center gap-2.5">
+        <div class="flex h-7 w-7 items-center justify-center rounded-[3px] bg-white/20">
+          <i class="fa-solid fa-lock-open text-white text-xs"></i>
+        </div>
+        <div>
+          <p class="modal-title" style="color:#fff">Reabrir Caso</p>
+          <p class="text-[11px]" style="color:#bfdbfe">{{ report.student.full_name }} — {{ report.get_purpose_display }}</p>
+        </div>
+      </div>
+      <button onclick="closeModal('modal-reabrir')" class="action-btn" style="opacity:1;position:static;background:transparent;border-color:transparent">
+        <i class="fa-solid fa-xmark text-white"></i>
+      </button>
+    </div>
+    <div class="modal-body space-y-3">
+      <div class="rounded-[3px] bg-blue-50 border border-blue-200 px-3 py-2 text-xs text-blue-800">
+        <i class="fa-solid fa-circle-info mr-1"></i>
+        Se guardará el historial del ciclo anterior. El caso volverá a estado <strong>En Seguimiento</strong>.
+      </div>
+      <div>
+        <label class="field-label">Nuevo objetivo (opcional — si cambia el enfoque)</label>
+        <textarea id="reabrir-objetivo" class="sai-input" placeholder="Dejar vacío para mantener el objetivo actual: {{ report.objective|truncatechars:60 }}"></textarea>
+      </div>
+      <div>
+        <label class="field-label">Nuevo encargado (opcional)</label>
+        <select id="reabrir-asignado" class="sai-input" style="cursor:pointer">
+          <option value="">— Mantener a {{ report.assigned_to.get_full_name|default:"actual" }} —</option>
+          {% for item in educadores_select %}
+          <option value="{{ item.pk }}">{{ item.get_full_name }} ({{ item.email }})</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label class="field-label">Motivo de reapertura (visible en historial)</label>
+        <textarea id="reabrir-notas" class="sai-input" style="min-height:60px" placeholder="Ej: El estudiante requiere nueva atención en este fin educativo..."></textarea>
+      </div>
+      <div id="reabrir-error" class="hidden rounded-[3px] bg-red-50 border border-red-200 px-3 py-2 text-xs text-red-600"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal('modal-reabrir')">Cancelar</button>
+      <button class="btn-primary" id="btn-confirm-reabrir" onclick="submitReabrir()">
+        <i class="fa-solid fa-lock-open text-[10px]"></i> Confirmar reapertura
+      </button>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+
+<!-- ══════════════════════════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════════════════════════ -->
 <script>
-  function closeModal(id){
-    document.getElementById(id).classList.add('hidden');
-    document.getElementById(id).classList.remove('flex');
+const CSRF = '{{ csrf_token }}';
+const REPORT_PK = {{ report.pk }};
+// URLs generadas por Django para evitar hardcodear prefijos
+const URL_EDIT_OBS  = "{% url 'acompanamiento:editar_observacion' 0 %}".replace('/0/', '/{id}/');
+const URL_DEL_OBS   = "{% url 'acompanamiento:eliminar_observacion' 0 %}".replace('/0/', '/{id}/');
+const URL_EDIT_REC  = "{% url 'acompanamiento:editar_recomendacion' 0 %}".replace('/0/', '/{id}/');
+const URL_DEL_REC   = "{% url 'acompanamiento:eliminar_recomendacion' 0 %}".replace('/0/', '/{id}/');
+const URL_EDIT_RPT  = "{% url 'acompanamiento:editar_reporte' report.pk %}";
+
+// ── Modal helpers ──────────────────────────────────────────
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// Cerrar modales al hacer click en el backdrop
+document.querySelectorAll('.sai-modal').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) closeModal(m.id); });
+});
+
+// ── Botón cerrar caso ─────────────────────────────────────
+const btnClose = document.getElementById('btn-close-case');
+if (btnClose) btnClose.addEventListener('click', () => openModal('close-case-modal'));
+
+// ── Botón editar reporte ──────────────────────────────────
+const btnEditReport = document.getElementById('btn-edit-report');
+if (btnEditReport) btnEditReport.addEventListener('click', () => openModal('modal-edit-report'));
+
+// ── Editar OBSERVACIÓN ─────────────────────────────────────
+function openEditObs(id, btn) {
+  const content = document.querySelector(`.obs-content-${id}`).textContent.trim();
+  document.getElementById('edit-obs-id').value = id;
+  document.getElementById('edit-obs-content').value = content;
+  document.getElementById('edit-obs-date').value = '';
+  document.getElementById('edit-obs-error').classList.add('hidden');
+  openModal('modal-edit-obs');
+}
+
+async function submitEditObs() {
+  const id = document.getElementById('edit-obs-id').value;
+  const content = document.getElementById('edit-obs-content').value.trim();
+  const date = document.getElementById('edit-obs-date').value;
+  const errEl = document.getElementById('edit-obs-error');
+  errEl.classList.add('hidden');
+
+  if (!content) { errEl.textContent = 'El texto no puede estar vacío.'; errEl.classList.remove('hidden'); return; }
+
+  const fd = new FormData();
+  fd.append('content', content);
+  if (date) fd.append('followup_date', date);
+  fd.append('csrfmiddlewaretoken', CSRF);
+
+  try {
+    const r = await fetch(URL_EDIT_OBS.replace('{id}', id), { method:'POST', body:fd });
+    const data = await r.json();
+    if (!r.ok) { errEl.textContent = data.error || 'Error al guardar.'; errEl.classList.remove('hidden'); return; }
+    // Actualizar DOM
+    document.querySelector(`.obs-content-${id}`).textContent = data.content;
+    if (data.followup_date) {
+      const parts = data.followup_date.split('-');
+      document.querySelector(`.obs-fdate-${id}`).textContent = `${parts[2]}/${parts[1]}/${parts[0]}`;
+    }
+    closeModal('modal-edit-obs');
+    showToast('Observación actualizada', 'success');
+  } catch(e) {
+    errEl.textContent = 'Error de red. Intenta nuevamente.';
+    errEl.classList.remove('hidden');
   }
-  document.getElementById('btn-close-case') && document.getElementById('btn-close-case').addEventListener('click',function(){
-    document.getElementById('close-case-modal').classList.remove('hidden');
-    document.getElementById('close-case-modal').classList.add('flex');
-  });
+}
+
+// ── Eliminar OBSERVACIÓN ───────────────────────────────────
+function openDeleteObs(id) {
+  const content = document.querySelector(`.obs-content-${id}`).textContent.trim();
+  document.getElementById('del-obs-id').value = id;
+  document.getElementById('del-obs-preview').textContent = content;
+  openModal('modal-del-obs');
+}
+
+async function submitDeleteObs() {
+  const id = document.getElementById('del-obs-id').value;
+  const fd = new FormData();
+  fd.append('csrfmiddlewaretoken', CSRF);
+
+  try {
+    const r = await fetch(URL_DEL_OBS.replace('{id}', id), { method:'POST', body:fd });
+    const data = await r.json();
+    if (!r.ok) { alert(data.error || 'Error al eliminar.'); return; }
+    // Remover del DOM
+    const el = document.getElementById(`obs-item-${id}`);
+    if (el) el.remove();
+    closeModal('modal-del-obs');
+    // Actualizar contador
+    const cnt = document.getElementById('obs-count');
+    cnt.textContent = Math.max(0, parseInt(cnt.textContent) - 1);
+    showToast('Observación eliminada', 'danger');
+  } catch(e) {
+    alert('Error de red. Intenta nuevamente.');
+  }
+}
+
+// ── Editar RECOMENDACIÓN ──────────────────────────────────
+function openEditRec(id, btn) {
+  const content = document.querySelector(`.rec-content-${id}`).textContent.trim();
+  document.getElementById('edit-rec-id').value = id;
+  document.getElementById('edit-rec-content').value = content;
+  document.getElementById('edit-rec-date').value = '';
+  document.getElementById('edit-rec-error').classList.add('hidden');
+  openModal('modal-edit-rec');
+}
+
+async function submitEditRec() {
+  const id = document.getElementById('edit-rec-id').value;
+  const content = document.getElementById('edit-rec-content').value.trim();
+  const date = document.getElementById('edit-rec-date').value;
+  const errEl = document.getElementById('edit-rec-error');
+  errEl.classList.add('hidden');
+
+  if (!content) { errEl.textContent = 'El texto no puede estar vacío.'; errEl.classList.remove('hidden'); return; }
+
+  const fd = new FormData();
+  fd.append('content', content);
+  if (date) fd.append('followup_date', date);
+  fd.append('csrfmiddlewaretoken', CSRF);
+
+  try {
+    const r = await fetch(URL_EDIT_REC.replace('{id}', id), { method:'POST', body:fd });
+    const data = await r.json();
+    if (!r.ok) { errEl.textContent = data.error || 'Error al guardar.'; errEl.classList.remove('hidden'); return; }
+    document.querySelector(`.rec-content-${id}`).textContent = data.content;
+    if (data.followup_date) {
+      const parts = data.followup_date.split('-');
+      document.querySelector(`.rec-fdate-${id}`).textContent = `${parts[2]}/${parts[1]}/${parts[0]}`;
+    }
+    closeModal('modal-edit-rec');
+    showToast('Recomendación actualizada', 'success');
+  } catch(e) {
+    errEl.textContent = 'Error de red. Intenta nuevamente.';
+    errEl.classList.remove('hidden');
+  }
+}
+
+// ── Eliminar RECOMENDACIÓN ────────────────────────────────
+function openDeleteRec(id) {
+  const content = document.querySelector(`.rec-content-${id}`).textContent.trim();
+  document.getElementById('del-rec-id').value = id;
+  document.getElementById('del-rec-preview').textContent = content;
+  openModal('modal-del-rec');
+}
+
+async function submitDeleteRec() {
+  const id = document.getElementById('del-rec-id').value;
+  const fd = new FormData();
+  fd.append('csrfmiddlewaretoken', CSRF);
+
+  try {
+    const r = await fetch(URL_DEL_REC.replace('{id}', id), { method:'POST', body:fd });
+    const data = await r.json();
+    if (!r.ok) { alert(data.error || 'Error al eliminar.'); return; }
+    const el = document.getElementById(`rec-item-${id}`);
+    if (el) el.remove();
+    closeModal('modal-del-rec');
+    const cnt = document.getElementById('rec-count');
+    cnt.textContent = Math.max(0, parseInt(cnt.textContent) - 1);
+    showToast('Recomendación eliminada', 'danger');
+  } catch(e) {
+    alert('Error de red. Intenta nuevamente.');
+  }
+}
+
+// ── Editar REPORTE ────────────────────────────────────────
+async function submitEditReport() {
+  const objetivo = document.getElementById('edit-report-objetivo').value.trim();
+  const newStatus = document.getElementById('edit-report-status').value;
+  const purpose = document.getElementById('edit-report-purpose').value;
+  const period = document.getElementById('edit-report-period').value.trim();
+  const errEl = document.getElementById('edit-report-error');
+  errEl.classList.add('hidden');
+
+  const fd = new FormData();
+  fd.append('objective', objetivo);
+  fd.append('status', newStatus);
+  fd.append('purpose', purpose);
+  fd.append('academic_period', period);
+  fd.append('csrfmiddlewaretoken', CSRF);
+
+  try {
+    const r = await fetch(URL_EDIT_RPT, { method:'POST', body:fd });
+    const data = await r.json();
+    if (!r.ok) { errEl.textContent = data.error || 'Error al guardar.'; errEl.classList.remove('hidden'); return; }
+    // Actualizar DOM
+    document.getElementById('val-objetivo').textContent = data.objective || 'Sin objetivo registrado.';
+    document.getElementById('val-period').textContent = data.academic_period || '—';
+    // Badge de estado
+    const badgeStatus = document.getElementById('badge-status');
+    badgeStatus.textContent = data.status_display;
+    badgeStatus.className = 'inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold';
+    if (data.status === 'ATENDIDO') badgeStatus.classList.add('badge-aten');
+    else if (data.status === 'SEGUIMIENTO') badgeStatus.classList.add('badge-seg');
+    else badgeStatus.classList.add('badge-prog');
+    // Badge de fin educativo
+    const badgePurpose = document.getElementById('badge-purpose');
+    badgePurpose.textContent = data.purpose_display;
+    badgePurpose.className = 'inline-flex items-center rounded-full px-2 py-0.5 mt-0.5 text-[10px] font-semibold';
+    const pillMap = { ACADEMICO:'pill-acad', CONVIVENCIA:'pill-conv', ESPIRITUAL:'pill-espi', PSICOAFECTIVO:'pill-psic' };
+    badgePurpose.classList.add(pillMap[data.purpose] || 'bg-slate-100 text-slate-500 border border-slate-200');
+    closeModal('modal-edit-report');
+    showToast('Reporte actualizado', 'success');
+  } catch(e) {
+    errEl.textContent = 'Error de red. Intenta nuevamente.';
+    errEl.classList.remove('hidden');
+  }
+}
+
+// ── Botón Reabrir ─────────────────────────────────────────
+const btnReabrir = document.getElementById('btn-reabrir');
+if (btnReabrir) {
+  btnReabrir.addEventListener('click', () => openModal('modal-reabrir'));
+}
+
+const URL_REABRIR = "{% url 'acompanamiento:reabrir' report.pk %}";
+
+async function submitReabrir() {
+  const objetivo = (document.getElementById('reabrir-objetivo')?.value || '').trim();
+  const notas    = (document.getElementById('reabrir-notas')?.value || '').trim();
+  const asigId   = document.getElementById('reabrir-asignado')?.value || '';
+  const errEl    = document.getElementById('reabrir-error');
+  const btn      = document.getElementById('btn-confirm-reabrir');
+  errEl.classList.add('hidden');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-[10px]"></i> Procesando...';
+
+  const fd = new FormData();
+  fd.append('csrfmiddlewaretoken', CSRF);
+  fd.append('objetivo', objetivo);
+  fd.append('notas', notas);
+  if (asigId) fd.append('assigned_to_id', asigId);
+
+  try {
+    const r = await fetch(URL_REABRIR, { method: 'POST', body: fd });
+    const data = await r.json();
+    if (!r.ok) {
+      errEl.textContent = data.error || 'Error al reabrir.';
+      errEl.classList.remove('hidden');
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-lock-open text-[10px]"></i> Confirmar reapertura';
+      return;
+    }
+    showToast('Caso reabierto correctamente', 'success');
+    setTimeout(() => window.location.reload(), 1200);
+  } catch(e) {
+    errEl.textContent = 'Error de red. Intenta nuevamente.';
+    errEl.classList.remove('hidden');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-lock-open text-[10px]"></i> Confirmar reapertura';
+  }
+}
+
+// ── Botón Cerrar Caso ────────────────────────────────────
+const btnCloseCase = document.getElementById('btn-close-case');
+if (btnCloseCase) {
+  btnCloseCase.addEventListener('click', () => openModal('close-case-modal'));
+}
+
+// ── Toast de confirmación ─────────────────────────────────
+function showToast(msg, type) {
+  const t = document.createElement('div');
+  t.style.cssText = `position:fixed;bottom:20px;right:20px;z-index:9999;
+    padding:10px 16px;border-radius:5px;font-size:12px;font-weight:600;
+    display:flex;align-items:center;gap:8px;
+    box-shadow:0 4px 20px rgba(0,0,0,.15);
+    animation:slideUp .2s ease;`;
+  if (type === 'success') {
+    t.style.background='#F0FDF4'; t.style.color='#16A34A'; t.style.border='1px solid #BBF7D0';
+    t.innerHTML = '<i class="fa-solid fa-circle-check"></i> ' + msg;
+  } else {
+    t.style.background='#FEF2F2'; t.style.color='#DC2626'; t.style.border='1px solid #FECACA';
+    t.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> ' + msg;
+  }
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
 </script>
+
+<style>
+@keyframes slideUp {
+  from { transform:translateY(10px); opacity:0; }
+  to   { transform:translateY(0);    opacity:1; }
+}
+</style>
+
 {% endblock %}

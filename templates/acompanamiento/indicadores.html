@@ -25,15 +25,24 @@
   <!-- Header -->
   <div class="flex flex-wrap items-center justify-between gap-4">
     <div>
-      <h1 class="text-2xl font-bold text-slate-900">Indicadores de Gestión</h1>
-      <p class="text-sm text-slate-500 mt-0.5">Eficiencia y Eficacia del Acompañamiento Integral · Meta ≥ 80%</p>
+      {% if es_global %}
+      <h1 class="text-2xl font-bold text-slate-900">Indicadores Globales de Gestión</h1>
+      <p class="text-sm text-slate-500 mt-0.5">Todos los educadores · Eficiencia y Eficacia · Meta ≥ 80%</p>
+      {% else %}
+      <h1 class="text-2xl font-bold text-slate-900">Mis Indicadores</h1>
+      <p class="text-sm text-slate-500 mt-0.5">
+        {{ viewer.get_full_name|default:viewer.username }} · Eficiencia y Eficacia · Meta ≥ 80%
+      </p>
+      {% endif %}
     </div>
+    {% if viewer.email == 'cap@calasanzsuba.edu.co' or viewer.email == 'mrodriguez@calasanzsuba.edu.co' %}
     <div class="flex gap-2">
       <a href="{% url 'acompanamiento:informe' %}?anio={{ anio }}{% if periodo %}&periodo={{ periodo }}{% endif %}{% if seccion %}&seccion={{ seccion }}{% endif %}{% if fin %}&fin={{ fin }}{% endif %}"
         class="flex items-center gap-2 rounded-[5px] bg-[#1a2847] px-4 py-2 text-sm font-semibold hover:opacity-90 transition" style="color:#fff !important">
         <i class="fa-solid fa-file-pdf text-xs"></i> Generar Informe SGI
       </a>
     </div>
+    {% endif %}
   </div>
 
   <!-- Filtros -->
@@ -50,6 +59,7 @@
         {% for p in periodos %}<option value="{{ p }}" {% if p == periodo %}selected{% endif %}>{{ p }}</option>{% endfor %}
       </select>
     </div>
+    {% if es_global %}
     <div class="space-y-1">
       <label class="text-xs font-semibold uppercase tracking-wide text-slate-500">Sección</label>
       <select name="seccion" class="rounded-[5px] border border-slate-300 px-3 py-1.5 text-sm focus:border-blue-500 focus:outline-none">
@@ -57,6 +67,7 @@
         {% for key, label in secciones %}<option value="{{ key }}" {% if key == seccion %}selected{% endif %}>{{ label }}</option>{% endfor %}
       </select>
     </div>
+    {% endif %}
     <div class="space-y-1">
       <label class="text-xs font-semibold uppercase tracking-wide text-slate-500">Fin Educativo</label>
       <select name="fin" class="rounded-[5px] border border-slate-300 px-3 py-1.5 text-sm focus:border-blue-500 focus:outline-none">

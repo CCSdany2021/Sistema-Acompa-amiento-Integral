@@ -5,128 +5,239 @@
 {% block extra_head %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
-  body{background:#f0f2f5!important}
-  .c{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:18px;box-shadow:0 1px 4px rgba(15,23,42,.05)}
-  .ct{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#94a3b8}
-  .kn{font-size:2.5rem;font-weight:700;line-height:1;letter-spacing:-.02em;color:#0f172a}
-  .ks{font-size:11px;color:#94a3b8;font-weight:500;margin-top:3px}
-  .chart-wrap{position:relative;width:100%}
-  /* Tabs de período */
-  .tab{font-size:11px;font-weight:700;padding:5px 14px;border-radius:99px;border:none;cursor:pointer;background:#e2e8f0;color:#64748b;transition:.15s}
-  .tab.active{background:#023059;color:#fff}
-  .tab:hover:not(.active){background:#cbd5e1}
-  /* Botón maximizar */
-  .mbtn{background:none;border:none;cursor:pointer;color:#94a3b8;padding:4px 6px;border-radius:6px;transition:.15s;line-height:1}
-  .mbtn:hover{background:#f1f5f9;color:#334155}
-  /* Card header */
-  .ch{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-  /* Modal maximizado */
-  #max-modal{display:none;position:fixed;inset:0;z-index:9998;background:#fff;padding:20px;flex-direction:column;gap:12px}
-  #max-canvas-wrap{flex:1;position:relative;min-height:0}
-  #max-canvas-wrap canvas{position:absolute;inset:0}
-  /* Overlay */
-  #ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9997}
+  body { background:#f0f2f5 !important }
+
+  /* ── KPI cards ── */
+  .kpi-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:12px; margin-bottom:16px }
+  .kpi { border-radius:12px; padding:16px 18px; display:flex; flex-direction:column; gap:4px; position:relative; overflow:hidden }
+  .kpi-icon { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; margin-bottom:6px; font-size:15px }
+  .kpi-label { font-size:9px; font-weight:700; letter-spacing:.1em; text-transform:uppercase }
+  .kpi-num { font-size:2rem; font-weight:800; line-height:1; letter-spacing:-.03em }
+  .kpi-sub { font-size:10px; font-weight:500; margin-top:2px }
+
+  .kpi-total  { background:#f8fafc; border:1px solid #e2e8f0 }
+  .kpi-total .kpi-icon  { background:#e2e8f0 } .kpi-total .kpi-icon i { color:#475569 }
+  .kpi-total .kpi-label { color:#64748b } .kpi-total .kpi-num { color:#0f172a } .kpi-total .kpi-sub { color:#94a3b8 }
+
+  .kpi-obs  { background:#f5f3ff; border:1px solid #ddd6fe }
+  .kpi-obs .kpi-icon  { background:#ede9fe } .kpi-obs .kpi-icon i { color:#7c3aed }
+  .kpi-obs .kpi-label { color:#7c3aed } .kpi-obs .kpi-num { color:#4c1d95 } .kpi-obs .kpi-sub { color:#a78bfa }
+
+  .kpi-rec  { background:#ecfeff; border:1px solid #a5f3fc }
+  .kpi-rec .kpi-icon  { background:#cffafe } .kpi-rec .kpi-icon i { color:#0891b2 }
+  .kpi-rec .kpi-label { color:#0891b2 } .kpi-rec .kpi-num { color:#164e63 } .kpi-rec .kpi-sub { color:#67e8f9 }
+
+  .kpi-pro  { background:#fff1f2; border:1px solid #fecdd3 }
+  .kpi-pro .kpi-icon  { background:#ffe4e6 } .kpi-pro .kpi-icon i { color:#e11d48 }
+  .kpi-pro .kpi-label { color:#e11d48 } .kpi-pro .kpi-num { color:#881337 } .kpi-pro .kpi-sub { color:#fda4af }
+
+  .kpi-seg  { background:#fffbeb; border:1px solid #fde68a }
+  .kpi-seg .kpi-icon  { background:#fef3c7 } .kpi-seg .kpi-icon i { color:#d97706 }
+  .kpi-seg .kpi-label { color:#d97706 } .kpi-seg .kpi-num { color:#78350f } .kpi-seg .kpi-sub { color:#fcd34d }
+
+  .kpi-ate  { background:#f0fdf4; border:1px solid #bbf7d0 }
+  .kpi-ate .kpi-icon  { background:#dcfce7 } .kpi-ate .kpi-icon i { color:#16a34a }
+  .kpi-ate .kpi-label { color:#16a34a } .kpi-ate .kpi-num { color:#14532d } .kpi-ate .kpi-sub { color:#86efac }
+
+  /* ── Chart cards ── */
+  .c { background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:18px; box-shadow:0 1px 4px rgba(15,23,42,.04) }
+  .ct { font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:#94a3b8 }
+  .chart-wrap { position:relative; width:100% }
+
+  /* ── Period tabs ── */
+  .tab { font-size:11px; font-weight:700; padding:5px 14px; border-radius:99px; border:none; cursor:pointer; background:#e2e8f0; color:#64748b; transition:.15s }
+  .tab.active { background:#023059; color:#fff }
+  .tab:hover:not(.active) { background:#cbd5e1 }
+
+  /* ── Maximize ── */
+  .mbtn { background:none; border:none; cursor:pointer; color:#94a3b8; padding:4px 6px; border-radius:6px; transition:.15s; line-height:1 }
+  .mbtn:hover { background:#f1f5f9; color:#334155 }
+  .ch { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px }
+  #max-modal { display:none; position:fixed; inset:0; z-index:9998; background:#fff; padding:20px; flex-direction:column; gap:12px }
+  #max-canvas-wrap { flex:1; position:relative; min-height:0 }
+  #max-canvas-wrap canvas { position:absolute; inset:0 }
+  #ov { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:9997 }
+
+  /* ── Filter bar ── */
+  .fbar { background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:14px 18px; margin-bottom:14px; display:flex; flex-wrap:wrap; align-items:flex-end; gap:10px }
+  .fbar select { border:1px solid #e2e8f0; border-radius:6px; padding:6px 10px; font-size:12px; color:#334155; background:#f8fafc; outline:none; cursor:pointer; height:32px }
+  .fbar select:focus { border-color:#2256F2; background:#fff }
+  .fbar label { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:#94a3b8; display:block; margin-bottom:3px }
+  .fbtn { height:32px; padding:0 16px; border-radius:6px; border:none; font-size:11px; font-weight:700; cursor:pointer; transition:.15s; display:flex; align-items:center; gap:6px }
+  .fbtn-apply { background:#2256F2; color:#fff }
+  .fbtn-apply:hover { background:#1a45d4 }
+  .fbtn-clear { background:#f1f5f9; color:#64748b; border:1px solid #e2e8f0 }
+  .fbtn-clear:hover { background:#e2e8f0 }
+  .filter-active-badge { display:none; font-size:9px; font-weight:700; background:#2256F2; color:#fff; border-radius:99px; padding:1px 7px; align-items:center }
+
+  /* ── Recientes table ── */
+  .rt-row { display:grid; grid-template-columns:2fr 60px 80px 1fr; gap:4px; align-items:center; padding:6px; border-radius:6px; background:#fafafa; border:1px solid #f1f5f9; margin-bottom:4px }
 </style>
 {% endblock %}
 
 {% block content %}
 
-<!-- Overlay -->
 <div id="ov"></div>
-
-<!-- Modal maximizar -->
 <div id="max-modal">
   <div style="display:flex;justify-content:space-between;align-items:center;flex-shrink:0">
     <span id="max-title" class="ct"></span>
-    <button onclick="closeMax()" class="mbtn" style="font-size:13px;padding:6px 10px">
-      <i class="fa-solid fa-compress" style="margin-right:4px"></i>Minimizar
-    </button>
+    <button onclick="closeMax()" class="mbtn" style="font-size:13px;padding:6px 10px"><i class="fa-solid fa-compress" style="margin-right:4px"></i>Minimizar</button>
   </div>
   <div id="max-canvas-wrap"></div>
 </div>
 
-<!-- Header + filtros de período -->
-<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+<!-- ── HEADER ──────────────────────────────────────────────────── -->
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
   <div>
-    <div style="font-size:1.3rem;font-weight:700;color:#0f172a;letter-spacing:-.02em;font-family:'Roboto',sans-serif">Dashboard · Acompañamiento Integral</div>
-    <div style="font-size:11px;color:#94a3b8;margin-top:1px">Sistema SAI — Colegio Calasanz Suba · Año 2026</div>
+    <div style="font-size:1.25rem;font-weight:800;color:#0f172a;letter-spacing:-.02em">Dashboard · Acompañamiento Integral</div>
+    <div style="font-size:11px;color:#94a3b8;margin-top:2px">Sistema SAI — Colegio Calasanz Suba · Año 2026</div>
   </div>
   <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-    <!-- Tabs de período -->
+    <!-- Tabs período -->
     <div style="display:flex;gap:5px;background:#f1f5f9;border-radius:99px;padding:3px">
       <button class="tab active" data-key="all" onclick="switchPeriod('all')">Consolidado</button>
-      <button class="tab" data-key="p1"  onclick="switchPeriod('p1')">Primer Periodo</button>
-      <button class="tab" data-key="p2"  onclick="switchPeriod('p2')">Segundo Periodo</button>
+      <button class="tab" data-key="p1" onclick="switchPeriod('p1')">1° Período</button>
+      <button class="tab" data-key="p2" onclick="switchPeriod('p2')">2° Período</button>
     </div>
-    <div class="c" style="padding:6px 14px;display:flex;align-items:center;gap:6px">
-      <i class="fa-regular fa-calendar" style="color:#94a3b8;font-size:12px"></i>
+    <!-- Fecha -->
+    <div class="c" style="padding:5px 12px;display:flex;align-items:center;gap:6px;border-radius:8px">
+      <i class="fa-regular fa-calendar" style="color:#94a3b8;font-size:11px"></i>
       <span style="font-size:11px;font-weight:600;color:#334155">{{ today|date:"d M Y" }}</span>
     </div>
-    <div style="background:#023059;border-radius:10px;padding:6px 14px">
-      <span style="font-size:11px;font-weight:700;color:#fff;letter-spacing:.05em">2026</span>
-    </div>
+    <!-- Exportar Informe (solo cap y mrodriguez) -->
+    {% if can_export %}
+    <a href="{% url 'acompanamiento:informe' %}?anio=2026"
+       style="display:flex;align-items:center;gap:6px;background:#1a2847;border-radius:8px;padding:6px 14px;font-size:11px;font-weight:700;color:#fff;text-decoration:none">
+      <i class="fa-solid fa-file-pdf" style="font-size:10px"></i> Exportar Informe SGI
+    </a>
+    {% endif %}
   </div>
 </div>
 
-<!-- KPIs -->
-<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:14px">
-  <div class="c" style="padding:16px">
-    <div class="ct">Reportes</div>
-    <div class="kn" id="kpi-total">{{ d.total }}</div>
-    <div class="ks" id="kpi-lbl-total">Total 2026</div>
+<!-- ── BARRA DE FILTROS ─────────────────────────────────────────── -->
+<div class="fbar">
+  <div>
+    <label>Fin Educativo</label>
+    <select id="f-fin">
+      <option value="">Todos los fines</option>
+      {% for key, label in fins_filter %}
+      <option value="{{ key }}">{{ label }}</option>
+      {% endfor %}
+    </select>
   </div>
-  <div class="c" style="padding:16px">
-    <div class="ct">Observaciones</div>
-    <div class="kn" style="color:#7c3aed" id="kpi-obs">{{ d.obs }}</div>
-    <div class="ks">Registradas</div>
+  <div>
+    <label>Quien Atiende</label>
+    <select id="f-assigned">
+      <option value="">Todos</option>
+      {% for ed in educators_filter %}
+      <option value="{{ ed.pk }}">{{ ed.get_full_name|default:ed.username }}</option>
+      {% endfor %}
+    </select>
   </div>
-  <div class="c" style="padding:16px">
-    <div class="ct">Recomendaciones</div>
-    <div class="kn" style="color:#0369a1" id="kpi-rec">{{ d.rec }}</div>
-    <div class="ks">Emitidas</div>
+  <div>
+    <label>Sección</label>
+    <select id="f-section">
+      <option value="">Todas las secciones</option>
+      {% for key, label in secs_filter %}
+      <option value="{{ key }}">{{ label }}</option>
+      {% endfor %}
+    </select>
   </div>
-  <div class="c" style="padding:16px">
-    <div class="ct">En Seguimiento</div>
-    <div class="kn" style="color:#d97706" id="kpi-seg">{{ d.seg }}</div>
-    <div class="ks" id="kpi-pct-seg">{{ d.pct_seg }}% del total</div>
+  <div>
+    <label>Período</label>
+    <select id="f-period">
+      <option value="">Todos los períodos</option>
+      {% for p in periods_filter %}
+      <option value="{{ p }}">{{ p }}</option>
+      {% endfor %}
+    </select>
   </div>
-  <div class="c" style="padding:16px">
-    <div class="ct">Atendidos</div>
-    <div class="kn" style="color:#16a34a" id="kpi-ate">{{ d.ate }}</div>
-    <div class="ks" id="kpi-pct-ate">{{ d.pct_ate }}% completados</div>
+  <div>
+    <label>Estado</label>
+    <select id="f-status">
+      <option value="">Todos los estados</option>
+      <option value="PROGRAMADO">Programado</option>
+      <option value="SEGUIMIENTO">En Seguimiento</option>
+      <option value="ATENDIDO">Atendido</option>
+    </select>
+  </div>
+  <div style="display:flex;gap:6px;align-items:flex-end">
+    <button class="fbtn fbtn-apply" onclick="applyFilters()">
+      <i class="fa-solid fa-filter" style="font-size:9px"></i> Filtrar
+    </button>
+    <button class="fbtn fbtn-clear" onclick="clearFilters()">
+      <i class="fa-solid fa-eraser" style="font-size:9px"></i> Limpiar
+    </button>
+  </div>
+  <div id="filter-badge" class="filter-active-badge" style="display:none;align-items:center">
+    <i class="fa-solid fa-circle-dot" style="font-size:7px;margin-right:4px"></i> Filtros activos
   </div>
 </div>
 
-<!-- Fila 1: 3 gráficas -->
+<!-- ── KPI CARDS (6) ────────────────────────────────────────────── -->
+<div class="kpi-grid">
+  <div class="kpi kpi-total">
+    <div class="kpi-icon"><i class="fa-solid fa-folder-open"></i></div>
+    <div class="kpi-label">Total Reportes</div>
+    <div class="kpi-num" id="kpi-total">{{ d.total }}</div>
+    <div class="kpi-sub" id="kpi-sub-total">Año 2026</div>
+  </div>
+  <div class="kpi kpi-obs">
+    <div class="kpi-icon"><i class="fa-solid fa-eye"></i></div>
+    <div class="kpi-label">Observaciones</div>
+    <div class="kpi-num" id="kpi-obs">{{ d.obs }}</div>
+    <div class="kpi-sub">Registradas</div>
+  </div>
+  <div class="kpi kpi-rec">
+    <div class="kpi-icon"><i class="fa-solid fa-lightbulb"></i></div>
+    <div class="kpi-label">Recomendaciones</div>
+    <div class="kpi-num" id="kpi-rec">{{ d.rec }}</div>
+    <div class="kpi-sub">Emitidas</div>
+  </div>
+  <div class="kpi kpi-pro">
+    <div class="kpi-icon"><i class="fa-solid fa-clock"></i></div>
+    <div class="kpi-label">Programados</div>
+    <div class="kpi-num" id="kpi-pro">{{ d.pro }}</div>
+    <div class="kpi-sub" id="kpi-sub-pro">{{ d.pct_pro }}% pendientes</div>
+  </div>
+  <div class="kpi kpi-seg">
+    <div class="kpi-icon"><i class="fa-solid fa-arrows-rotate"></i></div>
+    <div class="kpi-label">En Seguimiento</div>
+    <div class="kpi-num" id="kpi-seg">{{ d.seg }}</div>
+    <div class="kpi-sub" id="kpi-sub-seg">{{ d.pct_seg }}% del total</div>
+  </div>
+  <div class="kpi kpi-ate">
+    <div class="kpi-icon"><i class="fa-solid fa-circle-check"></i></div>
+    <div class="kpi-label">Atendidos</div>
+    <div class="kpi-num" id="kpi-ate">{{ d.ate }}</div>
+    <div class="kpi-sub" id="kpi-sub-ate">{{ d.pct_ate }}% completados</div>
+  </div>
+</div>
+
+<!-- ── FILA 1: 3 gráficas ────────────────────────────────────────── -->
 <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px">
-
   <div class="c" id="card-fin">
     <div class="ch"><span class="ct">Reportes por Fin Educativo</span><button class="mbtn" onclick="toggleMax('card-fin','finChart')"><i id="icon-card-fin" class="fa-solid fa-expand"></i></button></div>
     <div class="chart-wrap" style="height:220px"><canvas id="finChart"></canvas></div>
   </div>
-
   <div class="c" id="card-grouped">
     <div class="ch"><span class="ct">Estado por Fin Educativo</span><button class="mbtn" onclick="toggleMax('card-grouped','groupedChart')"><i id="icon-card-grouped" class="fa-solid fa-expand"></i></button></div>
     <div class="chart-wrap" style="height:220px"><canvas id="groupedChart"></canvas></div>
   </div>
-
   <div class="c" id="card-periodo">
     <div class="ch"><span class="ct">Distribución por Período</span><button class="mbtn" onclick="toggleMax('card-periodo','periodoChart')"><i id="icon-card-periodo" class="fa-solid fa-expand"></i></button></div>
     <div class="chart-wrap" style="height:220px"><canvas id="periodoChart"></canvas></div>
   </div>
-
 </div>
 
-<!-- Fila 2 -->
+<!-- ── FILA 2 ─────────────────────────────────────────────────────── -->
 <div style="display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:14px;margin-bottom:14px">
-
   <div class="c" id="card-top">
-    <div class="ch"><span class="ct">Top 5 Educadores</span><button class="mbtn" onclick="toggleMax('card-top','topChart')"><i id="icon-card-top" class="fa-solid fa-expand"></i></button></div>
+    <div class="ch"><span class="ct">Top 5 — Quien Atiende</span><button class="mbtn" onclick="toggleMax('card-top','topChart')"><i id="icon-card-top" class="fa-solid fa-expand"></i></button></div>
     <div class="chart-wrap" style="height:200px"><canvas id="topChart"></canvas></div>
   </div>
-
   <div class="c" id="card-donut">
-    <div class="ch"><span class="ct">Estados</span><button class="mbtn" onclick="toggleMax('card-donut','donutChart')"><i id="icon-card-donut" class="fa-solid fa-expand"></i></button></div>
+    <div class="ch"><span class="ct">Distribución de Estados</span><button class="mbtn" onclick="toggleMax('card-donut','donutChart')"><i id="icon-card-donut" class="fa-solid fa-expand"></i></button></div>
     <div id="donut-inner" style="display:flex;align-items:center;gap:16px">
       <div class="chart-wrap" id="donut-wrap" style="height:130px;width:130px;flex-shrink:0"><canvas id="donutChart"></canvas></div>
       <div>
@@ -146,25 +257,22 @@
         </div>
         <div>
           <div style="display:flex;align-items:center;gap:6px;margin-bottom:1px">
-            <div style="width:9px;height:9px;border-radius:3px;background:#3b82f6"></div>
+            <div style="width:9px;height:9px;border-radius:3px;background:#e11d48"></div>
             <span style="font-size:11px;font-weight:600;color:#374151">Programados</span>
           </div>
-          <div style="font-size:1.5rem;font-weight:700;color:#3b82f6;line-height:1" id="dn-pro">{{ d.pro }}</div>
+          <div style="font-size:1.5rem;font-weight:700;color:#e11d48;line-height:1" id="dn-pro">{{ d.pro }}</div>
         </div>
       </div>
     </div>
   </div>
-
   <div class="c" id="card-sec">
-    <div class="ch"><span class="ct">Estudiantes por Sección</span><button class="mbtn" onclick="toggleMax('card-sec','secChart')"><i id="icon-card-sec" class="fa-solid fa-expand"></i></button></div>
+    <div class="ch"><span class="ct">Reportes por Sección</span><button class="mbtn" onclick="toggleMax('card-sec','secChart')"><i id="icon-card-sec" class="fa-solid fa-expand"></i></button></div>
     <div class="chart-wrap" style="height:200px"><canvas id="secChart"></canvas></div>
   </div>
-
 </div>
 
-<!-- Fila 3: gauge + últimos reportes -->
+<!-- ── FILA 3 ─────────────────────────────────────────────────────── -->
 <div style="display:grid;grid-template-columns:180px 1fr;gap:14px">
-
   <div class="c" style="display:flex;flex-direction:column;align-items:center;justify-content:center">
     <div class="ct" style="text-align:center">Tasa Atención</div>
     <div style="position:relative;height:100px;width:160px">
@@ -177,33 +285,42 @@
   </div>
 
   <div class="c" style="padding:16px">
-    <div class="ct">Últimos Reportes</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-      {% for r in recientes %}
-      <div style="display:flex;align-items:center;gap:8px;padding:6px;border-radius:8px;background:#fafafa;border:1px solid #f1f5f9">
-        <div style="width:26px;height:26px;border-radius:7px;flex-shrink:0;display:flex;align-items:center;justify-content:center;
-          background:{% if r.purpose == 'ACADEMICO' %}#dbeafe{% elif r.purpose == 'PSICOAFECTIVO' %}#fce7f3{% elif r.purpose == 'ESPIRITUAL' %}#ede9fe{% else %}#fef3c7{% endif %}">
-          <i class="fa-solid fa-{% if r.purpose == 'ACADEMICO' %}graduation-cap{% elif r.purpose == 'PSICOAFECTIVO' %}brain{% elif r.purpose == 'ESPIRITUAL' %}heart{% else %}users{% endif %}"
-            style="font-size:9px;color:{% if r.purpose == 'ACADEMICO' %}#2563eb{% elif r.purpose == 'PSICOAFECTIVO' %}#db2777{% elif r.purpose == 'ESPIRITUAL' %}#7c3aed{% else %}#d97706{% endif %}"></i>
-        </div>
-        <div style="flex:1;min-width:0">
-          <div style="font-size:10px;font-weight:600;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.student.full_name }}</div>
-          <div style="font-size:9px;color:#94a3b8">{{ r.created_at|date:"d/m/Y" }}</div>
-        </div>
-        <span style="font-size:8px;font-weight:700;border-radius:99px;padding:2px 6px;flex-shrink:0;
-          background:{% if r.status == 'ATENDIDO' %}#f0fdf4{% elif r.status == 'SEGUIMIENTO' %}#fef9ec{% else %}#eff6ff{% endif %};
-          color:{% if r.status == 'ATENDIDO' %}#15803d{% elif r.status == 'SEGUIMIENTO' %}#b45309{% else %}#1d4ed8{% endif %}">
-          {{ r.get_status_display }}
-        </span>
-      </div>
-      {% endfor %}
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div class="ct" style="margin-bottom:0">Reportes Programados</div>
+      <span style="font-size:9px;font-weight:700;background:#fff1f2;color:#e11d48;border:1px solid #fecdd3;border-radius:99px;padding:2px 8px">
+        Pendientes de atención
+      </span>
     </div>
-    <a href="{% url 'acompanamiento:list' %}" style="display:block;text-align:right;margin-top:10px;font-size:11px;font-weight:600;color:#023059;text-decoration:none">
-      Ver todos <i class="fa-solid fa-arrow-right" style="font-size:9px"></i>
+    <div style="display:grid;grid-template-columns:2fr 60px 80px 1fr;gap:4px;padding:4px 6px;margin-bottom:4px">
+      <span style="font-size:9px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.04em">Estudiante</span>
+      <span style="font-size:9px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.04em">Curso</span>
+      <span style="font-size:9px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.04em">Fin educativo</span>
+      <span style="font-size:9px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.04em">Quien atiende</span>
+    </div>
+    <div id="recientes-list">
+    {% for r in recientes %}
+    <div class="rt-row">
+      <div style="font-size:10px;font-weight:600;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="{{ r.student.full_name }}">{{ r.student.full_name }}</div>
+      <div style="font-size:10px;color:#475569;font-weight:500">{% if r.student.course %}{{ r.student.course.name }}{% else %}—{% endif %}</div>
+      <span style="font-size:9px;font-weight:600;border-radius:99px;padding:2px 7px;display:inline-block;
+        background:{% if r.purpose == 'ACADEMICO' %}#dbeafe{% elif r.purpose == 'PSICOAFECTIVO' %}#fce7f3{% elif r.purpose == 'ESPIRITUAL' %}#ede9fe{% else %}#fef3c7{% endif %};
+        color:{% if r.purpose == 'ACADEMICO' %}#1d4ed8{% elif r.purpose == 'PSICOAFECTIVO' %}#be185d{% elif r.purpose == 'ESPIRITUAL' %}#6d28d9{% else %}#92400e{% endif %}">
+        {{ r.get_purpose_display }}</span>
+      <div style="font-size:10px;color:#475569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{% if r.assigned_to %}{{ r.assigned_to.get_full_name|default:r.assigned_to.username }}{% else %}—{% endif %}</div>
+    </div>
+    {% empty %}
+    <div id="recientes-empty" style="text-align:center;padding:20px;color:#94a3b8;font-size:11px">
+      <i class="fa-solid fa-check-circle" style="font-size:20px;color:#22c55e;display:block;margin-bottom:6px"></i>
+      No hay reportes programados pendientes
+    </div>
+    {% endfor %}
+    </div>
+    <a href="{% url 'acompanamiento:list' %}?status=PROGRAMADO" style="display:block;text-align:right;margin-top:8px;font-size:11px;font-weight:600;color:#2256F2;text-decoration:none">
+      Ver todos los programados <i class="fa-solid fa-arrow-right" style="font-size:9px"></i>
     </a>
   </div>
-
 </div>
+
 {% endblock %}
 
 {% block extra_js %}
@@ -212,28 +329,24 @@
 <script>
 document.addEventListener('DOMContentLoaded', function(){
   if(typeof Chart==='undefined'){console.error('Chart.js no cargó');return;}
-
   Chart.register(ChartDataLabels);
-  Chart.defaults.font.family = "'Roboto',sans-serif";
+  Chart.defaults.font.family = "'Outfit','Roboto',sans-serif";
   Chart.defaults.font.size   = 11;
   Chart.defaults.color       = '#64748b';
 
-  // ── Datos por período ──────────────────────────────────────
   const FL = {{ fines_labels|safe }};
-  const PERIODS = {
+  let PERIODS = {
     all: {{ j_all|safe }},
     p1:  {{ j_p1|safe }},
     p2:  {{ j_p2|safe }},
   };
+  let currentPeriodKey = 'all';
 
-  // ── Helpers de opciones ────────────────────────────────────
-  const gc   = '#f1f5f9';
-  const ax   = {grid:{color:gc},ticks:{font:{size:10,weight:'600'}}};
-  const dlB  = {anchor:'end',align:'end',  font:{size:10,weight:'700'},color:'#374151',formatter:v=>v>0?v:''};
-  const dlH  = {anchor:'end',align:'right',font:{size:10,weight:'700'},color:'#374151',formatter:v=>v>0?v:''};
-  const dlOff= {display:false};
+  const gc  = '#f1f5f9';
+  const ax  = { grid:{color:gc}, ticks:{font:{size:10,weight:'600'}} };
+  const dlB = { anchor:'end', align:'end', font:{size:10,weight:'700'}, color:'#374151', formatter:v=>v>0?v:'' };
+  const dlOff = { display:false };
 
-  // ── Registro de instancias y configs originales ────────────
   const charts = {};
   const cfgs   = {};
   function mk(id, cfg){
@@ -244,102 +357,97 @@ document.addEventListener('DOMContentLoaded', function(){
 
   const D = PERIODS.all;
 
-  // 1. Fin educativo
-  mk('finChart',{type:'bar',data:{
+  // 1. Fin Educativo — Donut (muestra proporciones)
+  mk('finChart',{type:'doughnut',data:{
     labels:FL,
-    datasets:[{data:D.fin_totals,backgroundColor:['#3b82f6','#ec4899','#8b5cf6','#f59e0b'],borderRadius:8,borderSkipped:false}]
-  },options:{responsive:true,maintainAspectRatio:false,
-    plugins:{legend:{display:false},datalabels:dlB},
-    scales:{y:{...ax},x:{...ax,grid:{display:false}}}}});
+    datasets:[{data:D.fin_totals,backgroundColor:['#3b82f6','#ec4899','#8b5cf6','#f59e0b'],borderWidth:2,borderColor:'#fff',hoverOffset:10}]
+  },options:{cutout:'55%',responsive:true,maintainAspectRatio:false,
+    plugins:{
+      legend:{position:'right',labels:{boxWidth:10,font:{size:10},padding:10}},
+      datalabels:{display:true,formatter:(v,ctx)=>{const t=ctx.dataset.data.reduce((a,b)=>a+b,0);return t>0&&v>0?v:'';},color:'#fff',font:{size:11,weight:'700'}}
+    }}});
 
-  // 2. Agrupado fin+estado
+  // 2. Estado por Fin — Barras agrupadas (comparación múltiple, la mejor)
   mk('groupedChart',{type:'bar',data:{
     labels:FL,
     datasets:[
       {label:'Seguimiento',data:D.fin_seg,backgroundColor:'#f59e0b',borderRadius:5},
       {label:'Atendido',   data:D.fin_ate,backgroundColor:'#22c55e',borderRadius:5},
-      {label:'Programado', data:D.fin_pro,backgroundColor:'#3b82f6',borderRadius:5},
+      {label:'Programado', data:D.fin_pro,backgroundColor:'#e11d48',borderRadius:5},
     ]
   },options:{responsive:true,maintainAspectRatio:false,
     plugins:{legend:{position:'top',labels:{boxWidth:10,font:{size:10}}},datalabels:dlB},
     scales:{y:{...ax},x:{...ax,grid:{display:false}}}}});
 
-  // 3. Período
-  mk('periodoChart',{type:'bar',data:{
+  // 3. Distribución por Período — Línea (muestra tendencia)
+  mk('periodoChart',{type:'line',data:{
     labels:D.per_labels,
-    datasets:[{data:D.per_data,backgroundColor:['#023059','#0369a1','#0ea5e9','#38bdf8','#bae6fd'],borderRadius:8,borderSkipped:false}]
+    datasets:[{
+      label:'Reportes',data:D.per_data,
+      borderColor:'#2256F2',backgroundColor:'rgba(34,86,242,0.12)',
+      borderWidth:2.5,tension:0.35,fill:true,
+      pointBackgroundColor:'#2256F2',pointBorderColor:'#fff',pointBorderWidth:2,pointRadius:5
+    }]
   },options:{responsive:true,maintainAspectRatio:false,
-    plugins:{legend:{display:false},datalabels:dlB},
-    scales:{y:{...ax},x:{...ax,grid:{display:false}}}}});
+    plugins:{legend:{display:false},datalabels:{anchor:'end',align:'top',font:{size:10,weight:'700'},color:'#2256F2',formatter:v=>v>0?v:''}},
+    scales:{y:{...ax,beginAtZero:true},x:{...ax,grid:{display:false}}}}});
 
-  // 4. Top educadores — apilado por estado
+  // 4. Top educadores — Barras horizontales apiladas
   mk('topChart',{type:'bar',data:{
     labels:D.top_labels,
     datasets:[
       {label:'Seguimiento',data:D.top_seg,backgroundColor:'#f59e0b',borderRadius:3},
       {label:'Atendido',   data:D.top_ate,backgroundColor:'#22c55e',borderRadius:3},
-      {label:'Programado', data:D.top_pro,backgroundColor:'#ef4444',borderRadius:3},
+      {label:'Programado', data:D.top_pro,backgroundColor:'#e11d48',borderRadius:3},
     ]
   },options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
-    plugins:{
-      legend:{position:'top',labels:{boxWidth:10,font:{size:10}}},
-      datalabels:{anchor:'center',align:'center',font:{size:10,weight:'700'},color:'#fff',formatter:v=>v>0?v:''}
-    },
-    scales:{
-      x:{...ax,grid:{color:gc},stacked:true},
-      y:{grid:{display:false},ticks:{font:{size:10,weight:'600'}},stacked:true}
-    }}});
+    plugins:{legend:{position:'top',labels:{boxWidth:10,font:{size:10}}},
+             datalabels:{anchor:'center',align:'center',font:{size:10,weight:'700'},color:'#fff',formatter:v=>v>0?v:''}},
+    scales:{x:{...ax,stacked:true},y:{grid:{display:false},ticks:{font:{size:10,weight:'600'}},stacked:true}}}});
 
-  // 5. Donut estados
+  // 5. Estados — Donut (ya estaba)
   mk('donutChart',{type:'doughnut',data:{
     labels:['Seguimiento','Atendido','Programado'],
-    datasets:[{data:D.estados,backgroundColor:['#f59e0b','#22c55e','#3b82f6'],borderWidth:0,hoverOffset:6}]
-  },options:{cutout:'68%',responsive:true,maintainAspectRatio:false,
-    plugins:{legend:{display:false},datalabels:dlOff}}});
+    datasets:[{data:D.estados,backgroundColor:['#f59e0b','#22c55e','#e11d48'],borderWidth:2,borderColor:'#fff',hoverOffset:6}]
+  },options:{cutout:'68%',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},datalabels:dlOff}}});
 
-  // 6. Secciones
-  mk('secChart',{type:'bar',data:{
+  // 6. Secciones — Área polar (comparación visual diferente)
+  mk('secChart',{type:'polarArea',data:{
     labels:D.sec_labels,
-    datasets:[{data:D.sec_data,backgroundColor:['#023059','#0369a1','#0ea5e9','#38bdf8'],borderRadius:8,borderSkipped:false}]
+    datasets:[{data:D.sec_data,backgroundColor:['rgba(2,48,89,0.75)','rgba(3,105,161,0.75)','rgba(14,165,233,0.75)','rgba(56,189,248,0.75)'],borderWidth:0}]
   },options:{responsive:true,maintainAspectRatio:false,
-    plugins:{legend:{display:false},datalabels:dlB},
-    scales:{y:{...ax},x:{...ax,grid:{display:false}}}}});
+    plugins:{legend:{position:'right',labels:{boxWidth:10,font:{size:10},padding:8}},datalabels:dlOff}}});
 
-  // 7. Gauge
   mk('gaugeChart',{type:'doughnut',data:{
     datasets:[{data:[D.pct_ate, Math.max(0,100-D.pct_ate)],backgroundColor:['#22c55e','#f1f5f9'],borderWidth:0}]
-  },options:{rotation:-90,circumference:180,cutout:'72%',responsive:true,maintainAspectRatio:false,
-    plugins:{legend:{display:false},tooltip:{enabled:false},datalabels:dlOff}}});
+  },options:{rotation:-90,circumference:180,cutout:'72%',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{enabled:false},datalabels:dlOff}}});
 
-  // ── Cambio de período ──────────────────────────────────────
+  // ── Helpers ──────────────────────────────────────────────────────
   function qi(id){ return document.getElementById(id); }
 
   function upd(id, u){
     const c = charts[id]; if(!c) return;
     if(u.labels !== undefined) c.data.labels = u.labels;
     (u.data||[]).forEach((ds,i)=>{ if(c.data.datasets[i]) c.data.datasets[i].data = ds.data; });
-    c.update();
+    c.update('none');
   }
 
-  window.switchPeriod = function(key){
-    const d = PERIODS[key];
-    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.key===key));
-    // KPIs
-    qi('kpi-total').textContent   = d.total;
-    qi('kpi-obs').textContent     = d.obs;
-    qi('kpi-rec').textContent     = d.rec;
-    qi('kpi-seg').textContent     = d.seg;
-    qi('kpi-ate').textContent     = d.ate;
-    qi('kpi-pct-seg').textContent = d.pct_seg+'% del total';
-    qi('kpi-pct-ate').textContent = d.pct_ate+'% completados';
-    // Donut legend
-    qi('dn-seg').textContent      = d.seg;
-    qi('dn-ate').textContent      = d.ate;
-    qi('dn-pro').textContent      = d.pro;
-    // Gauge
-    qi('gauge-pct').textContent   = d.pct_ate+'%';
-    qi('gauge-sub').textContent   = d.ate+' de '+d.total+' reportes';
-    // Charts
+  function applyData(d){
+    qi('kpi-total').textContent    = d.total;
+    qi('kpi-obs').textContent      = d.obs;
+    qi('kpi-rec').textContent      = d.rec;
+    qi('kpi-pro').textContent      = d.pro;
+    qi('kpi-seg').textContent      = d.seg;
+    qi('kpi-ate').textContent      = d.ate;
+    qi('kpi-sub-total').textContent = 'Año 2026';
+    qi('kpi-sub-pro').textContent  = d.pct_pro+'% pendientes';
+    qi('kpi-sub-seg').textContent  = d.pct_seg+'% del total';
+    qi('kpi-sub-ate').textContent  = d.pct_ate+'% completados';
+    qi('dn-seg').textContent       = d.seg;
+    qi('dn-ate').textContent       = d.ate;
+    qi('dn-pro').textContent       = d.pro;
+    qi('gauge-pct').textContent    = d.pct_ate+'%';
+    qi('gauge-sub').textContent    = d.ate+' de '+d.total+' reportes';
     upd('finChart',    {data:[{data:d.fin_totals}]});
     upd('groupedChart',{data:[{data:d.fin_seg},{data:d.fin_ate},{data:d.fin_pro}]});
     upd('periodoChart',{labels:d.per_labels, data:[{data:d.per_data}]});
@@ -347,64 +455,118 @@ document.addEventListener('DOMContentLoaded', function(){
     upd('donutChart',  {data:[{data:d.estados}]});
     upd('secChart',    {labels:d.sec_labels, data:[{data:d.sec_data}]});
     upd('gaugeChart',  {data:[{data:[d.pct_ate, Math.max(0,100-d.pct_ate)]}]});
+  }
+
+  // ── Cambio de período (tabs) ─────────────────────────────────────
+  window.switchPeriod = function(key){
+    currentPeriodKey = key;
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.key===key));
+    applyData(PERIODS[key]);
   };
 
-  // ── Maximizar / Minimizar — modal independiente ────────────
-  // El card original nunca cambia de tamaño; se renderiza una copia en el modal.
-  let maxChart = null;
-  let maxInfo  = null;
-  const ov     = qi('ov');
+  // ── Filtros AJAX ─────────────────────────────────────────────────
+  const PURPOSE_COLORS = {
+    ACADEMICO:    {bg:'#dbeafe', color:'#1d4ed8'},
+    PSICOAFECTIVO:{bg:'#fce7f3', color:'#be185d'},
+    ESPIRITUAL:   {bg:'#ede9fe', color:'#6d28d9'},
+    CONVIVENCIA:  {bg:'#fef3c7', color:'#92400e'},
+  };
+
+  function renderRecientes(list){
+    const el = qi('recientes-list');
+    if(!list.length){
+      el.innerHTML = `<div style="text-align:center;padding:20px;color:#94a3b8;font-size:11px">
+        <i class="fa-solid fa-check-circle" style="font-size:20px;color:#22c55e;display:block;margin-bottom:6px"></i>
+        No hay reportes programados pendientes</div>`;
+      return;
+    }
+    el.innerHTML = list.map(r => {
+      const pc = PURPOSE_COLORS[r.purpose] || {bg:'#f1f5f9', color:'#475569'};
+      return `<div class="rt-row">
+        <div style="font-size:10px;font-weight:600;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${r.student_name}">${r.student_name}</div>
+        <div style="font-size:10px;color:#475569;font-weight:500">${r.course}</div>
+        <span style="font-size:9px;font-weight:600;border-radius:99px;padding:2px 7px;display:inline-block;background:${pc.bg};color:${pc.color}">${r.purpose_display}</span>
+        <div style="font-size:10px;color:#475569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.assigned_to}</div>
+      </div>`;
+    }).join('');
+  }
+
+  window.applyFilters = async function(){
+    const fin    = qi('f-fin').value;
+    const asig   = qi('f-assigned').value;
+    const sec    = qi('f-section').value;
+    const period = qi('f-period').value;
+    const status = qi('f-status').value;
+
+    const anyActive = fin || asig || sec || period || status;
+    qi('filter-badge').style.display = anyActive ? 'flex' : 'none';
+
+    const params = new URLSearchParams({fin, assigned_to:asig, section:sec, period, status});
+    try {
+      const r    = await fetch('/dashboard-api/?' + params);
+      const data = await r.json();
+      PERIODS = {all: data.all, p1: data.p1, p2: data.p2};
+      // Reset to 'all' tab when re-filtering
+      currentPeriodKey = 'all';
+      document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.key==='all'));
+      applyData(PERIODS.all);
+      renderRecientes(data.recientes);
+    } catch(e){
+      console.error('Error cargando dashboard:', e);
+    }
+  };
+
+  window.clearFilters = function(){
+    qi('f-fin').value      = '';
+    qi('f-assigned').value = '';
+    qi('f-section').value  = '';
+    qi('f-period').value   = '';
+    qi('f-status').value   = '';
+    qi('filter-badge').style.display = 'none';
+    // Restore initial data
+    PERIODS = { all: {{ j_all|safe }}, p1: {{ j_p1|safe }}, p2: {{ j_p2|safe }} };
+    currentPeriodKey = 'all';
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.key==='all'));
+    applyData(PERIODS.all);
+    // Restore recientes desde el HTML inicial
+    location.reload();
+  };
+
+  // ── Maximizar ─────────────────────────────────────────────────────
+  let maxChart = null, maxInfo = null;
+  const ov = qi('ov');
 
   window.toggleMax = function(cardId, chartId){
-    // Si ya está abierto el mismo card, cerrar
-    if(maxInfo && maxInfo.cardId === cardId){ closeMax(); return; }
-    // Si hay otro abierto, cerrarlo primero
+    if(maxInfo && maxInfo.cardId===cardId){ closeMax(); return; }
     if(maxInfo) closeMax();
-
-    const src  = charts[chartId];
-    const cfg  = cfgs[chartId];
+    const src = charts[chartId];
+    const cfg = cfgs[chartId];
     if(!src || !cfg) return;
-
-    // Título
     const titleEl = document.querySelector('#'+cardId+' .ct');
     qi('max-title').textContent = titleEl ? titleEl.textContent : '';
-
-    // Snapshot de datos actuales
-    const snap = {
-      labels:   src.data.labels ? [...src.data.labels] : undefined,
-      datasets: src.data.datasets.map(ds => ({...ds, data:[...ds.data]}))
-    };
-
-    // Crear canvas fresco
+    const snap = { labels: src.data.labels ? [...src.data.labels] : undefined, datasets: src.data.datasets.map(ds=>({...ds,data:[...ds.data]})) };
     qi('max-canvas-wrap').innerHTML = '<canvas id="maxCanvas"></canvas>';
-    maxChart = new Chart(qi('maxCanvas'), {
-      type:    cfg.type,
-      data:    snap,
-      options: cfg.options,
-    });
-
-    // Cambiar ícono del botón del card origen
+    maxChart = new Chart(qi('maxCanvas'), { type:cfg.type, data:snap, options:cfg.options });
     const icon = qi('icon-'+cardId);
     if(icon) icon.className = 'fa-solid fa-compress';
-
     qi('max-modal').style.display = 'flex';
     ov.style.display = 'block';
     maxInfo = {cardId, chartId};
   };
 
   window.closeMax = function(){
-    if(maxChart){ maxChart.destroy(); maxChart = null; }
-    if(maxInfo){
-      const icon = qi('icon-'+maxInfo.cardId);
-      if(icon) icon.className = 'fa-solid fa-expand';
-    }
+    if(maxChart){ maxChart.destroy(); maxChart=null; }
+    if(maxInfo){ const icon=qi('icon-'+maxInfo.cardId); if(icon) icon.className='fa-solid fa-expand'; }
     qi('max-modal').style.display = 'none';
     ov.style.display = 'none';
     maxInfo = null;
   };
 
   ov.addEventListener('click', closeMax);
-
 });
 </script>
+<style>
+@media (max-width:1280px){ .kpi-grid { grid-template-columns: repeat(3,1fr) } }
+@media (max-width:768px) { .kpi-grid { grid-template-columns: repeat(2,1fr) } }
+</style>
 {% endblock %}

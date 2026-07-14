@@ -1,241 +1,314 @@
 {% extends 'base.html' %}
+{% load sai_extras %}
 
-{% block title %}Estudiantes - SAI{% endblock %}
-
+{% block title %}Estudiantes – SAI{% endblock %}
 {% block breadcrumb %}Estudiantes{% endblock %}
 
 {% block extra_head %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
-  body { font-family: 'Roboto', sans-serif; }
-  .soft-shell { box-shadow: 0 20px 50px rgba(59, 91, 219, 0.08); }
-  /* Avatar colors - paleta pastel variada */
-  .avatar-color-0 { background: #60a5fa; display:flex; }
-  .avatar-color-1 { background: #a78bfa; display:flex; }
-  .avatar-color-2 { background: #34d399; display:flex; }
-  .avatar-color-3 { background: #fb923c; display:flex; }
-  .avatar-color-4 { background: #f472b6; display:flex; }
-  .avatar-color-5 { background: #4ade80; display:flex; }
-  .avatar-color-6 { background: #38bdf8; display:flex; }
-  .avatar-color-7 { background: #fbbf24; display:flex; }
-  .avatar-color-8 { background: #c084fc; display:flex; }
-  .avatar-color-9 { background: #2dd4bf; display:flex; }
-  
+  :root {
+    --c-primary:#2256F2; --c-primary-h:#1a45d4;
+    --c-success:#22C55E; --c-danger:#EF4444; --c-warn:#F59E0B;
+    --c-bg:#F8FAFC; --c-surface:#FFFFFF; --c-border:#E2E8F0;
+    --c-text:#0F172A; --c-muted:#64748B;
+    --r-card:5px; --r-input:3px;
+    --sh-card:0 1px 3px rgba(0,0,0,.06);
+    --sh-card-h:0 4px 12px rgba(34,86,242,.10);
+  }
+  body { font-family:'Inter',sans-serif; background:var(--c-bg); }
+
+  /* avatar palette */
+  .av0{background:#60a5fa}.av1{background:#a78bfa}.av2{background:#34d399}
+  .av3{background:#fb923c}.av4{background:#f472b6}.av5{background:#4ade80}
+  .av6{background:#38bdf8}.av7{background:#fbbf24}.av8{background:#c084fc}
+  .av9{background:#2dd4bf}
+
+  /* student card — cabecera horizontal + lista de casos */
   .student-card {
-    transition: transform .2s ease, box-shadow .2s ease;
-    box-shadow:
-      0 1px 2px rgba(15,23,42,.05),
-      0 2px 6px rgba(15,23,42,.07),
-      0 4px 10px rgba(15,23,42,.04);
+    background:var(--c-surface);
+    border:1px solid var(--c-border);
+    border-left: 4px solid var(--c-border);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    transition: box-shadow .2s, transform .2s, border-left-color .3s;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    text-align: left;
+    padding: 1rem;
+    gap: .65rem;
   }
   .student-card:hover {
-    transform: translateY(-5px);
-    box-shadow:
-      0 2px 4px rgba(15,23,42,.05),
-      0 8px 18px rgba(15,23,42,.10),
-      0 18px 28px rgba(15,23,42,.06);
-  }
-  .student-card:active { transform: translateY(-2px); }
-  .student-card:focus-within { outline: 2px solid #3b82f6; outline-offset: 2px; }
-  
-  .avatar-placeholder {
-    background: linear-gradient(135deg, var(--avatar-color-1) 0%, var(--avatar-color-2) 100%);
-  }
-  
-  .filter-chip { transition: all 0.2s ease; }
-  .filter-chip:hover { transform: scale(1.02); }
-  .filter-chip.active { box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.3); }
-  
-  @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+    box-shadow: 0 8px 24px rgba(34,86,242,.12);
+    transform: translateY(-3px);
   }
 
-  /* Estilos para selección de fines educativos */
-  input[name="fines_educativos"]:checked + div.academico { border-color: #2563eb; background-color: #dbeafe; }
-  input[name="fines_educativos"]:checked + div.academico i { color: #1d4ed8; transform: scale(1.1); }
-  input[name="fines_educativos"]:checked + div.academico p { color: #1e3a8a; }
-
-  input[name="fines_educativos"]:checked + div.convivencia { border-color: #d97706; background-color: #fef3c7; }
-  input[name="fines_educativos"]:checked + div.convivencia i { color: #b45309; transform: scale(1.1); }
-  input[name="fines_educativos"]:checked + div.convivencia p { color: #78350f; }
-
-  input[name="fines_educativos"]:checked + div.espiritual { border-color: #7c3aed; background-color: #ede9fe; }
-  input[name="fines_educativos"]:checked + div.espiritual i { color: #6d28d9; transform: scale(1.1); }
-  input[name="fines_educativos"]:checked + div.espiritual p { color: #4c1d95; }
-
-  input[name="fines_educativos"]:checked + div.psicoafectivo { border-color: #db2777; background-color: #fce7f3; }
-  input[name="fines_educativos"]:checked + div.psicoafectivo i { color: #be185d; transform: scale(1.1); }
-  input[name="fines_educativos"]:checked + div.psicoafectivo p { color: #831843; }
-  .animate-fade-in-up { animation: fadeInUp 0.4s ease-out forwards; }
-  
-  .skeleton-animate {
-    background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
-    background-size: 200% 100%;
-    animation: shimmer 1.5s infinite;
+  /* cabecera: avatar + nombre/curso en fila */
+  .sc-head { display: flex; align-items: center; gap: .6rem; min-width: 0; }
+  .sc-avatar-wrap {
+    position: relative;
+    width: 42px; height: 42px;
+    flex-shrink: 0;
   }
-  @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
-
-  /* Tabs coloreados por tipo */
-  .tab-resumen.active { background: linear-gradient(135deg, #475569 0%, #334155 100%); color: white; border-bottom: 3px solid #475569; }
-  .tab-observaciones.active { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; border-bottom: 3px solid #3b82f6; }
-  .tab-recomendaciones.active { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white; border-bottom: 3px solid #22c55e; }
-  .tab-cerrar.active { background: linear-gradient(135deg, #ec4899 0%, #db2777 100%); color: white; border-bottom: 3px solid #ec4899; }
-  
-  /* Contenido de tabs con bordes de color */
-  #tab-observations.tab-active { border-left: 4px solid #3b82f6; }
-  #tab-recommendations.tab-active { border-left: 4px solid #22c55e; }
-  #tab-close.tab-active { border-left: 4px solid #ec4899; }
-/* Tooltip para badges de reportes */
-  .report-badge { position: relative; }
-  .report-badge::after {
-    content: attr(data-tooltip);
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #1e293b;
-    color: white;
-    padding: 6px 10px;
-    border-radius: 6px;
-    font-size: var(--text-xs);
-    white-space: nowrap;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.2s;
-    z-index: 100;
-    margin-bottom: 4px;
+  .sc-avatar-wrap img,
+  .sc-avatar-wrap .av-fallback {
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 2px #e2e8f0;
   }
-  .report-badge:hover::after { opacity: 1; }
+  .sc-avatar-wrap .av-fallback {
+    display: flex; align-items: center; justify-content: center;
+    font-size: .95rem; font-weight: 700; color: #fff;
+  }
+  .sc-status-dot {
+    position: absolute; bottom: -1px; right: -1px;
+    width: 11px; height: 11px; border-radius: 50%;
+    border: 2px solid #fff;
+    background: #cbd5e1;
+  }
+  .sc-status-dot.has-reports { background: #22c55e; }
+  .sc-status-dot.has-pending { background: #f59e0b; }
+
+  .sc-id { min-width: 0; flex: 1; }
+
+  /* nombre en azul estilo link */
+  .sc-name {
+    font-size: 13px; font-weight: 600; color: #2256F2;
+    line-height: 1.3; margin: 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .sc-course {
+    font-size: 11px; color: var(--c-muted);
+    margin: 1px 0 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  /* lista de casos: fin completo + estado, uno por fila */
+  .sc-case-list {
+    display: flex; flex-direction: column; gap: 5px;
+    width: 100%; min-height: 20px;
+  }
+  .sc-case-row {
+    display: flex; align-items: center; gap: 7px; width: 100%;
+    background: #F8FAFC; border: none; border-radius: 6px;
+    padding: 5px 8px; cursor: pointer; text-align: left;
+    font-family: inherit; transition: background .15s;
+  }
+  .sc-case-row:hover { background: #EEF3FB; }
+  .sc-case-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .fin-dot-acad { background:#1D4ED8; } .fin-dot-conv { background:#B45309; }
+  .fin-dot-espi { background:#7C3AED; } .fin-dot-psic { background:#BE185D; }
+  .sc-case-fin {
+    font-size: 11px; font-weight: 600; color: #1e293b; flex: 1; min-width: 0;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .sc-case-status {
+    font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .02em;
+    padding: 2px 7px; border-radius: 99px; flex-shrink: 0;
+  }
+  .sc-case-empty {
+    font-size: 11px; color: #94a3b8; font-style: italic;
+    padding: 5px 8px; margin: 0;
+  }
+
+  /* progreso: una sola línea (antes eran 3 chips + barra) */
+  .sc-progress-line { display: flex; align-items: center; gap: 7px; width: 100%; }
+  .sc-progress-track { flex: 1; height: 5px; border-radius: 99px; background: #f1f5f9; overflow: hidden; }
+  .sc-progress-fill  { height: 100%; border-radius: 99px; background: #22c55e; width: 0%; transition: width .7s; }
+  .sc-progress-label { font-size: 10px; font-weight: 700; color: #64748B; white-space: nowrap; }
+
+  /* botones de acción */
+  .sc-actions {
+    display: flex; flex-wrap: wrap;
+    gap: 6px; width: 100%; margin-top: auto;
+  }
+  .sc-btn {
+    flex: 1 1 0; min-width: 0;
+    border-radius: 999px;
+    padding: 6px 0;
+    font-size: 11px; font-weight: 600;
+    border: none; cursor: pointer;
+    transition: opacity .15s, transform .1s;
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    text-decoration: none;
+  }
+  .sc-btn:hover { opacity: .88; transform: scale(.98); }
+  .sc-btn.primary   { background: #F2C144; color: #1a1a2e; }
+  .sc-btn.secondary { background: #023059; color: #fff; }
+
+  /* fin pills */
+  .pill-acad { background:#EFF6FF; color:#1D4ED8; border:1px solid #BFDBFE; }
+  .pill-conv { background:#FFFBEB; color:#B45309; border:1px solid #FDE68A; }
+  .pill-espi { background:#F5F3FF; color:#7C3AED; border:1px solid #DDD6FE; }
+  .pill-psic { background:#FFF1F2; color:#BE185D; border:1px solid #FBCFE8; }
+
+  /* workspace pill tabs */
+  .ws-tab {
+    border-radius:999px; padding:5px 13px; font-size:12px; font-weight:500;
+    color:var(--c-muted); transition:all .15s; white-space:nowrap; cursor:pointer;
+  }
+  .ws-tab:hover { color:var(--c-text); background:rgba(0,0,0,.04); }
+  .ws-tab.active { background:var(--c-surface); box-shadow:0 1px 4px rgba(0,0,0,.10); color:var(--c-text); font-weight:600; }
+
+  /* status badges */
+  .badge-prog { background:#FEF2F2; color:#DC2626; border:1px solid #FECACA; }
+  .badge-seg  { background:#FFFBEB; color:#D97706; border:1px solid #FDE68A; }
+  .badge-aten { background:#F0FDF4; color:#16A34A; border:1px solid #BBF7D0; }
+
+  /* base input */
+  .sai-input {
+    border:1px solid var(--c-border); border-radius:var(--r-input);
+    padding:7px 10px; font-size:12px; font-family:'Inter',sans-serif;
+    width:100%; outline:none; background:white;
+    transition:border-color .15s,box-shadow .15s;
+  }
+  .sai-input:focus { border-color:var(--c-primary); box-shadow:0 0 0 3px rgba(34,86,242,.08); }
+
+  /* fin radio selector */
+  input[name="fines_educativos"]:checked + div.academico   { border-color:#2563eb; background:#dbeafe; }
+  input[name="fines_educativos"]:checked + div.convivencia { border-color:#d97706; background:#fef3c7; }
+  input[name="fines_educativos"]:checked + div.espiritual  { border-color:#7c3aed; background:#ede9fe; }
+  input[name="fines_educativos"]:checked + div.psicoafectivo { border-color:#db2777; background:#fce7f3; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+  .animate-up { animation:fadeUp .22s ease both; }
 </style>
 {% endblock %}
 
 {% block content %}
-<!-- Barra de búsqueda superior -->
-<div id="course-header-section" class="mb-6 -mt-4">
-  <div class="flex items-center gap-3">
-    <div class="relative flex-1 max-w-lg">
-      <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-      <input type="text" id="student-search" placeholder="Buscar estudiante..."
-        class="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-11 pr-5 text-sm text-slate-800 placeholder-slate-400 shadow-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 transition-all">
+<!-- ── SEARCH BAR ─────────────────────────────────────────── -->
+<div id="course-header-section" class="mb-4">
+  <div class="flex items-center gap-2">
+    <div class="relative flex-1 max-w-sm">
+      <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+      <input type="text" id="student-search" placeholder="Buscar estudiante… (Ctrl+K)"
+        class="w-full rounded-[3px] border border-slate-200 bg-white py-2 pl-9 pr-4 text-xs text-slate-800 placeholder-slate-400 focus:border-[#2256F2] focus:outline-none focus:ring-2 focus:ring-blue-100 transition-all">
     </div>
-    <button id="filter-toggle-btn" class="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 shadow-sm transition-all">
-      <i class="fa-solid fa-sliders text-slate-400"></i>
-      <span>Filtros</span>
+    <button id="filter-toggle-btn" class="flex items-center gap-1.5 rounded-[3px] border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 transition-all">
+      <i class="fa-solid fa-sliders text-slate-400 text-[10px]"></i> Filtros
     </button>
-    <a href="{% url 'estudiantes:sync' %}" class="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 transition-all">
-      <i class="fa-solid fa-arrows-rotate"></i>
+    <a href="{% url 'estudiantes:sync' %}" class="flex items-center gap-1.5 rounded-[3px] bg-[#2256F2] px-3 py-2 text-xs font-semibold text-white hover:bg-[#1a45d4] transition-all">
+      <i class="fa-solid fa-arrows-rotate text-[10px]"></i>
       <span class="hidden sm:inline">Sincronizar</span>
     </a>
   </div>
-
-  <!-- Chips de filtro -->
-  <div id="filter-chips" class="mt-3 hidden">
-    <div class="flex flex-wrap gap-2">
-      <button class="filter-chip rounded-full bg-white border border-slate-200 px-3 py-1 text-xs font-medium text-slate-600 hover:border-blue-400 hover:text-blue-600 shadow-sm" data-filter="all">Todos</button>
-      <button class="filter-chip rounded-full bg-white border border-slate-200 px-3 py-1 text-xs font-medium text-slate-600 hover:border-blue-400 hover:text-blue-600 shadow-sm" data-filter="with-reports">Con reportes</button>
-      <button class="filter-chip rounded-full bg-white border border-slate-200 px-3 py-1 text-xs font-medium text-slate-600 hover:border-blue-400 hover:text-blue-600 shadow-sm" data-filter="without-reports">Sin reportes</button>
-      <button class="filter-chip rounded-full bg-blue-50 border border-blue-200 px-3 py-1 text-xs font-medium text-blue-700 hover:bg-blue-100 shadow-sm" data-filter="ACADEMICO">Académico</button>
-      <button class="filter-chip rounded-full bg-amber-50 border border-amber-200 px-3 py-1 text-xs font-medium text-amber-700 hover:bg-amber-100 shadow-sm" data-filter="CONVIVENCIA">Convivencia</button>
-      <button class="filter-chip rounded-full bg-violet-50 border border-violet-200 px-3 py-1 text-xs font-medium text-violet-700 hover:bg-violet-100 shadow-sm" data-filter="ESPIRITUAL">Espiritual</button>
-      <button class="filter-chip rounded-full bg-rose-50 border border-rose-200 px-3 py-1 text-xs font-medium text-rose-700 hover:bg-rose-100 shadow-sm" data-filter="PSICOAFECTIVO">Psicoafectivo</button>
-    </div>
+  <div id="filter-chips" class="mt-2 hidden gap-1.5">
+    <button class="filter-chip rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-600 hover:border-[#2256F2] hover:text-[#2256F2] transition-all" data-filter="all">Todos</button>
+    <button class="filter-chip rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-600 hover:border-[#2256F2] hover:text-[#2256F2] transition-all" data-filter="with-reports">Con reportes</button>
+    <button class="filter-chip rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-600 hover:border-[#2256F2] hover:text-[#2256F2] transition-all" data-filter="without-reports">Sin reportes</button>
+    <button class="filter-chip pill-acad rounded-full px-2.5 py-1 text-[11px] font-medium transition-all" data-filter="ACADEMICO">Académico</button>
+    <button class="filter-chip pill-conv rounded-full px-2.5 py-1 text-[11px] font-medium transition-all" data-filter="CONVIVENCIA">Convivencia</button>
+    <button class="filter-chip pill-espi rounded-full px-2.5 py-1 text-[11px] font-medium transition-all" data-filter="ESPIRITUAL">Espiritual</button>
+    <button class="filter-chip pill-psic rounded-full px-2.5 py-1 text-[11px] font-medium transition-all" data-filter="PSICOAFECTIVO">Psicoafectivo</button>
   </div>
 </div>
 
-<!-- GRID DE TARJETAS -->
-<section id="students-table-section" class="pb-10 w-full">
-  <div id="students-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 w-full">
+<!-- ── STUDENT GRID ──────────────────────────────────────── -->
+<section id="students-table-section" class="pb-10">
+  <div id="students-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
     {% for student in students %}
-    {% with initial=student.full_name|slice:":1"|upper %}
-    <div class="student-card flex flex-col rounded-[4px] bg-white border border-slate-200 overflow-hidden cursor-default border-t-4"
-         style="border-top-color:#cbd5e1"
+    {% with initial=student.full_name|slice:":1"|upper ci=forloop.counter0|stringformat:"s"|slice:"-1" rcount=student.reports.count %}
+    <div class="student-card"
          data-student-name="{{ student.full_name|lower }}"
          data-student-code="{{ student.code }}"
-         data-reports-count="{{ student.reports.count }}"
+         data-reports-count="{{ rcount }}"
          data-report-purposes="{% for r in student.reports.all %}{{ r.purpose }}{% if not forloop.last %},{% endif %}{% endfor %}"
          data-report-statuses="{% for r in student.reports.all %}{{ r.status }}{% if not forloop.last %},{% endif %}{% endfor %}">
 
-      <!-- Avatar + info horizontal -->
-      <div class="flex items-start gap-3 px-4 pt-4 pb-3">
-        <!-- Avatar con dot de estado -->
-        <div class="relative flex-shrink-0">
+      <!-- ── Cabecera: avatar + nombre/curso ── -->
+      <div class="sc-head">
+        <div class="sc-avatar-wrap">
           <img src="/archivos/registro_fotografico/{{ student.code }}.jpg"
-               class="h-12 w-12 rounded-full object-cover"
                alt="{{ student.full_name }}"
                onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
-          <div class="hidden h-12 w-12 items-center justify-center rounded-full avatar-color-{{ forloop.counter0|add:0|stringformat:'s'|slice:'-1' }}">
-            <span class="text-xl font-bold text-white">{{ initial }}</span>
-          </div>
-          <span class="status-dot absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full ring-2 ring-white bg-slate-300"></span>
+          <div class="av-fallback av{{ ci }}" style="display:none">{{ initial }}</div>
+          <span class="sc-status-dot {% if rcount > 0 %}has-reports{% endif %}"></span>
         </div>
-
-        <!-- Nombre + código + badges -->
-        <div class="min-w-0 flex-1 pt-0.5">
-          <h3 class="text-sm font-bold text-slate-900 leading-tight" title="{{ student.full_name }}">{{ student.full_name }}</h3>
-          <p class="text-[11px] text-slate-400 mt-0.5 font-medium">{{ student.code }} · {{ student.course.name|default:student.section|default:"Sin curso" }}</p>
-
-          <!-- Badges de reporte -->
-          <div class="mt-2 flex flex-wrap gap-1 min-h-[18px]">
-            {% for report in student.reports.all %}
-            <button type="button"
-              class="inline-flex h-5 items-center rounded-[4px] px-1.5 text-[9px] font-bold border cursor-pointer hover:opacity-75 transition-opacity
-              {% if report.purpose == 'ACADEMICO' %}bg-blue-50 text-blue-700 border-blue-200
-              {% elif report.purpose == 'CONVIVENCIA' %}bg-amber-50 text-amber-700 border-amber-200
-              {% elif report.purpose == 'ESPIRITUAL' %}bg-violet-50 text-violet-700 border-violet-200
-              {% elif report.purpose == 'PSICOAFECTIVO' %}bg-rose-50 text-rose-700 border-rose-200
-              {% else %}bg-slate-50 text-slate-500 border-slate-200{% endif %}"
-              data-workspace-open="1"
-              data-report-id="{{ report.id }}"
-              data-report-purpose="{{ report.get_purpose_display }}"
-              data-report-status="{{ report.get_status_display }}"
-              data-report-objective="{{ report.objective|default:''|escapejs }}"
-              data-report-date="{{ report.created_at|date:'d/m/Y H:i' }}"
-              data-report-created-by="{{ report.created_by.get_full_name|default:report.created_by.username|default:'-'|escapejs }}"
-              data-report-assigned-to="{{ report.assigned_to.get_full_name|default:report.assigned_to.username|default:'-'|escapejs }}"
-              data-student-name="{{ student.full_name|default:'-'|escapejs }}"
-              data-student-code="{{ student.code }}"
-              data-student-course="{{ student.course.name|default:student.section|default:'-'|escapejs }}"
-              data-obs-items="{% for obs in report.observations.all %}{{ obs.followup_date|date:'d/m/Y'|default:obs.date_log|date:'d/m/Y' }}|| {{ obs.content|escapejs }}|| {{ obs.created_by.get_full_name|default:obs.created_by.username|default:'Usuario'|escapejs }}|| {{ obs.date_log|date:'d/m/Y H:i' }}{% if not forloop.last %}##{% endif %}{% endfor %}"
-              data-rec-items="{% for rec in report.recommendations.all %}{{ rec.followup_date|date:'d/m/Y'|default:rec.date_log|date:'d/m/Y' }}|| {{ rec.content|escapejs }}|| {{ rec.created_by.get_full_name|default:rec.created_by.username|default:'Usuario'|escapejs }}|| {{ rec.date_log|date:'d/m/Y H:i' }}{% if not forloop.last %}##{% endif %}{% endfor %}"
-              title="{{ report.get_purpose_display }} · {{ report.get_status_display }}">
-              {{ report.get_purpose_display|slice:":3" }}
-            </button>
-            {% endfor %}
-          </div>
+        <div class="sc-id">
+          <p class="sc-name">{{ student.full_name }}</p>
+          <p class="sc-course">{{ student.code }} &nbsp;·&nbsp; {{ student.course.name|default:student.section|default:"—" }}</p>
         </div>
       </div>
 
-      <!-- Stats compactas -->
-      <div class="mx-4 mb-3 grid grid-cols-3 divide-x divide-slate-100 rounded-[4px] border border-slate-100 bg-slate-50 overflow-hidden">
-        <div class="py-2 text-center">
-          <p class="text-sm font-bold text-slate-800 leading-none">{{ student.reports.count }}</p>
-          <p class="mt-0.5 text-[9px] font-semibold uppercase tracking-wider text-slate-400">Rep.</p>
-        </div>
-        <div class="py-2 text-center">
-          <p class="text-sm font-bold text-emerald-600 leading-none stat-atendidos">0</p>
-          <p class="mt-0.5 text-[9px] font-semibold uppercase tracking-wider text-slate-400">Atend.</p>
-        </div>
-        <div class="py-2 text-center">
-          <p class="text-sm font-bold text-amber-500 leading-none stat-proceso">0</p>
-          <p class="mt-0.5 text-[9px] font-semibold uppercase tracking-wider text-slate-400">Proceso</p>
-        </div>
-      </div>
-
-      <!-- Progress bar compacta -->
-      <div class="px-4 pb-3">
-        <div class="flex items-center gap-2">
-          <div class="flex-1 h-1.5 rounded-full bg-slate-100 overflow-hidden">
-            <div class="h-full rounded-full bg-emerald-500 stat-progress-bar transition-all duration-700" style="width:0%"></div>
-          </div>
-          <span class="text-[10px] font-bold text-slate-400 stat-progress-text w-7 text-right">0%</span>
-        </div>
-      </div>
-
-      <!-- CTA -->
-      <div class="px-4 pb-4">
+      <!-- ── Casos: fin educativo completo + estado ── -->
+      <div class="sc-case-list">
+        {% for report in student.reports.all %}
         <button type="button"
-          class="flex w-full items-center justify-center gap-2 rounded-lg bg-[#023059] py-2.5 text-xs font-bold text-white hover:bg-[#034078] transition-colors focus:outline-none focus:ring-2 focus:ring-[#023059] focus:ring-offset-1"
+          class="sc-case-row"
+          data-workspace-open="1"
+          data-report-id="{{ report.id }}"
+          data-report-purpose="{{ report.get_purpose_display }}"
+          data-report-status="{{ report.get_status_display }}"
+          data-report-objective="{{ report.objective|default:''|escapejs }}"
+          data-report-date="{{ report.created_at|date:'d/m/Y H:i' }}"
+          data-report-created-by="{{ report.created_by_display|escapejs }}"
+          data-report-assigned-to="{{ report.assigned_to_display|escapejs }}"
+          data-student-name="{{ student.full_name|default:'-'|escapejs }}"
+          data-student-code="{{ student.code }}"
+          data-student-course="{{ student.course.name|default:student.section|default:'-'|escapejs }}"
+          data-can-edit="{% if report|can_edit_report:viewer %}1{% else %}0{% endif %}"
+          data-can-reopen="{% if report|can_reopen_report:viewer %}1{% else %}0{% endif %}"
+          data-is-closed="{% if report.is_closed %}1{% else %}0{% endif %}"
+          data-obs-items="{% for obs in report.observations.all %}{{ obs.id }}||{{ obs.followup_date|date:'d/m/Y'|default:obs.date_log|date:'d/m/Y' }}|| {{ obs.content|escapejs }}|| {{ obs.created_by_display|escapejs }}||{{ obs.created_by_id|default:'' }}|| {{ obs.date_log|date:'d/m/Y H:i' }}||{{ obs.academic_period|escapejs }}{% if not forloop.last %}##{% endif %}{% endfor %}"
+          data-rec-items="{% for rec in report.recommendations.all %}{{ rec.id }}||{{ rec.followup_date|date:'d/m/Y'|default:rec.date_log|date:'d/m/Y' }}|| {{ rec.content|escapejs }}|| {{ rec.created_by_display|escapejs }}||{{ rec.created_by_id|default:'' }}|| {{ rec.date_log|date:'d/m/Y H:i' }}||{{ rec.academic_period|escapejs }}{% if not forloop.last %}##{% endif %}{% endfor %}"
+          title="{{ report.get_purpose_display }} · {{ report.get_status_display }}">
+          <span class="sc-case-dot {% if report.purpose == 'ACADEMICO' %}fin-dot-acad{% elif report.purpose == 'CONVIVENCIA' %}fin-dot-conv{% elif report.purpose == 'ESPIRITUAL' %}fin-dot-espi{% elif report.purpose == 'PSICOAFECTIVO' %}fin-dot-psic{% endif %}"></span>
+          <span class="sc-case-fin">{{ report.get_purpose_display }}</span>
+          <span class="sc-case-status {% if report.status == 'PROGRAMADO' %}badge-prog{% elif report.status == 'SEGUIMIENTO' %}badge-seg{% else %}badge-aten{% endif %}">{{ report.get_status_display }}</span>
+        </button>
+        {% empty %}
+        <p class="sc-case-empty">Sin casos registrados</p>
+        {% endfor %}
+      </div>
+
+      <!-- ── Progreso: X/Y atendidos ── -->
+      <div class="sc-progress-line">
+        <div class="sc-progress-track"><div class="stat-progress-bar sc-progress-fill"></div></div>
+        <span class="stat-progress-text sc-progress-label">{{ rcount }} caso{{ rcount|pluralize }}</span>
+      </div>
+
+      <!-- ── Botones de acción ── -->
+      <div class="sc-actions">
+        <!-- Ver último reporte (si hay) -->
+        {% if student.reports.all %}
+        {% with last_r=student.reports.all|first %}
+        <button type="button"
+          class="sc-btn secondary"
+          data-workspace-open="1"
+          data-report-id="{{ last_r.id }}"
+          data-report-purpose="{{ last_r.get_purpose_display }}"
+          data-report-status="{{ last_r.get_status_display }}"
+          data-report-objective="{{ last_r.objective|default:''|escapejs }}"
+          data-report-date="{{ last_r.created_at|date:'d/m/Y H:i' }}"
+          data-report-created-by="{{ last_r.created_by_display|escapejs }}"
+          data-report-assigned-to="{{ last_r.assigned_to_display|escapejs }}"
+          data-student-name="{{ student.full_name|default:'-'|escapejs }}"
+          data-student-code="{{ student.code }}"
+          data-student-course="{{ student.course.name|default:student.section|default:'-'|escapejs }}"
+          data-can-edit="{% if last_r|can_edit_report:viewer %}1{% else %}0{% endif %}"
+          data-can-reopen="{% if last_r|can_reopen_report:viewer %}1{% else %}0{% endif %}"
+          data-is-closed="{% if last_r.is_closed %}1{% else %}0{% endif %}"
+          data-obs-items="{% for obs in last_r.observations.all %}{{ obs.id }}||{{ obs.followup_date|date:'d/m/Y'|default:obs.date_log|date:'d/m/Y' }}|| {{ obs.content|escapejs }}|| {{ obs.created_by_display|escapejs }}||{{ obs.created_by_id|default:'' }}|| {{ obs.date_log|date:'d/m/Y H:i' }}||{{ obs.academic_period|escapejs }}{% if not forloop.last %}##{% endif %}{% endfor %}"
+          data-rec-items="{% for rec in last_r.recommendations.all %}{{ rec.id }}||{{ rec.followup_date|date:'d/m/Y'|default:rec.date_log|date:'d/m/Y' }}|| {{ rec.content|escapejs }}|| {{ rec.created_by_display|escapejs }}||{{ rec.created_by_id|default:'' }}|| {{ rec.date_log|date:'d/m/Y H:i' }}||{{ rec.academic_period|escapejs }}{% if not forloop.last %}##{% endif %}{% endfor %}"
+          title="Ver reporte">
+          <i class="fa-solid fa-eye" style="font-size:9px"></i> Ver
+        </button>
+        {% endwith %}
+        {% else %}
+        <button type="button" class="sc-btn secondary" disabled style="opacity:.4;cursor:not-allowed">
+          <i class="fa-solid fa-eye" style="font-size:9px"></i> Ver
+        </button>
+        {% endif %}
+
+        <!-- Nuevo reporte -->
+        <button type="button"
+          class="sc-btn primary"
           data-modal-target="create-report-modal"
           data-student-id="{{ student.id }}"
           data-student-name="{{ student.full_name|escapejs }}"
@@ -243,370 +316,296 @@
           data-student-course="{{ student.course.name|default:student.section|default:'Sin curso'|escapejs }}"
           data-student-section="{{ student.course.section.name|default:student.section|default:'Sin seccion'|escapejs }}"
           data-report-purposes="{% for r in student.reports.all %}{{ r.purpose }}{% if not forloop.last %},{% endif %}{% endfor %}"
-          data-report-info="{% for r in student.reports.all %}{% if r.status != 'ATENDIDO' %}{{ r.purpose }}|{{ r.created_at|date:'d/m/Y' }}|{{ r.created_by.get_full_name|default:r.created_by.username|default:'Sistema'|escapejs }};;{% endif %}{% endfor %}">
-          <i class="fa-solid fa-plus" style="font-size:9px"></i>
-          Nuevo Reporte
+          data-report-info="{% for r in student.reports.all %}{% if r.status != 'ATENDIDO' %}{{ r.purpose }}|{{ r.created_at|date:'d/m/Y' }}|{{ r.created_by_display|escapejs }};;{% endif %}{% endfor %}">
+          <i class="fa-solid fa-plus" style="font-size:9px"></i> Reporte
         </button>
+
+        <!-- Ficha PDF (solo CAP, mrodriguez, dhiguera, pvasquez — y solo si el estudiante tiene reportes) -->
+        {% if can_export_ficha and rcount > 0 %}
+        <a href="{% url 'estudiantes:ficha_estudiante' student.id %}"
+           target="_blank"
+           class="sc-btn secondary"
+           title="Exportar ficha de seguimiento en PDF">
+          <i class="fa-solid fa-file-pdf" style="font-size:9px"></i> Ficha
+        </a>
+        {% endif %}
       </div>
+
     </div>
     {% endwith %}
 
     {% empty %}
-    <div class="col-span-full flex flex-col items-center justify-center py-20 text-center">
-      <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 text-3xl text-slate-300">
+    <div class="col-span-full flex flex-col items-center justify-center py-16 text-center">
+      <div class="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-2xl text-slate-300">
         <i class="fa-solid fa-users"></i>
       </div>
-      <h3 class="text-base font-medium text-slate-700">No hay estudiantes</h3>
-      <p class="mt-1 text-sm text-slate-400">No hay estudiantes registrados para este curso.</p>
+      <p class="text-sm font-medium text-slate-600">No hay estudiantes en este curso</p>
     </div>
     {% endfor %}
   </div>
 </section>
 
-<!-- WORKSPACE PANEL with TABS -->
-<section id="report-workspace-panel" class="soft-shell mt-4 hidden w-full min-h-[85vh] rounded-2xl border border-slate-300/60 bg-white shadow-2xl shadow-slate-300/40">
-  <!-- Header con breadcrumb -->
-  <div class="flex items-center justify-between border-b-2 border-slate-200/80 bg-white px-6 py-4">
-    <div class="flex items-center gap-4">
-      <button type="button" id="btn-back-to-list" class="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">
-        <i class="fa-solid fa-arrow-left"></i>
-        <span>Volver</span>
+<!-- ── WORKSPACE PANEL ───────────────────────────────────── -->
+<section id="report-workspace-panel" class="hidden w-full rounded-[5px] border border-slate-200 bg-white shadow-lg animate-up">
+
+  <!-- Workspace header -->
+  <div class="flex items-center justify-between border-b border-slate-200 px-5 py-3">
+    <div class="flex items-center gap-3">
+      <button type="button" id="btn-back-to-list"
+        class="flex items-center gap-1.5 rounded-[3px] border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 hover:border-[#2256F2] hover:text-[#2256F2] transition-all">
+        <i class="fa-solid fa-arrow-left text-[10px]"></i> Volver
       </button>
-      <div class="h-6 w-px bg-slate-200"></div>
-      <div class="flex items-center gap-3">
-        <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#2563eb] to-[#1d4ed8] shadow-md">
-          <i class="fa-solid fa-file-shield text-lg text-white" aria-hidden="true"></i>
+      <div class="h-4 w-px bg-slate-200"></div>
+      <div class="flex items-center gap-2">
+        <div class="flex h-7 w-7 items-center justify-center rounded-[3px] bg-[#2256F2]">
+          <i class="fa-solid fa-file-shield text-xs text-white"></i>
         </div>
-        <div>
-          <h3 class="text-lg font-bold text-slate-900">Detalle del Reporte</h3>
-          <p class="text-xs text-slate-500">Información del acompañamiento</p>
-        </div>
+        <span class="text-sm font-semibold text-slate-900">Detalle del Reporte</span>
       </div>
     </div>
-    <div class="flex items-center gap-2">
-      <button class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">
-        <i class="fa-solid fa-print"></i>
-      </button>
-      <button class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">
-        <i class="fa-solid fa-share-nodes"></i>
-      </button>
-    </div>
   </div>
 
-  <!-- Tabs Navigation with colors -->
-  <div class="border-b border-slate-200 bg-slate-50 px-6">
-    <div class="flex gap-2">
-      <button class="workspace-tab tab-resumen active tab-btn relative px-4 py-3 text-sm font-medium text-slate-600 hover:text-slate-900 rounded-t-lg" data-tab="overview">
-        <i class="fa-solid fa-chart-line mr-2"></i>Resumen
-      </button>
-      <button class="workspace-tab tab-observaciones tab-btn relative px-4 py-3 text-sm font-medium text-slate-600 hover:text-slate-900 rounded-t-lg" data-tab="observations">
-        <i class="fa-solid fa-magnifying-glass mr-2"></i>Observaciones
-        <span class="ml-1.5 rounded-full bg-blue-100 px-1.5 py-0.5 text-[10px] font-bold text-blue-700 obs-count">0</span>
-      </button>
-      <button class="workspace-tab tab-recomendaciones tab-btn relative px-4 py-3 text-sm font-medium text-slate-600 hover:text-slate-900 rounded-t-lg" data-tab="recommendations">
-        <i class="fa-solid fa-lightbulb mr-2"></i>Recomendaciones
-        <span class="ml-1.5 rounded-full bg-green-100 px-1.5 py-0.5 text-[10px] font-bold text-green-700 rec-count">0</span>
-      </button>
-      <button class="workspace-tab tab-cerrar tab-btn relative px-4 py-3 text-sm font-medium text-slate-600 hover:text-slate-900 rounded-t-lg" data-tab="close">
-        <i class="fa-solid fa-check-circle mr-2"></i>Cerrar Caso
-      </button>
-    </div>
-  </div>
+  <!-- 2-column body -->
+  <div class="grid gap-4 p-5 lg:grid-cols-12">
 
-  <!-- Contenido Principal -->
-  <div class="grid gap-6 p-6 lg:grid-cols-12">
-    <!-- Columna Izquierda - Perfil del Estudiante -->
-    <div class="lg:col-span-3 space-y-4">
-      <!-- Card Perfil Principal -->
-      <div class="relative overflow-hidden rounded-xl bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900 p-5 shadow-lg">
-        <div class="absolute top-0 right-0 w-28 h-28 bg-white/10 rounded-full -translate-y-8 translate-x-8"></div>
+    <!-- Left: student profile -->
+    <div class="lg:col-span-3 space-y-3">
 
-        <div class="relative z-10 flex flex-col items-center text-center">
-          <div class="mb-3 flex h-20 w-20 items-center justify-center rounded-full bg-white/20 shadow-md ring-4 ring-white/30">
-            <img id="workspace-student-img" src="" class="h-20 w-20 rounded-full object-cover hidden" alt="Foto">
-            <div id="workspace-student-initial" class="flex h-20 w-20 items-center justify-center rounded-full bg-white/30 text-3xl font-bold text-white">-</div>
+      <!-- Profile card: white + 4px blue top border -->
+      <div class="rounded-[5px] border border-slate-200 bg-white overflow-hidden" style="border-top:4px solid #2256F2">
+        <div class="flex flex-col items-center text-center p-4">
+          <div class="relative mb-3">
+            <img id="workspace-student-img" src="" class="h-16 w-16 rounded-full object-cover hidden" alt="Foto">
+            <div id="workspace-student-initial" class="flex h-16 w-16 items-center justify-center rounded-full bg-[#2256F2] text-2xl font-bold text-white">-</div>
           </div>
-          <h4 id="workspace-student-name" class="text-lg font-bold text-white tracking-wide leading-snug">-</h4>
-          <div class="mt-2 inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1 text-sm font-semibold text-white/95">
-            <i class="fa-solid fa-id-card text-xs" aria-hidden="true"></i>
+          <h4 id="workspace-student-name" class="text-sm font-bold text-slate-900 leading-snug mb-1">-</h4>
+          <div class="flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-medium text-slate-600 mb-1">
+            <i class="fa-solid fa-id-card text-[9px]"></i>
             <span id="workspace-student-code">-</span>
           </div>
-          <div class="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-white/15 px-3 py-1.5 text-sm font-semibold text-white">
-            <i class="fa-solid fa-graduation-cap text-xs" aria-hidden="true"></i>
+          <div class="flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-0.5 text-[11px] font-medium text-[#2256F2]">
+            <i class="fa-solid fa-graduation-cap text-[9px]"></i>
             <span id="workspace-course">-</span>
           </div>
         </div>
       </div>
 
-      <!-- Estado del Reporte -->
-      <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-        <div class="flex items-center justify-between mb-3">
-          <h5 class="text-sm font-bold uppercase tracking-wide text-slate-700">Estado</h5>
-          <span id="workspace-status" class="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-sm font-bold text-emerald-800 shadow-sm"></span>
+      <!-- Estado -->
+      <div class="rounded-[5px] border border-slate-200 bg-white p-3 space-y-2">
+        <div class="flex items-center justify-between">
+          <span class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Estado</span>
+          <span id="workspace-status" class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold"></span>
         </div>
-        <div class="space-y-2">
-          <div class="flex items-center gap-3 rounded-lg bg-slate-50 p-2.5">
-            <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
-              <i class="fa-regular fa-calendar" aria-hidden="true"></i>
-            </div>
-            <div>
-              <p class="text-xs font-semibold text-slate-500">Fecha</p>
-              <p id="workspace-date" class="text-sm font-bold text-slate-900">-</p>
-            </div>
+        <div class="flex items-center gap-2 rounded-[3px] bg-slate-50 p-2">
+          <div class="flex h-6 w-6 items-center justify-center rounded-[3px] bg-blue-50 shrink-0">
+            <i class="fa-regular fa-calendar text-[#2256F2] text-[10px]"></i>
+          </div>
+          <div>
+            <p class="text-[9px] font-medium text-slate-500 uppercase">Fecha</p>
+            <p id="workspace-date" class="text-[11px] font-semibold text-slate-900">-</p>
           </div>
         </div>
       </div>
 
-      <!-- Equipo de Atención -->
-      <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-        <h5 class="mb-3 text-sm font-bold uppercase tracking-wide text-slate-700">Equipo</h5>
-        <div class="space-y-2">
-          <div class="flex items-center gap-3 rounded-lg bg-slate-50 p-2.5">
-            <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-violet-50 text-violet-600">
-              <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
-            </div>
-            <div class="flex-1 min-w-0">
-              <p class="text-xs font-semibold text-slate-500">Remitente</p>
-              <p id="workspace-created-by" class="truncate text-sm font-semibold text-slate-800">-</p>
-            </div>
+      <!-- Equipo -->
+      <div class="rounded-[5px] border border-slate-200 bg-white p-3 space-y-2">
+        <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Equipo</p>
+        <div class="flex items-center gap-2 rounded-[3px] bg-slate-50 p-2">
+          <div class="flex h-6 w-6 items-center justify-center rounded-[3px] bg-violet-50 shrink-0">
+            <i class="fa-solid fa-paper-plane text-violet-600 text-[10px]"></i>
           </div>
-          <div class="flex items-center gap-3 rounded-xl bg-slate-50 p-3">
-            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
-              <i class="fa-solid fa-user-check"></i>
-            </div>
-            <div class="flex-1 min-w-0">
-              <p class="text-xs font-medium text-slate-500">Encargado</p>
-              <p id="workspace-assigned-to" class="truncate text-sm font-semibold text-slate-800">-</p>
-            </div>
+          <div class="min-w-0">
+            <p class="text-[9px] font-medium text-slate-500 uppercase">Remitente</p>
+            <p id="workspace-created-by" class="truncate text-[11px] font-semibold text-slate-800">-</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 rounded-[3px] bg-slate-50 p-2">
+          <div class="flex h-6 w-6 items-center justify-center rounded-[3px] bg-amber-50 shrink-0">
+            <i class="fa-solid fa-user-check text-amber-600 text-[10px]"></i>
+          </div>
+          <div class="min-w-0">
+            <p class="text-[9px] font-medium text-slate-500 uppercase">Encargado</p>
+            <p id="workspace-assigned-to" class="truncate text-[11px] font-semibold text-slate-800">-</p>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Columna Derecha - Detalles del Reporte (más ancha) -->
-    <div class="lg:col-span-9 space-y-4">
+    <!-- Right: tab content -->
+    <div class="lg:col-span-9 flex flex-col gap-3">
+
+      <!-- Aviso solo lectura cuando status = ATENDIDO -->
+      <div id="ws-atendido-notice" class="hidden rounded-[5px] border border-green-200 bg-green-50 px-3 py-2 flex items-center justify-between gap-2 flex-wrap">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-circle-check text-green-600 text-xs shrink-0"></i>
+          <p class="text-xs font-medium text-green-800">Caso atendido — solo lectura del historial. No se pueden agregar nuevas observaciones ni recomendaciones.</p>
+        </div>
+        <button type="button" id="btn-reabrir-caso" onclick="openReabrirModal()"
+          class="hidden shrink-0 flex items-center gap-1.5 rounded-[3px] bg-[#2256F2] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#1a45d4] transition">
+          <i class="fa-solid fa-lock-open text-[10px]"></i> Reabrir caso
+        </button>
+      </div>
+
+      <!-- Pill tabs nav -->
+      <div class="flex items-center gap-1 rounded-[5px] bg-[#F1F5F9] p-1 self-start flex-wrap">
+        <button class="ws-tab active" data-tab="overview">
+          <i class="fa-solid fa-chart-line mr-1.5 text-[10px]"></i>Resumen
+        </button>
+        <button class="ws-tab" data-tab="observations">
+          <i class="fa-solid fa-eye mr-1.5 text-[10px]"></i>Observaciones
+          <span class="ml-1 rounded-full bg-blue-100 px-1.5 py-0.5 text-[9px] font-bold text-blue-700 obs-count">0</span>
+        </button>
+        <button class="ws-tab" data-tab="recommendations">
+          <i class="fa-solid fa-lightbulb mr-1.5 text-[10px]"></i>Recomendaciones
+          <span class="ml-1 rounded-full bg-emerald-100 px-1.5 py-0.5 text-[9px] font-bold text-emerald-700 rec-count">0</span>
+        </button>
+        <button id="tab-btn-close" class="ws-tab" data-tab="close">
+          <i class="fa-solid fa-lock mr-1.5 text-[10px]"></i>Cerrar Caso
+        </button>
+      </div>
+
       <!-- Tab: Resumen -->
       <div id="tab-overview" class="workspace-tab-content">
-        <div class="rounded-xl border-2 border-slate-200 bg-white p-5 shadow-sm">
-          <div class="flex items-center gap-4 mb-4">
-            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-slate-700 shadow-sm">
-              <i class="fa-solid fa-bullseye text-lg" aria-hidden="true"></i>
+        <div class="rounded-[5px] border border-slate-200 bg-white p-4">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="flex h-8 w-8 items-center justify-center rounded-[3px] bg-[#EEF2FF] shrink-0">
+              <i class="fa-solid fa-bullseye text-[#2256F2] text-sm"></i>
             </div>
             <div>
-              <h5 class="text-base font-bold text-slate-900">Fin Educativo</h5>
-              <p id="workspace-purpose-card" class="text-sm font-bold text-slate-700">-</p>
+              <p class="text-[10px] font-medium text-slate-500 uppercase tracking-wide">Fin Educativo</p>
+              <p id="workspace-purpose-card" class="text-sm font-bold text-slate-900">-</p>
             </div>
           </div>
-          <div class="rounded-lg bg-slate-50 p-4 border-2 border-slate-100">
-            <h6 class="mb-3 text-sm font-bold text-slate-900 flex items-center gap-2">
-              <i class="fa-solid fa-target" aria-hidden="true"></i> Objetivo del acompañamiento
-            </h6>
-            <p id="workspace-objective" class="text-base leading-relaxed text-slate-700 font-medium">-</p>
+          <div class="rounded-[3px] bg-[#F8FAFC] p-3.5" style="border-left:4px solid #2256F2">
+            <p class="text-[10px] font-semibold text-[#2256F2] uppercase tracking-wide mb-2 flex items-center gap-1.5">
+              <i class="fa-solid fa-bullseye text-[9px]"></i> Objetivo del acompañamiento
+            </p>
+            <p id="workspace-objective" class="text-sm text-slate-700 leading-relaxed">-</p>
           </div>
         </div>
       </div>
 
       <!-- Tab: Observaciones -->
       <div id="tab-observations" class="workspace-tab-content hidden">
-        <div class="rounded-l border-2 border-slate-200 bg-white p-5 shadow-sm">
-          <div class="mb-4 flex items-center justify-between">
-            <h4 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-              <i class="fa-solid fa-magnifying-glass text-blue-600"></i> Observaciones
-            </h4>
-            <button onclick="openModal('edit-observation-modal')" class="rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-blue-700">
-              <i class="fa-solid fa-plus mr-1"></i> Nueva
+        <div class="rounded-[5px] border border-slate-200 bg-white p-4">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-2">
+              <div class="flex h-7 w-7 items-center justify-center rounded-[3px] bg-blue-50">
+                <i class="fa-solid fa-eye text-[#2256F2] text-xs"></i>
+              </div>
+              <span class="text-sm font-semibold text-slate-900">Observaciones</span>
+            </div>
+            <button id="btn-nueva-obs" onclick="openModal('edit-observation-modal')"
+              class="flex items-center gap-1 rounded-[3px] bg-[#2256F2] px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-[#1a45d4] transition-all">
+              <i class="fa-solid fa-plus text-[9px]"></i> Nueva
             </button>
           </div>
-          <div id="observations-container" class="space-y-3"></div>
+          <div id="observations-container"></div>
         </div>
       </div>
 
       <!-- Tab: Recomendaciones -->
       <div id="tab-recommendations" class="workspace-tab-content hidden">
-        <div class="rounded-xl border-2 border-slate-200 bg-white p-5 shadow-sm">
-          <div class="mb-4 flex items-center justify-between">
-            <h4 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-              <i class="fa-solid fa-lightbulb text-green-600"></i> Recomendaciones
-            </h4>
-            <button onclick="openModal('edit-recommendation-modal')" class="rounded-lg bg-emerald-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-emerald-700 shadow-sm">
-              <i class="fa-solid fa-plus mr-1"></i> Nueva
+        <div class="rounded-[5px] border border-slate-200 bg-white p-4">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-2">
+              <div class="flex h-7 w-7 items-center justify-center rounded-[3px] bg-emerald-50">
+                <i class="fa-solid fa-lightbulb text-emerald-600 text-xs"></i>
+              </div>
+              <span class="text-sm font-semibold text-slate-900">Recomendaciones</span>
+            </div>
+            <button id="btn-nueva-rec" onclick="openModal('edit-recommendation-modal')"
+              class="flex items-center gap-1 rounded-[3px] bg-emerald-600 px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-emerald-700 transition-all">
+              <i class="fa-solid fa-plus text-[9px]"></i> Nueva
             </button>
           </div>
-          <div id="recommendations-container" class="space-y-3"></div>
+          <div id="recommendations-container"></div>
         </div>
       </div>
 
       <!-- Tab: Cerrar Caso -->
       <div id="tab-close" class="workspace-tab-content hidden">
-        <button onclick="openModal('close-case-modal')" class="w-full rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 p-8 text-center hover:border-red-300 hover:bg-red-50 transition-colors">
-          <i class="fa-solid fa-check-circle text-4xl text-slate-300 mb-3"></i>
-          <p class="text-lg font-bold text-slate-600">Cerrar Caso de Acompañamiento</p>
-          <p class="text-sm text-slate-500 mt-1">Finaliza el seguimiento del estudiante</p>
+        <button onclick="openModal('close-case-modal')"
+          class="w-full rounded-[5px] border-2 border-dashed border-slate-200 bg-slate-50 p-10 text-center hover:border-rose-300 hover:bg-rose-50 transition-colors">
+          <i class="fa-solid fa-lock text-3xl text-slate-300 mb-2"></i>
+          <p class="text-sm font-semibold text-slate-600">Cerrar Caso de Acompañamiento</p>
+          <p class="text-xs text-slate-400 mt-1">Actualiza el estado del seguimiento del estudiante</p>
         </button>
       </div>
+
     </div>
   </div>
 </section>
-              <p id="workspace-created-by" class="truncate text-sm font-semibold text-slate-800">-</p>
-            </div>
-          </div>
-          <div class="flex items-center gap-3 rounded-xl bg-slate-50 p-3">
-            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100 text-amber-600">
-              <i class="fa-solid fa-user-check"></i>
-            </div>
-            <div class="flex-1 min-w-0">
-              <p class="text-xs font-medium text-slate-500">Encargado</p>
-              <p id="workspace-assigned-to" class="truncate text-sm font-semibold text-slate-800">-</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
 
-    <!-- Columna Derecha - Detalles del Reporte (más ancha) -->
-    <div class="lg:col-span-9 space-y-5">
-      <!-- Fin Educativo y Objetivo -->
-      <div class="rounded-xl border-2 border-slate-300 bg-white p-6 shadow-md">
-        <div class="flex items-center gap-4 mb-4">
-          <div class="flex h-11 w-11 items-center justify-center rounded-lg bg-violet-100 text-violet-700 shadow-sm">
-            <i class="fa-solid fa-bullseye text-lg" aria-hidden="true"></i>
-          </div>
-          <div>
-            <h5 class="text-lg font-extrabold text-slate-900 tracking-tight">Fin Educativo</h5>
-            <p id="workspace-purpose-card" class="text-base font-bold text-violet-700">-</p>
-          </div>
-        </div>
-        <div class="rounded-lg bg-slate-100 p-5 border-2 border-slate-200">
-          <h6 class="mb-3 text-base font-bold text-[#2256F2] flex items-center gap-2">
-            <i class="fa-solid fa-target" aria-hidden="true"></i> Objetivo del acompañamiento
-          </h6>
-          <p id="workspace-objective" class="text-lg leading-7 text-slate-800 font-semibold">-</p>
-        </div>
-      </div>
-
-      <!-- Acciones y Contenido -->
-      <div id="workspace-action-content">
-        <div id="workspace-history-block" class="hidden rounded-xl border-2 border-slate-300 bg-white p-5 shadow-md">
-          <h4 id="history-title" class="mb-5 text-lg font-extrabold text-slate-900 flex items-center gap-3">
-            <i class="fa-solid fa-clock-rotate-left text-[#2256F2]" aria-hidden="true"></i> Historial
-          </h4>
-          <div id="history-container" class="space-y-3"></div>
-        </div>
-      </div>
-    </div>
-</section>
-
-<!-- ============================================ -->
-<!-- MODAL CERRAR CASO -->
-<!-- ============================================ -->
-<div id="close-case-modal" class="fixed inset-0 z-[70] hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-  <div class="w-full max-w-lg flex flex-col max-h-[88vh] bg-white rounded-xl shadow-2xl overflow-hidden">
-    <!-- Header -->
-    <div class="flex items-center justify-between bg-rose-600 px-5 py-4 shrink-0">
-      <div class="flex items-center gap-3">
-        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-white/20">
-          <i class="fa-solid fa-check-circle text-white text-sm"></i>
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- MODAL: CERRAR CASO                                         -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div id="close-case-modal" class="fixed inset-0 z-[70] hidden items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+  <div class="w-full max-w-lg flex flex-col max-h-[90vh] bg-white rounded-[5px] shadow-2xl overflow-hidden">
+    <div class="flex items-center justify-between bg-rose-600 px-4 py-3 shrink-0" style="min-height:48px">
+      <div class="flex items-center gap-2.5">
+        <div class="flex h-7 w-7 items-center justify-center rounded-[3px] bg-white/20">
+          <i class="fa-solid fa-lock text-white text-xs"></i>
         </div>
         <div>
-          <h3 class="text-base font-medium text-white">Cerrar Caso de Acompañamiento</h3>
-          <p class="text-xs text-rose-100">Finaliza el seguimiento del estudiante</p>
+          <p class="text-sm font-semibold text-white">Cerrar Caso</p>
+          <p class="text-[11px] text-rose-200">Finaliza el seguimiento del estudiante</p>
         </div>
       </div>
-      <button type="button" data-close-modal="close-case-modal" class="flex h-8 w-8 items-center justify-center rounded-lg text-white/70 hover:bg-white/20 hover:text-white transition">
-        <i class="fa-solid fa-xmark"></i>
+      <button type="button" data-close-modal="close-case-modal"
+        class="flex h-7 w-7 items-center justify-center rounded-[3px] text-white/70 hover:bg-white/20 hover:text-white transition">
+        <i class="fa-solid fa-xmark text-xs"></i>
       </button>
     </div>
-
-    <!-- Body scrollable -->
-    <div class="overflow-y-auto flex-1 p-5">
-      <form method="post" id="workspace-close-case-form" class="space-y-4">
+    <div class="overflow-y-auto flex-1 p-4">
+      <form method="post" id="workspace-close-case-form" class="space-y-3">
         {% csrf_token %}
         <input type="hidden" name="action" value="close_report">
         <input type="hidden" name="report_id" id="close-case-report-id">
-
-        <!-- Info del estudiante -->
-        <div class="rounded-lg bg-slate-50 border border-slate-200 p-3.5">
-          <p class="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2 flex items-center gap-1.5">
-            <i class="fa-solid fa-user-graduate text-slate-400"></i> Estudiante
-          </p>
-          <div class="grid grid-cols-3 gap-3 text-sm">
-            <div>
-              <p class="text-[11px] text-slate-400 uppercase">Nombre</p>
-              <p id="close-form-student-name" class="font-medium text-slate-800 text-sm">-</p>
-            </div>
-            <div>
-              <p class="text-[11px] text-slate-400 uppercase">Código</p>
-              <p id="close-form-student-code" class="font-medium text-slate-800 text-sm">-</p>
-            </div>
-            <div>
-              <p class="text-[11px] text-slate-400 uppercase">Curso</p>
-              <p id="close-form-student-course" class="font-medium text-slate-800 text-sm">-</p>
-            </div>
+        <div class="rounded-[3px] border border-slate-200 bg-slate-50 p-3">
+          <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-2">Estudiante</p>
+          <div class="grid grid-cols-3 gap-2 text-xs">
+            <div><p class="text-[9px] text-slate-400 uppercase">Nombre</p><p id="close-form-student-name" class="font-semibold text-slate-800">-</p></div>
+            <div><p class="text-[9px] text-slate-400 uppercase">Código</p><p id="close-form-student-code" class="font-semibold text-slate-800">-</p></div>
+            <div><p class="text-[9px] text-slate-400 uppercase">Curso</p><p id="close-form-student-course" class="font-semibold text-slate-800">-</p></div>
           </div>
         </div>
-
-        <!-- Datos del reporte -->
-        <div class="rounded-lg bg-slate-50 border border-slate-200 p-3.5">
-          <p class="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2 flex items-center gap-1.5">
-            <i class="fa-solid fa-file-lines text-slate-400"></i> Datos del reporte
-          </p>
-          <div class="grid grid-cols-3 gap-3 text-sm mb-2">
-            <div>
-              <p class="text-[11px] text-slate-400 uppercase">Fecha</p>
-              <p id="close-form-report-date" class="font-medium text-slate-800">-</p>
-            </div>
-            <div>
-              <p class="text-[11px] text-slate-400 uppercase">Fin educativo</p>
-              <p id="close-form-purpose" class="font-medium text-slate-800">-</p>
-            </div>
-            <div>
-              <p class="text-[11px] text-slate-400 uppercase">Remitente</p>
-              <p id="close-form-created-by" class="font-medium text-slate-800">-</p>
-            </div>
+        <div class="rounded-[3px] border border-slate-200 bg-slate-50 p-3">
+          <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-2">Reporte</p>
+          <div class="grid grid-cols-3 gap-2 text-xs mb-2">
+            <div><p class="text-[9px] text-slate-400 uppercase">Fecha</p><p id="close-form-report-date" class="font-semibold text-slate-800">-</p></div>
+            <div><p class="text-[9px] text-slate-400 uppercase">Fin</p><p id="close-form-purpose" class="font-semibold text-slate-800">-</p></div>
+            <div><p class="text-[9px] text-slate-400 uppercase">Remite</p><p id="close-form-created-by" class="font-semibold text-slate-800">-</p></div>
           </div>
-          <div>
-            <p class="text-[11px] text-slate-400 uppercase">Objetivo</p>
-            <p id="close-form-objective" class="text-sm text-slate-700 leading-relaxed mt-0.5">-</p>
-          </div>
+          <div><p class="text-[9px] text-slate-400 uppercase">Objetivo</p><p id="close-form-objective" class="text-xs text-slate-700 leading-relaxed mt-0.5">-</p></div>
         </div>
-
-        <!-- Campos editables -->
-        <div class="grid grid-cols-1 gap-4">
-          <div class="space-y-1.5">
-            <label class="text-sm font-medium text-slate-700 flex items-center gap-1.5">
-              <i class="fa-solid fa-flag text-rose-500 text-xs"></i> Estado del caso
-            </label>
-            <select name="close_status" id="close-status-select" required
-              class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 focus:border-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-100 transition cursor-pointer">
-              <option value="">Selecciona el estado</option>
-              <option value="PROGRAMADO">Programado</option>
-              <option value="SEGUIMIENTO">En Seguimiento</option>
-              <option value="ATENDIDO">Atendido</option>
-            </select>
-          </div>
-          <div class="space-y-1.5">
-            <label class="text-sm font-medium text-slate-700 flex items-center gap-1.5">
-              <i class="fa-solid fa-circle-check text-rose-500 text-xs"></i> ¿Cumplió el objetivo de acompañamiento?
-            </label>
-            <select name="cumple_acompanamiento" id="cumple-select" required
-              class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 focus:border-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-100 transition cursor-pointer">
-              <option value="">Selecciona una opción</option>
-              <option value="true">Sí</option>
-              <option value="false">No</option>
-            </select>
-          </div>
+        <div class="space-y-1">
+          <label class="text-xs font-medium text-slate-700 flex items-center gap-1.5">
+            <i class="fa-solid fa-flag text-rose-500 text-[9px]"></i> Estado del caso
+          </label>
+          <select name="close_status" id="close-status-select" required class="sai-input cursor-pointer">
+            <option value="">Selecciona el estado</option>
+            <option value="PROGRAMADO">Programado</option>
+            <option value="SEGUIMIENTO">En Seguimiento</option>
+            <option value="ATENDIDO">Atendido</option>
+          </select>
         </div>
-
-        <!-- Botones -->
-        <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
+        <div class="space-y-1">
+          <label class="text-xs font-medium text-slate-700 flex items-center gap-1.5">
+            <i class="fa-solid fa-circle-check text-rose-500 text-[9px]"></i> ¿Cumplió el objetivo?
+          </label>
+          <select name="cumple_acompanamiento" id="cumple-select" required class="sai-input cursor-pointer">
+            <option value="">Selecciona una opción</option>
+            <option value="true">Sí</option>
+            <option value="false">No</option>
+          </select>
+        </div>
+        <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
           <button type="button" data-close-modal="close-case-modal"
-            class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 transition cursor-pointer">
-            Cancelar
-          </button>
+            class="rounded-[3px] border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 transition">Cancelar</button>
           <button type="submit"
-            class="flex items-center gap-2 rounded-lg bg-rose-600 px-5 py-2 text-sm font-medium text-white hover:bg-rose-700 transition cursor-pointer">
-            <i class="fa-solid fa-lock text-xs"></i>
-            Cerrar Caso
+            class="flex items-center gap-1.5 rounded-[3px] bg-rose-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-rose-700 transition">
+            <i class="fa-solid fa-lock text-[9px]"></i> Cerrar Caso
           </button>
         </div>
       </form>
@@ -614,76 +613,52 @@
   </div>
 </div>
 
-  <!-- Footer -->
-  <div class="border-t-2 border-slate-200 bg-white px-8 py-5">
-    <div class="flex items-center justify-between">
-      <button type="button" id="btn-back-to-list" class="group flex items-center gap-3 rounded-lg border-2 border-slate-300 bg-white px-6 py-3 text-base font-bold text-slate-800 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md hover:border-[#2256F2] hover:text-[#2256F2] cursor-pointer">
-        <i class="fa-solid fa-arrow-left transition-transform group-hover:-translate-x-1" aria-hidden="true"></i>
-        Volver al listado
-      </button>
-      <div class="flex items-center gap-3 text-base font-medium text-slate-600">
-        <i class="fa-solid fa-shield-halved"></i>
-        <span>Sistema de Acompañamiento Integral</span>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============================================ -->
-<!-- MODAL EDITAR OBSERVACIÓN - DISEÑO MODERNO -->
-<!-- ============================================ -->
-<div id="edit-observation-modal" class="fixed inset-0 z-[70] hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-  <div class="w-full max-w-lg flex flex-col max-h-[88vh] bg-white rounded-xl shadow-2xl overflow-hidden">
-    <!-- Header -->
-    <div class="flex items-center justify-between bg-blue-600 px-5 py-4 shrink-0">
-      <div class="flex items-center gap-3">
-        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-white/20">
-          <i class="fa-solid fa-magnifying-glass text-white text-sm"></i>
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- MODAL: NUEVA OBSERVACIÓN                                   -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div id="edit-observation-modal" class="fixed inset-0 z-[70] hidden items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+  <div class="w-full max-w-lg flex flex-col max-h-[90vh] bg-white rounded-[5px] shadow-2xl overflow-hidden">
+    <div class="flex items-center justify-between bg-[#2256F2] px-4 py-3 shrink-0" style="min-height:48px">
+      <div class="flex items-center gap-2.5">
+        <div class="flex h-7 w-7 items-center justify-center rounded-[3px] bg-white/20">
+          <i class="fa-solid fa-eye text-white text-xs"></i>
         </div>
         <div>
-          <h3 class="text-base font-medium text-white">Nueva Observación</h3>
-          <p class="text-xs text-blue-200">Seguimiento y evolución del estudiante</p>
+          <p class="text-sm font-semibold text-white">Nueva Observación</p>
+          <p class="text-[11px] text-blue-200">Seguimiento y evolución del estudiante</p>
         </div>
       </div>
-      <button type="button" data-close-modal="edit-observation-modal" class="flex h-8 w-8 items-center justify-center rounded-lg text-white/70 hover:bg-white/20 hover:text-white transition">
-        <i class="fa-solid fa-xmark"></i>
+      <button type="button" data-close-modal="edit-observation-modal"
+        class="flex h-7 w-7 items-center justify-center rounded-[3px] text-white/70 hover:bg-white/20 hover:text-white transition">
+        <i class="fa-solid fa-xmark text-xs"></i>
       </button>
     </div>
-
-    <!-- Body scrollable -->
-    <div class="overflow-y-auto flex-1 p-5">
-      <form method="post" class="space-y-4">
+    <div class="overflow-y-auto flex-1 p-4">
+      <form method="post" class="space-y-3">
         {% csrf_token %}
         <input type="hidden" name="action" value="add_observation">
         <input type="hidden" name="report_id" id="obs-modal-report-id">
-
-        <div class="space-y-1.5">
-          <label class="text-sm font-medium text-slate-700 flex items-center gap-1.5">
-            <i class="fa-regular fa-calendar-check text-blue-500 text-xs"></i> Fecha de seguimiento
+        <div class="space-y-1">
+          <label class="text-xs font-medium text-slate-700 flex items-center gap-1.5">
+            <i class="fa-regular fa-calendar-check text-[#2256F2] text-[9px]"></i> Fecha de seguimiento
           </label>
-          <input type="date" name="observation_followup_date" required
-            class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 transition bg-white">
+          <input type="date" name="observation_followup_date" required class="sai-input">
         </div>
-
-        <div class="space-y-1.5">
-          <label class="text-sm font-medium text-slate-700 flex items-center gap-1.5">
-            <i class="fa-solid fa-pen-nib text-blue-500 text-xs"></i> Descripción de la observación
+        <div class="space-y-1">
+          <label class="text-xs font-medium text-slate-700 flex items-center gap-1.5">
+            <i class="fa-solid fa-pen-nib text-[#2256F2] text-[9px]"></i> Descripción de la observación
           </label>
           <textarea name="observation_content" rows="5" required
-            placeholder="Describe los hallazgos, evolución y aspectos relevantes del estudiante..."
-            class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 transition bg-white resize-none leading-relaxed"></textarea>
-          <p class="text-xs text-slate-500">Comportamiento, rendimiento académico, relaciones con compañeros, etc.</p>
+            placeholder="Describe los hallazgos, evolución y aspectos relevantes..."
+            class="sai-input resize-none leading-relaxed"></textarea>
+          <p class="text-[10px] text-slate-500">Comportamiento, rendimiento académico, relaciones, etc.</p>
         </div>
-
-        <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
+        <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
           <button type="button" data-close-modal="edit-observation-modal"
-            class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 transition cursor-pointer">
-            Cancelar
-          </button>
+            class="rounded-[3px] border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 transition">Cancelar</button>
           <button type="submit"
-            class="flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2 text-sm font-medium text-white hover:bg-blue-700 transition cursor-pointer">
-            <i class="fa-solid fa-floppy-disk text-xs"></i>
-            Guardar observación
+            class="flex items-center gap-1.5 rounded-[3px] bg-[#2256F2] px-4 py-1.5 text-xs font-semibold text-white hover:bg-[#1a45d4] transition">
+            <i class="fa-solid fa-floppy-disk text-[9px]"></i> Guardar observación
           </button>
         </div>
       </form>
@@ -691,61 +666,52 @@
   </div>
 </div>
 
-<!-- ============================================ -->
-<!-- MODAL EDITAR RECOMENDACIÓN - DISEÑO MODERNO -->
-<!-- ============================================ -->
-<div id="edit-recommendation-modal" class="fixed inset-0 z-[70] hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-  <div class="w-full max-w-lg flex flex-col max-h-[88vh] bg-white rounded-xl shadow-2xl overflow-hidden">
-    <!-- Header -->
-    <div class="flex items-center justify-between bg-emerald-600 px-5 py-4 shrink-0">
-      <div class="flex items-center gap-3">
-        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-white/20">
-          <i class="fa-solid fa-lightbulb text-white text-sm"></i>
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- MODAL: NUEVA RECOMENDACIÓN                                 -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div id="edit-recommendation-modal" class="fixed inset-0 z-[70] hidden items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+  <div class="w-full max-w-lg flex flex-col max-h-[90vh] bg-white rounded-[5px] shadow-2xl overflow-hidden">
+    <div class="flex items-center justify-between bg-emerald-600 px-4 py-3 shrink-0" style="min-height:48px">
+      <div class="flex items-center gap-2.5">
+        <div class="flex h-7 w-7 items-center justify-center rounded-[3px] bg-white/20">
+          <i class="fa-solid fa-lightbulb text-white text-xs"></i>
         </div>
         <div>
-          <h3 class="text-base font-medium text-white">Nueva Recomendación</h3>
-          <p class="text-xs text-emerald-100">Acciones sugeridas para el estudiante</p>
+          <p class="text-sm font-semibold text-white">Nueva Recomendación</p>
+          <p class="text-[11px] text-emerald-100">Acciones sugeridas para el estudiante</p>
         </div>
       </div>
-      <button type="button" data-close-modal="edit-recommendation-modal" class="flex h-8 w-8 items-center justify-center rounded-lg text-white/70 hover:bg-white/20 hover:text-white transition">
-        <i class="fa-solid fa-xmark"></i>
+      <button type="button" data-close-modal="edit-recommendation-modal"
+        class="flex h-7 w-7 items-center justify-center rounded-[3px] text-white/70 hover:bg-white/20 hover:text-white transition">
+        <i class="fa-solid fa-xmark text-xs"></i>
       </button>
     </div>
-
-    <!-- Body scrollable -->
-    <div class="overflow-y-auto flex-1 p-5">
-      <form method="post" class="space-y-4">
+    <div class="overflow-y-auto flex-1 p-4">
+      <form method="post" class="space-y-3">
         {% csrf_token %}
         <input type="hidden" name="action" value="add_recommendation">
         <input type="hidden" name="report_id" id="rec-modal-report-id">
-
-        <div class="space-y-1.5">
-          <label class="text-sm font-medium text-slate-700 flex items-center gap-1.5">
-            <i class="fa-regular fa-calendar-check text-emerald-600 text-xs"></i> Fecha de seguimiento
+        <div class="space-y-1">
+          <label class="text-xs font-medium text-slate-700 flex items-center gap-1.5">
+            <i class="fa-regular fa-calendar-check text-emerald-600 text-[9px]"></i> Fecha de seguimiento
           </label>
-          <input type="date" name="recommendation_followup_date" required
-            class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-800 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100 transition bg-white">
+          <input type="date" name="recommendation_followup_date" required class="sai-input">
         </div>
-
-        <div class="space-y-1.5">
-          <label class="text-sm font-medium text-slate-700 flex items-center gap-1.5">
-            <i class="fa-solid fa-lightbulb text-emerald-600 text-xs"></i> Recomendaciones
+        <div class="space-y-1">
+          <label class="text-xs font-medium text-slate-700 flex items-center gap-1.5">
+            <i class="fa-solid fa-lightbulb text-emerald-600 text-[9px]"></i> Recomendación
           </label>
           <textarea name="recommendation_content" rows="5" required
-            placeholder="Describe las acciones, estrategias y recomendaciones para apoyar al estudiante..."
-            class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100 transition bg-white resize-none leading-relaxed"></textarea>
-          <p class="text-xs text-slate-500">Estrategias pedagógicas, acciones de apoyo, recursos recomendados, etc.</p>
+            placeholder="Describe las acciones, estrategias y recomendaciones..."
+            class="sai-input resize-none leading-relaxed"></textarea>
+          <p class="text-[10px] text-slate-500">Estrategias pedagógicas, recursos recomendados, etc.</p>
         </div>
-
-        <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
+        <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
           <button type="button" data-close-modal="edit-recommendation-modal"
-            class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 transition cursor-pointer">
-            Cancelar
-          </button>
+            class="rounded-[3px] border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 transition">Cancelar</button>
           <button type="submit"
-            class="flex items-center gap-2 rounded-lg bg-emerald-600 px-5 py-2 text-sm font-medium text-white hover:bg-emerald-700 transition cursor-pointer">
-            <i class="fa-solid fa-floppy-disk text-xs"></i>
-            Guardar recomendación
+            class="flex items-center gap-1.5 rounded-[3px] bg-emerald-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 transition">
+            <i class="fa-solid fa-floppy-disk text-[9px]"></i> Guardar recomendación
           </button>
         </div>
       </form>
@@ -753,137 +719,261 @@
   </div>
 </div>
 
-<!-- ============================================ -->
-<!-- MODAL CREAR REPORTE - UX MEJORADO -->
-<!-- ============================================ -->
-<div id="create-report-modal" class="fixed inset-0 z-[60] hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-  <div class="w-full max-w-xl flex flex-col max-h-[92vh] bg-white rounded-[5px] shadow-2xl overflow-hidden">
-    <!-- Header -->
-    <div class="flex items-center justify-between bg-[#023059] px-5 py-4 shrink-0">
-      <div class="flex items-center gap-3">
-        <div class="flex h-9 w-9 items-center justify-center rounded-[5px] bg-white/20">
-          <i class="fa-solid fa-file-circle-plus text-white text-sm"></i>
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- MODAL: EDITAR OBSERVACIÓN / RECOMENDACIÓN EXISTENTE         -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div id="edit-item-modal" class="fixed inset-0 z-[75] hidden items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+  <div class="w-full max-w-lg flex flex-col max-h-[90vh] bg-white rounded-[5px] shadow-2xl overflow-hidden">
+    <div id="edit-item-header" class="flex items-center justify-between bg-[#2256F2] px-4 py-3 shrink-0" style="min-height:48px">
+      <div class="flex items-center gap-2.5">
+        <div class="flex h-7 w-7 items-center justify-center rounded-[3px] bg-white/20">
+          <i class="fa-solid fa-pen-to-square text-white text-xs"></i>
         </div>
-        <div>
-          <h3 class="text-base font-medium text-white leading-tight">Nuevo Reporte</h3>
-          <p id="modal-student-name" class="text-sm text-blue-200 font-normal">-</p>
-        </div>
+        <p id="edit-item-title" class="text-sm font-semibold text-white">Editar</p>
       </div>
-      <div class="flex items-center gap-3 ml-4 shrink-0">
-        <div class="text-right">
-          <p class="text-[10px] text-blue-300 uppercase tracking-wide">Código</p>
-          <p id="modal-student-code" class="text-sm font-medium text-white">-</p>
-        </div>
-        <div class="text-right">
-          <p class="text-[10px] text-blue-300 uppercase tracking-wide">Curso</p>
-          <p id="modal-student-course" class="text-sm font-medium text-white">-</p>
-        </div>
-        <button type="button" data-close-modal="create-report-modal" class="ml-2 flex h-8 w-8 items-center justify-center rounded-[5px] text-white/70 hover:bg-white/20 hover:text-white transition">
-          <i class="fa-solid fa-xmark"></i>
+      <button type="button" onclick="closeModal('edit-item-modal')"
+        class="flex h-7 w-7 items-center justify-center rounded-[3px] text-white/70 hover:bg-white/20 hover:text-white transition">
+        <i class="fa-solid fa-xmark text-xs"></i>
+      </button>
+    </div>
+    <div class="overflow-y-auto flex-1 p-4 space-y-3">
+      <input type="hidden" id="edit-item-type">
+      <input type="hidden" id="edit-item-id">
+      <div class="space-y-1">
+        <label class="text-xs font-medium text-slate-700">Fecha de seguimiento</label>
+        <input type="date" id="edit-item-date" class="sai-input">
+      </div>
+      <div class="space-y-1">
+        <label class="text-xs font-medium text-slate-700">Contenido</label>
+        <textarea id="edit-item-content" rows="5" class="sai-input resize-none leading-relaxed"></textarea>
+      </div>
+      <div id="edit-item-error" class="hidden rounded-[3px] bg-red-50 border border-red-200 px-3 py-2 text-xs text-red-600"></div>
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+        <button type="button" onclick="closeModal('edit-item-modal')"
+          class="rounded-[3px] border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 transition">Cancelar</button>
+        <button type="button" onclick="submitEditItem()"
+          class="flex items-center gap-1.5 rounded-[3px] bg-[#2256F2] px-4 py-1.5 text-xs font-semibold text-white hover:bg-[#1a45d4] transition">
+          <i class="fa-solid fa-floppy-disk text-[9px]"></i> Guardar cambios
         </button>
       </div>
     </div>
+  </div>
+</div>
 
-    <!-- Body scrollable -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- MODAL: ELIMINAR OBSERVACIÓN / RECOMENDACIÓN                -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div id="delete-item-modal" class="fixed inset-0 z-[75] hidden items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+  <div class="w-full max-w-sm bg-white rounded-[5px] shadow-2xl overflow-hidden">
+    <div class="flex items-center justify-between bg-red-50 border-b border-red-200 px-4 py-3">
+      <div class="flex items-center gap-2.5">
+        <div class="flex h-7 w-7 items-center justify-center rounded-[3px] bg-red-100">
+          <i class="fa-solid fa-triangle-exclamation text-red-600 text-xs"></i>
+        </div>
+        <p id="delete-item-title" class="text-sm font-semibold text-red-700">Eliminar</p>
+      </div>
+      <button type="button" onclick="closeModal('delete-item-modal')"
+        class="flex h-7 w-7 items-center justify-center rounded-[3px] text-slate-400 hover:bg-slate-100 transition">
+        <i class="fa-solid fa-xmark text-xs"></i>
+      </button>
+    </div>
+    <div class="p-4">
+      <input type="hidden" id="delete-item-type">
+      <input type="hidden" id="delete-item-id">
+      <p class="text-xs text-slate-600 leading-relaxed">¿Estás seguro de que deseas eliminar este registro? Esta acción no se puede deshacer.</p>
+      <div class="mt-3 rounded-[3px] bg-slate-50 border border-slate-200 p-2.5">
+        <p id="delete-item-preview" class="text-xs text-slate-700 line-clamp-3"></p>
+      </div>
+      <div id="delete-item-error" class="hidden mt-2 rounded-[3px] bg-red-50 border border-red-200 px-3 py-2 text-xs text-red-600"></div>
+      <div class="flex items-center justify-end gap-2 pt-3 mt-2 border-t border-slate-100">
+        <button type="button" onclick="closeModal('delete-item-modal')"
+          class="rounded-[3px] border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 transition">Cancelar</button>
+        <button type="button" onclick="submitDeleteItem()"
+          class="flex items-center gap-1.5 rounded-[3px] bg-red-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-red-700 transition">
+          <i class="fa-solid fa-trash text-[9px]"></i> Eliminar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- MODAL: REABRIR CASO (solo coordinadores de sección y CAP)  -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div id="reabrir-modal" class="fixed inset-0 z-[75] hidden items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+  <div class="w-full max-w-lg flex flex-col max-h-[90vh] bg-white rounded-[5px] shadow-2xl overflow-hidden">
+    <div class="flex items-center justify-between bg-[#2256F2] px-4 py-3 shrink-0" style="min-height:48px">
+      <div class="flex items-center gap-2.5">
+        <div class="flex h-7 w-7 items-center justify-center rounded-[3px] bg-white/20">
+          <i class="fa-solid fa-lock-open text-white text-xs"></i>
+        </div>
+        <p class="text-sm font-semibold text-white">Reabrir Caso</p>
+      </div>
+      <button type="button" onclick="closeModal('reabrir-modal')"
+        class="flex h-7 w-7 items-center justify-center rounded-[3px] text-white/70 hover:bg-white/20 hover:text-white transition">
+        <i class="fa-solid fa-xmark text-xs"></i>
+      </button>
+    </div>
+    <div class="overflow-y-auto flex-1 p-4 space-y-3">
+      <div class="rounded-[3px] bg-blue-50 border border-blue-200 px-3 py-2 text-xs text-blue-800">
+        <i class="fa-solid fa-circle-info mr-1"></i>
+        Se guardará el historial del ciclo anterior. El caso volverá a estado <strong>En Seguimiento</strong>.
+      </div>
+      <div class="space-y-1">
+        <label class="text-xs font-medium text-slate-700">Nuevo objetivo (opcional)</label>
+        <textarea id="reabrir-objetivo" rows="3" class="sai-input resize-none leading-relaxed" placeholder="Dejar vacío para mantener el objetivo actual"></textarea>
+      </div>
+      <div class="space-y-1">
+        <label class="text-xs font-medium text-slate-700">Nuevo encargado (opcional)</label>
+        <select id="reabrir-asignado" class="sai-input cursor-pointer">
+          <option value="">— Mantener encargado actual —</option>
+        </select>
+      </div>
+      <div class="space-y-1">
+        <label class="text-xs font-medium text-slate-700">Motivo de reapertura (visible en historial)</label>
+        <textarea id="reabrir-notas" rows="3" class="sai-input resize-none leading-relaxed" placeholder="Ej: El estudiante requiere nueva atención en este fin educativo..."></textarea>
+      </div>
+      <div id="reabrir-error" class="hidden rounded-[3px] bg-red-50 border border-red-200 px-3 py-2 text-xs text-red-600"></div>
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+        <button type="button" onclick="closeModal('reabrir-modal')"
+          class="rounded-[3px] border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 transition">Cancelar</button>
+        <button type="button" onclick="submitReabrirCaso()"
+          class="flex items-center gap-1.5 rounded-[3px] bg-[#2256F2] px-4 py-1.5 text-xs font-semibold text-white hover:bg-[#1a45d4] transition">
+          <i class="fa-solid fa-lock-open text-[9px]"></i> Confirmar reapertura
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- MODAL: CREAR REPORTE                                       -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div id="create-report-modal" class="fixed inset-0 z-[60] hidden items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+  <div class="w-full max-w-xl flex flex-col max-h-[92vh] bg-white rounded-[5px] shadow-2xl overflow-hidden">
+    <div class="flex items-center justify-between bg-[#023059] px-4 py-3 shrink-0" style="min-height:48px">
+      <div class="flex items-center gap-2.5">
+        <div class="flex h-7 w-7 items-center justify-center rounded-[3px] bg-white/20">
+          <i class="fa-solid fa-file-circle-plus text-white text-xs"></i>
+        </div>
+        <div>
+          <p class="text-sm font-semibold text-white">Nuevo Reporte</p>
+          <p id="modal-student-name" class="text-[11px] text-blue-300">-</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3 ml-3 shrink-0">
+        <div class="text-right">
+          <p class="text-[9px] text-blue-400 uppercase">Código</p>
+          <p id="modal-student-code" class="text-xs font-medium text-white">-</p>
+        </div>
+        <div class="text-right">
+          <p class="text-[9px] text-blue-400 uppercase">Curso</p>
+          <p id="modal-student-course" class="text-xs font-medium text-white">-</p>
+        </div>
+        <button type="button" data-close-modal="create-report-modal"
+          class="ml-1 flex h-7 w-7 items-center justify-center rounded-[3px] text-white/70 hover:bg-white/20 hover:text-white transition">
+          <i class="fa-solid fa-xmark text-xs"></i>
+        </button>
+      </div>
+    </div>
     <div class="overflow-y-auto flex-1">
-      <form method="post" class="p-5 space-y-5">
+      <form method="post" class="p-4 space-y-4">
         {% csrf_token %}
         <input type="hidden" name="student_id" id="modal-student-id">
-
-        <!-- Tipo de acompañamiento -->
-        <div class="space-y-2">
-          <label class="text-sm font-medium text-slate-700 flex items-center gap-2">
-            <i class="fa-solid fa-tag text-slate-400 text-xs"></i> Tipo de acompañamiento
+        <div class="space-y-1.5">
+          <label class="text-xs font-medium text-slate-700 flex items-center gap-1.5">
+            <i class="fa-solid fa-tag text-slate-400 text-[9px]"></i> Tipo de acompañamiento
           </label>
           <div class="grid grid-cols-2 gap-2">
             <label class="cursor-pointer">
               <input type="radio" name="fines_educativos" value="ACADEMICO" class="peer sr-only">
-              <div class="academico rounded-[5px] border border-slate-200 p-3 text-center transition-all hover:border-blue-400 peer-checked:border-blue-500 peer-checked:bg-blue-50">
-                <i class="fa-solid fa-graduation-cap text-lg text-blue-500 mb-1 block"></i>
-                <p class="text-sm font-medium text-slate-700">Académico</p>
-                <p class="text-[11px] text-slate-500">Rendimiento escolar</p>
+              <div class="academico rounded-[3px] border border-slate-200 p-2.5 text-center transition-all hover:border-blue-400">
+                <p class="text-xs font-semibold text-slate-700 mb-0.5">Académico</p>
+                <p class="text-[10px] text-slate-500">Rendimiento escolar</p>
               </div>
             </label>
             <label class="cursor-pointer">
               <input type="radio" name="fines_educativos" value="CONVIVENCIA" class="peer sr-only">
-              <div class="convivencia rounded-[5px] border border-slate-200 p-3 text-center transition-all hover:border-amber-400 peer-checked:border-amber-500 peer-checked:bg-amber-50">
-                <i class="fa-solid fa-users text-lg text-amber-500 mb-1 block"></i>
-                <p class="text-sm font-medium text-slate-700">Convivencia</p>
-                <p class="text-[11px] text-slate-500">Relaciones interpersonales</p>
+              <div class="convivencia rounded-[3px] border border-slate-200 p-2.5 text-center transition-all hover:border-amber-400">
+                <p class="text-xs font-semibold text-slate-700 mb-0.5">Convivencia</p>
+                <p class="text-[10px] text-slate-500">Relaciones interpersonales</p>
               </div>
             </label>
             <label class="cursor-pointer">
               <input type="radio" name="fines_educativos" value="ESPIRITUAL" class="peer sr-only">
-              <div class="espiritual rounded-[5px] border border-slate-200 p-3 text-center transition-all hover:border-violet-400 peer-checked:border-violet-500 peer-checked:bg-violet-50">
-                <i class="fa-solid fa-heart text-lg text-violet-500 mb-1 block"></i>
-                <p class="text-sm font-medium text-slate-700">Espiritual</p>
-                <p class="text-[11px] text-slate-500">Desarrollo moral y ético</p>
+              <div class="espiritual rounded-[3px] border border-slate-200 p-2.5 text-center transition-all hover:border-violet-400">
+                <p class="text-xs font-semibold text-slate-700 mb-0.5">Espiritual</p>
+                <p class="text-[10px] text-slate-500">Desarrollo moral y ético</p>
               </div>
             </label>
             <label class="cursor-pointer">
               <input type="radio" name="fines_educativos" value="PSICOAFECTIVO" class="peer sr-only">
-              <div class="psicoafectivo rounded-[5px] border border-slate-200 p-3 text-center transition-all hover:border-pink-400 peer-checked:border-pink-500 peer-checked:bg-pink-50">
-                <i class="fa-solid fa-brain text-lg text-pink-500 mb-1 block"></i>
-                <p class="text-sm font-medium text-slate-700">Psicoafectivo</p>
-                <p class="text-[11px] text-slate-500">Estado emocional</p>
+              <div class="psicoafectivo rounded-[3px] border border-slate-200 p-2.5 text-center transition-all hover:border-pink-400">
+                <p class="text-xs font-semibold text-slate-700 mb-0.5">Psicoafectivo</p>
+                <p class="text-[10px] text-slate-500">Estado emocional</p>
               </div>
             </label>
           </div>
           <input type="hidden" name="purpose" id="purpose-hidden">
         </div>
-
-        <!-- Alerta fin ya existente -->
-        <div id="fin-existente-alert" class="hidden rounded-[5px] border border-amber-200 bg-amber-50 p-3">
+        <!-- Alerta fin existente -->
+        <div id="fin-existente-alert" class="hidden rounded-[3px] border border-amber-200 bg-amber-50 p-2.5">
           <div class="flex items-start gap-2">
-            <i class="fa-solid fa-triangle-exclamation text-amber-500 mt-0.5 text-sm shrink-0"></i>
+            <i class="fa-solid fa-triangle-exclamation text-amber-500 mt-0.5 text-xs shrink-0"></i>
             <div>
-              <p class="text-sm font-semibold text-amber-800">Ya tiene un acompañamiento activo de este fin</p>
-              <p id="fin-existente-info" class="text-xs text-amber-700 mt-0.5"></p>
-              <p class="text-xs text-amber-600 mt-1">Ciérralo como <strong>ATENDIDO</strong> antes de crear uno nuevo del mismo tipo.</p>
+              <p class="text-xs font-semibold text-amber-800">Ya tiene un acompañamiento activo de este fin</p>
+              <p id="fin-existente-info" class="text-[11px] text-amber-700 mt-0.5"></p>
+              <p class="text-[11px] text-amber-600 mt-1">Ciérralo como <strong>ATENDIDO</strong> antes de crear uno nuevo.</p>
             </div>
           </div>
         </div>
-
         <!-- Equipo -->
         <div class="grid grid-cols-2 gap-3">
-          <div class="space-y-1.5">
-            <label class="text-sm font-medium text-slate-700 flex items-center gap-1.5">
-              <i class="fa-solid fa-paper-plane text-slate-400 text-xs"></i> Quien remite
+          <div class="space-y-1">
+            <label class="text-xs font-medium text-slate-700 flex items-center gap-1.5">
+              <i class="fa-solid fa-paper-plane text-slate-400 text-[9px]"></i> Quien remite
             </label>
-            <select id="modal-remite-select" name="remite_user_id" class="w-full rounded-[5px] border border-slate-300 bg-white px-3 py-2 text-sm text-slate-600 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 transition cursor-pointer">
-              <option value="">— Selecciona —</option>
-            </select>
+            <div class="sai-input flex items-center gap-1.5 bg-slate-50 text-slate-600 cursor-not-allowed">
+              <i class="fa-solid fa-lock text-[9px] text-slate-400"></i>
+              {{ real_user.get_full_name|default:real_user.username }}
+            </div>
+            <input type="hidden" name="remite_user_id" value="{{ real_user.id }}">
           </div>
-          <div class="space-y-1.5">
-            <label class="text-sm font-medium text-slate-700 flex items-center gap-1.5">
-              <i class="fa-solid fa-user-check text-slate-400 text-xs"></i> Quien atenderá
+          <div class="space-y-1">
+            <label class="text-xs font-medium text-slate-700 flex items-center gap-1.5">
+              <i class="fa-solid fa-user-check text-slate-400 text-[9px]"></i> Quien atenderá
             </label>
-            <select id="modal-atiende-select" name="assigned_to" class="w-full rounded-[5px] border border-slate-300 bg-white px-3 py-2 text-sm text-slate-600 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 transition cursor-pointer">
+            <select id="modal-atiende-select" name="assigned_to" class="sai-input cursor-pointer">
               <option value="">— Selecciona —</option>
             </select>
           </div>
         </div>
-
+        <!-- Período académico: lo asigna el sistema automáticamente, no lo elige el usuario -->
+        <div class="space-y-1">
+          <label class="text-xs font-medium text-slate-700 flex items-center gap-1.5">
+            <i class="fa-regular fa-calendar text-slate-400 text-[9px]"></i> Período académico
+          </label>
+          <div class="sai-input flex items-center gap-1.5 bg-slate-50 text-slate-600 cursor-not-allowed">
+            <i class="fa-solid fa-lock text-[9px] text-slate-400"></i>
+            {{ periodo_actual }}
+          </div>
+        </div>
         <!-- Objetivo -->
-        <div class="space-y-1.5">
-          <label class="text-sm font-medium text-slate-700 flex items-center gap-1.5">
-            <i class="fa-solid fa-bullseye text-slate-400 text-xs"></i> Objetivo del acompañamiento
+        <div class="space-y-1">
+          <label class="text-xs font-medium text-slate-700 flex items-center gap-1.5">
+            <i class="fa-solid fa-bullseye text-slate-400 text-[9px]"></i> Objetivo del acompañamiento
           </label>
           <textarea name="objective" rows="4" required
             placeholder="¿Qué se espera lograr? ¿Cuáles son las necesidades del estudiante?"
-            class="w-full rounded-[5px] border border-slate-300 px-3 py-2.5 text-sm text-slate-600 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 transition bg-white resize-none leading-relaxed"></textarea>
+            class="sai-input resize-none leading-relaxed"></textarea>
         </div>
-
-        <!-- Botones -->
-        <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
+        <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
           <button type="button" data-close-modal="create-report-modal"
-            class="rounded-[5px] border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 transition cursor-pointer">
-            Cancelar
-          </button>
+            class="rounded-[3px] border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 transition">Cancelar</button>
           <button type="submit"
-            class="flex items-center gap-2 rounded-[5px] bg-[#2563eb] px-5 py-2 text-sm font-semibold hover:bg-[#1d4ed8] transition cursor-pointer"
-            style="color:#ffffff">
-            <i class="fa-solid fa-plus text-xs" style="color:#ffffff"></i>
+            class="flex items-center gap-1.5 rounded-[3px] bg-[#2256F2] px-4 py-1.5 text-xs font-semibold hover:bg-[#1a45d4] transition"
+            style="color:#ffffff !important">
+            <i class="fa-solid fa-plus text-[9px]" style="color:#ffffff"></i>
             Crear reporte
           </button>
         </div>
@@ -895,454 +985,455 @@
 
 {% block extra_js %}
 <script>
-  // Datos de educadores para filtrado dinámico
   const EDUCADORES = {{ educadores_json|safe }};
+  const CSRF = '{{ csrf_token }}';
+  const CURRENT_VIEWER_ID = {{ viewer.id|default:'null' }};
+  const URL_EDIT_OBS = "{% url 'acompanamiento:editar_observacion' 0 %}".replace('/0/', '/{id}/');
+  const URL_DEL_OBS  = "{% url 'acompanamiento:eliminar_observacion' 0 %}".replace('/0/', '/{id}/');
+  const URL_EDIT_REC = "{% url 'acompanamiento:editar_recomendacion' 0 %}".replace('/0/', '/{id}/');
+  const URL_DEL_REC  = "{% url 'acompanamiento:eliminar_recomendacion' 0 %}".replace('/0/', '/{id}/');
+  const URL_REABRIR  = "{% url 'acompanamiento:reabrir' 0 %}".replace('/0/', '/{id}/');
+  let CAN_EDIT_CURRENT_REPORT = false;
+  let REPORT_CLOSED_CURRENT = false;
+  let CURRENT_REPORT_ID = '';
 
-  function poblarDropdownsPorFin(finSeleccionado) {
-    const remiteSelect  = document.getElementById('modal-remite-select');
-    const atiendeSelect = document.getElementById('modal-atiende-select');
-    [remiteSelect, atiendeSelect].forEach(sel => {
-      const prev = sel.value;
-      sel.innerHTML = '<option value="">— Selecciona —</option>';
-      const filtrados = finSeleccionado
-        ? EDUCADORES.filter(e => e.fines.includes(finSeleccionado))
-        : EDUCADORES;
-      filtrados.forEach(e => {
-        const opt = document.createElement('option');
-        opt.value = e.id;
-        opt.textContent = e.nombre;
-        if (String(e.id) === prev) opt.selected = true;
-        sel.appendChild(opt);
-      });
+  function poblarDropdownsPorFin(fin) {
+    const sel = document.getElementById('modal-atiende-select');
+    const prev = sel.value;
+    sel.innerHTML = '<option value="">— Selecciona —</option>';
+    (fin ? EDUCADORES.filter(e => e.fines.includes(fin)) : EDUCADORES).forEach(e => {
+      const o = document.createElement('option');
+      o.value = e.id; o.textContent = e.nombre;
+      if (String(e.id) === prev) o.selected = true;
+      sel.appendChild(o);
     });
   }
 
-  // Calcular stats + color de estado por card
+  /* ── Card stats + left-border color ── */
   document.querySelectorAll('.student-card').forEach(card => {
     const raw = card.dataset.reportStatuses || '';
-    const statuses = raw.split(',').filter(Boolean);
-    const total = statuses.length;
-    const atendidos   = statuses.filter(s => s === 'ATENDIDO').length;
-    const proceso     = total - atendidos;
-    const pct         = total > 0 ? Math.round((atendidos / total) * 100) : 0;
-    const hasProg     = statuses.some(s => s === 'PROGRAMADO');
-    const hasSeg      = statuses.some(s => s === 'SEGUIMIENTO');
-
-    // Color del borde superior y dot según estado más urgente
-    let topColor, dotColor;
-    if      (total === 0)  { topColor = '#cbd5e1'; dotColor = '#cbd5e1'; }
-    else if (hasProg)      { topColor = '#ef4444'; dotColor = '#ef4444'; }
-    else if (hasSeg)       { topColor = '#f59e0b'; dotColor = '#f59e0b'; }
-    else                   { topColor = '#22c55e'; dotColor = '#22c55e'; }
-
-    card.style.borderTopColor = topColor;
-    const dot = card.querySelector('.status-dot');
-    if (dot) dot.style.background = dotColor;
-
-    // Stats
-    const atEl  = card.querySelector('.stat-atendidos');
-    const prEl  = card.querySelector('.stat-proceso');
-    const pctEl = card.querySelector('.stat-progress-text');
-    const barEl = card.querySelector('.stat-progress-bar');
-    if (atEl)  atEl.textContent  = atendidos;
-    if (prEl)  prEl.textContent  = proceso;
-    if (pctEl) pctEl.textContent = pct + '%';
-    if (barEl) setTimeout(() => { barEl.style.width = pct + '%'; }, 200);
+    const ss = raw.split(',').filter(Boolean);
+    const total = ss.length;
+    const ate = ss.filter(s => s === 'ATENDIDO').length;
+    const pct = total ? Math.round(ate/total*100) : 0;
+    const hasProg = ss.some(s => s === 'PROGRAMADO');
+    const hasSeg  = ss.some(s => s === 'SEGUIMIENTO');
+    const c = total===0 ? '#CBD5E1' : hasProg ? '#EF4444' : hasSeg ? '#F59E0B' : '#22C55E';
+    card.style.borderLeftColor = c;
+    const progLabel = card.querySelector('.stat-progress-text');
+    if (progLabel) progLabel.textContent = total ? `${ate}/${total} atendidos` : 'Sin casos';
+    const progBar = card.querySelector('.stat-progress-bar');
+    if (progBar) setTimeout(() => { progBar.style.width = pct + '%'; }, 150);
   });
 
-  function openModal(id){
-    const m=document.getElementById(id);
-    if(m){m.classList.remove('hidden');m.classList.add('flex');}
-  }
-  
-  function closeModal(id){
-    const m=document.getElementById(id);
-    if(m){m.classList.add('hidden');m.classList.remove('flex');}
-  }
-  
-  function setText(id, value){
-    const el = document.getElementById(id);
-    if (el) el.textContent = value && String(value).trim() ? value : '-';
-  }
+  function openModal(id)  { const m=document.getElementById(id); if(m){m.classList.remove('hidden');m.classList.add('flex');} }
+  function closeModal(id) { const m=document.getElementById(id); if(m){m.classList.add('hidden');m.classList.remove('flex');} }
+  function setText(id, v) { const el=document.getElementById(id); if(el) el.textContent=(v&&String(v).trim())?v:'-'; }
 
-  function renderHistory(rawItems, type = 'observation'){
-    const container=document.getElementById('history-container');
-    container.innerHTML='';
-    
-    const colors = type === 'recommendation' 
-      ? { bg: '#dcfce7', text: '#55a630', badge: '#dcfce7', badgeText: '#4a8f2a', border: '#bbf7d0', dot: '#55a630' }
-      : { bg: '#dbeafe', text: '#3b82f6', badge: '#dbeafe', badgeText: '#2563eb', border: '#bfdbfe', dot: '#3b82f6' };
-    
-    const typeLabel = type === 'recommendation' ? 'Recomendación' : 'Observación';
-    
-    if(!rawItems){
-      container.innerHTML=`<div class="rounded-lg border border-slate-200 bg-slate-50 p-4 text-base text-slate-500">Sin ${typeLabel.toLowerCase()}es registradas</div>`;
+  /* ── Timeline renderer ── */
+  window.TIMELINE_ITEMS = {};
+
+  function renderTimeline(rawItems, containerId, type, canEditAll, isClosed) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = '';
+    const isRec = type === 'recommendation';
+    const dotColor  = isRec ? '#22C55E' : '#2256F2';
+    const bgColor   = isRec ? '#F0FDF4' : '#EFF6FF';
+    const txtColor  = isRec ? '#16A34A' : '#1D4ED8';
+    const label     = isRec ? 'recomendación' : 'observación';
+    const modalId   = isRec ? 'edit-recommendation-modal' : 'edit-observation-modal';
+
+    if (!rawItems) {
+      container.innerHTML = `<div class="flex flex-col items-center py-10 text-center">
+        <i class="fa-regular fa-clipboard text-3xl text-slate-200 mb-2"></i>
+        <p class="text-xs text-slate-500">No hay ${label}es registradas</p>
+        <button onclick="openModal('${modalId}')" class="mt-2 text-xs font-semibold hover:underline" style="color:${dotColor}">+ Agregar ${label}</button>
+      </div>`;
       return;
     }
-    
-    const items = rawItems.split('##').filter(Boolean).map(item => {
-      const parts = item.split('||');
+
+    const items = rawItems.split('##').filter(Boolean).map(i => {
+      const p = i.split('||');
       return {
-        date:       parts[0] ? parts[0].trim() : '',
-        content:    parts[1] ? parts[1].trim() : '',
-        author:     parts[2] ? parts[2].trim() : 'Usuario',
-        created_at: parts[3] ? parts[3].trim() : ''
+        id: p[0]?.trim()||'',
+        date: p[1]?.trim()||'',
+        content: p[2]?.trim()||'',
+        author: p[3]?.trim()||'Usuario',
+        authorId: p[4]?.trim()||'',
+        created_at: p[5]?.trim()||'',
+        period: p[6]?.trim()||'',
       };
-    });
+    }).sort((a,b) => b.date.split('/').reverse().join('').localeCompare(a.date.split('/').reverse().join('')));
 
-    items.sort((a, b) => {
-      const dateA = a.date.split('/').reverse().join('');
-      const dateB = b.date.split('/').reverse().join('');
-      return dateB.localeCompare(dateA);
-    });
-
-    const total = items.length;
-    const counterDiv = document.createElement('div');
-    counterDiv.className = 'mb-5 pb-4 border-b-2 border-slate-200';
-    counterDiv.innerHTML = `<span class="text-lg font-extrabold" style="color:${colors.text}">${total} ${typeLabel}${total !== 1 ? 's' : ''}</span> <span class="text-base text-slate-500 font-medium">registrada${total !== 1 ? 's' : ''}</span>`;
-    container.appendChild(counterDiv);
-
-    items.forEach((item) => {
-      const createdBadge = item.created_at
-        ? `<span class="inline-flex items-center gap-1 text-xs font-600 px-2 py-1 rounded-md bg-slate-100 text-slate-500 border border-slate-200">
-             <i class="fa-regular fa-clock" style="font-size:10px"></i> Creada: ${item.created_at}
-           </span>`
-        : '';
-      const itemDiv = document.createElement('div');
-      itemDiv.className = 'mb-5 pl-5 relative';
-      itemDiv.innerHTML = `
-        <div class="absolute left-0 top-2 w-4 h-4 rounded-full border-2 border-white shadow-md" style="background:${colors.dot}"></div>
-        <div class="border-l-4 ml-2 pl-5 pb-4" style="border-color:${colors.dot}">
-          <div class="flex flex-wrap items-center gap-3 mb-2">
-            <span class="text-lg font-extrabold text-slate-900">${item.author}</span>
-            <span class="text-lg font-bold px-4 py-1.5 rounded-lg shadow-sm" style="background:${colors.bg};color:${colors.badgeText}">${item.date}</span>
-            ${createdBadge}
-          </div>
-          <p class="text-lg leading-relaxed text-slate-700 font-medium">${item.content}</p>
+    const wrap = document.createElement('div');
+    items.forEach((item, idx) => {
+      if (item.id) window.TIMELINE_ITEMS[type + '-' + item.id] = item;
+      const canEdit = !isClosed && (!!canEditAll || (CURRENT_VIEWER_ID !== null && item.authorId !== '' && String(item.authorId) === String(CURRENT_VIEWER_ID)));
+      const isLast = idx === items.length - 1;
+      const init = (item.author||'?').charAt(0).toUpperCase();
+      const div = document.createElement('div');
+      div.className = 'relative flex gap-3';
+      div.innerHTML = `
+        <div class="flex flex-col items-center shrink-0" style="width:22px">
+          <div style="width:22px;height:22px;border-radius:50%;background:${dotColor};border:2px solid white;box-shadow:0 0 0 2px #E2E8F0;flex-shrink:0"></div>
+          ${!isLast ? `<div style="width:2px;flex:1;min-height:14px;background:#E2E8F0"></div>` : ''}
         </div>
-      `;
-      container.appendChild(itemDiv);
+        <div class="flex-1 min-w-0 ${isLast?'pb-2':'pb-4'}">
+          <div class="flex flex-wrap items-center gap-1.5 mb-1.5">
+            <div class="flex h-5 w-5 items-center justify-center rounded-full text-white text-[9px] font-bold shrink-0" style="background:${dotColor}">${init}</div>
+            <span class="text-[11px] font-semibold text-slate-900">${item.author}</span>
+            <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium" style="background:${bgColor};color:${txtColor}">
+              <i class="fa-regular fa-calendar" style="font-size:8px"></i> ${item.date}
+            </span>
+            ${item.created_at ? `<span class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] text-slate-500"><i class="fa-regular fa-clock" style="font-size:8px"></i> ${item.created_at}</span>` : ''}
+            ${item.period ? `<span class="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-700">${item.period}</span>` : ''}
+          </div>
+          <div class="relative rounded-[3px] bg-white border border-slate-200 p-2.5 ${canEdit && item.id ? 'pr-14' : ''}" style="border-left:3px solid ${dotColor}">
+            <p class="text-xs text-slate-700 leading-relaxed">${item.content}</p>
+            ${canEdit && item.id ? `
+            <div class="absolute top-1.5 right-1.5 flex items-center gap-1">
+              <button type="button" title="Editar ${label}" onclick="openEditItem('${type}','${item.id}')"
+                class="flex h-6 w-6 items-center justify-center rounded-[3px] text-slate-400 hover:bg-slate-100 hover:text-[#2256F2] transition">
+                <i class="fa-solid fa-pen-to-square" style="font-size:10px"></i>
+              </button>
+              <button type="button" title="Eliminar ${label}" onclick="openDeleteItem('${type}','${item.id}')"
+                class="flex h-6 w-6 items-center justify-center rounded-[3px] text-slate-400 hover:bg-red-50 hover:text-red-600 transition">
+                <i class="fa-solid fa-trash" style="font-size:10px"></i>
+              </button>
+            </div>` : ''}
+          </div>
+        </div>`;
+      wrap.appendChild(div);
     });
+    container.appendChild(wrap);
   }
 
-  // Modal Crear Reporte
-  document.querySelectorAll("[data-modal-target='create-report-modal']").forEach(btn=>{
-    btn.addEventListener('click', function(){
-      document.getElementById('modal-student-id').value=this.dataset.studentId||'';
-      document.getElementById('modal-student-name').textContent=this.dataset.studentName||'';
-      document.getElementById('modal-student-code').textContent=this.dataset.studentCode||'-';
-      document.getElementById('modal-student-course').textContent=this.dataset.studentCourse||'-';
-      document.getElementById('purpose-hidden').value='';
+  /* ── Editar / eliminar observación o recomendación existente ── */
+  function openEditItem(type, id) {
+    const item = window.TIMELINE_ITEMS[type + '-' + id];
+    if (!item) return;
+    const isRec = type === 'recommendation';
+    document.getElementById('edit-item-type').value = type;
+    document.getElementById('edit-item-id').value = id;
+    document.getElementById('edit-item-content').value = item.content;
+    document.getElementById('edit-item-date').value = '';
+    document.getElementById('edit-item-title').textContent = isRec ? 'Editar Recomendación' : 'Editar Observación';
+    document.getElementById('edit-item-header').style.background = isRec ? '#059669' : '#2256F2';
+    document.getElementById('edit-item-error').classList.add('hidden');
+    openModal('edit-item-modal');
+  }
+
+  async function submitEditItem() {
+    const type = document.getElementById('edit-item-type').value;
+    const id = document.getElementById('edit-item-id').value;
+    const content = document.getElementById('edit-item-content').value.trim();
+    const date = document.getElementById('edit-item-date').value;
+    const errEl = document.getElementById('edit-item-error');
+    errEl.classList.add('hidden');
+    if (!content) { errEl.textContent = 'El contenido no puede estar vacío.'; errEl.classList.remove('hidden'); return; }
+
+    const url = (type === 'recommendation' ? URL_EDIT_REC : URL_EDIT_OBS).replace('{id}', id);
+    const fd = new FormData();
+    fd.append('content', content);
+    if (date) fd.append('followup_date', date);
+    fd.append('csrfmiddlewaretoken', CSRF);
+
+    try {
+      const r = await fetch(url, { method: 'POST', body: fd });
+      const data = await r.json();
+      if (!r.ok) { errEl.textContent = data.error || 'Error al guardar.'; errEl.classList.remove('hidden'); return; }
+      closeModal('edit-item-modal');
+      window.location.reload();
+    } catch (e) {
+      errEl.textContent = 'Error de red. Intenta nuevamente.';
+      errEl.classList.remove('hidden');
+    }
+  }
+
+  function openDeleteItem(type, id) {
+    const item = window.TIMELINE_ITEMS[type + '-' + id];
+    if (!item) return;
+    const isRec = type === 'recommendation';
+    document.getElementById('delete-item-type').value = type;
+    document.getElementById('delete-item-id').value = id;
+    document.getElementById('delete-item-title').textContent = isRec ? 'Eliminar Recomendación' : 'Eliminar Observación';
+    document.getElementById('delete-item-preview').textContent = item.content;
+    document.getElementById('delete-item-error').classList.add('hidden');
+    openModal('delete-item-modal');
+  }
+
+  async function submitDeleteItem() {
+    const type = document.getElementById('delete-item-type').value;
+    const id = document.getElementById('delete-item-id').value;
+    const errEl = document.getElementById('delete-item-error');
+    errEl.classList.add('hidden');
+
+    const url = (type === 'recommendation' ? URL_DEL_REC : URL_DEL_OBS).replace('{id}', id);
+    const fd = new FormData();
+    fd.append('csrfmiddlewaretoken', CSRF);
+
+    try {
+      const r = await fetch(url, { method: 'POST', body: fd });
+      const data = await r.json();
+      if (!r.ok) { errEl.textContent = data.error || 'Error al eliminar.'; errEl.classList.remove('hidden'); return; }
+      closeModal('delete-item-modal');
+      window.location.reload();
+    } catch (e) {
+      errEl.textContent = 'Error de red. Intenta nuevamente.';
+      errEl.classList.remove('hidden');
+    }
+  }
+
+  /* ── Reabrir caso (solo coordinadores de sección y CAP) ── */
+  function openReabrirModal() {
+    document.getElementById('reabrir-objetivo').value = '';
+    document.getElementById('reabrir-notas').value = '';
+    document.getElementById('reabrir-error').classList.add('hidden');
+    const sel = document.getElementById('reabrir-asignado');
+    sel.innerHTML = '<option value="">— Mantener encargado actual —</option>';
+    EDUCADORES.forEach(e => {
+      const o = document.createElement('option');
+      o.value = e.id; o.textContent = e.nombre;
+      sel.appendChild(o);
+    });
+    openModal('reabrir-modal');
+  }
+
+  async function submitReabrirCaso() {
+    const objetivo = document.getElementById('reabrir-objetivo').value.trim();
+    const notas    = document.getElementById('reabrir-notas').value.trim();
+    const asigId   = document.getElementById('reabrir-asignado').value;
+    const errEl    = document.getElementById('reabrir-error');
+    errEl.classList.add('hidden');
+    if (!CURRENT_REPORT_ID) { errEl.textContent = 'No se identificó el reporte.'; errEl.classList.remove('hidden'); return; }
+
+    const fd = new FormData();
+    fd.append('csrfmiddlewaretoken', CSRF);
+    fd.append('objetivo', objetivo);
+    fd.append('notas', notas);
+    if (asigId) fd.append('assigned_to_id', asigId);
+
+    try {
+      const r = await fetch(URL_REABRIR.replace('{id}', CURRENT_REPORT_ID), { method: 'POST', body: fd });
+      const data = await r.json();
+      if (!r.ok) { errEl.textContent = data.error || 'Error al reabrir.'; errEl.classList.remove('hidden'); return; }
+      closeModal('reabrir-modal');
+      window.location.reload();
+    } catch (e) {
+      errEl.textContent = 'Error de red. Intenta nuevamente.';
+      errEl.classList.remove('hidden');
+    }
+  }
+
+  /* ── Modal: Crear Reporte ── */
+  document.querySelectorAll("[data-modal-target='create-report-modal']").forEach(btn => {
+    btn.addEventListener('click', function() {
+      document.getElementById('modal-student-id').value = this.dataset.studentId||'';
+      document.getElementById('modal-student-name').textContent = this.dataset.studentName||'';
+      document.getElementById('modal-student-code').textContent = this.dataset.studentCode||'-';
+      document.getElementById('modal-student-course').textContent = this.dataset.studentCourse||'-';
+      document.getElementById('purpose-hidden').value = '';
       document.getElementById('fin-existente-alert').classList.add('hidden');
 
-      // Metadata de reportes existentes: "PURPOSE|fecha|creador;;..."
-      const reportInfoRaw = this.dataset.reportInfo || '';
       const reportMeta = {};
-      if(reportInfoRaw) {
-        reportInfoRaw.split(';;').forEach(entry => {
-          const [purpose, fecha, creador] = entry.split('|');
-          if(purpose) reportMeta[purpose.trim()] = {fecha: fecha||'', creador: creador||''};
-        });
-      }
-
-      // Fines ya usados
+      (this.dataset.reportInfo||'').split(';;').forEach(e => {
+        const [p,f,c] = e.split('|');
+        if(p) reportMeta[p.trim()] = {fecha:f||'',creador:c||''};
+      });
       const usedPurposes = Object.keys(reportMeta);
 
-      // Resetear fines educativos
       document.querySelectorAll('input[name="fines_educativos"]').forEach(radio => {
         radio.checked = false;
-        const label = radio.closest('label');
-        const card = radio.nextElementSibling;
-        if(usedPurposes.includes(radio.value)){
+        const lbl = radio.closest('label');
+        if (usedPurposes.includes(radio.value)) {
           radio.disabled = true;
-          label.classList.add('opacity-40','cursor-not-allowed');
-          label.classList.remove('cursor-pointer');
-          // Guardar meta para mostrar alerta al click
-          label.dataset.reportMeta = JSON.stringify(reportMeta[radio.value]);
+          lbl.classList.add('opacity-40','cursor-not-allowed');
+          lbl.classList.remove('cursor-pointer');
+          lbl.dataset.reportMeta = JSON.stringify(reportMeta[radio.value]);
         } else {
           radio.disabled = false;
-          label.classList.remove('opacity-40','cursor-not-allowed');
-          label.classList.add('cursor-pointer');
-          delete label.dataset.reportMeta;
+          lbl.classList.remove('opacity-40','cursor-not-allowed');
+          lbl.classList.add('cursor-pointer');
+          delete lbl.dataset.reportMeta;
         }
       });
-
-      // Click en fin deshabilitado → mostrar alerta
       document.querySelectorAll('label[data-report-meta]').forEach(lbl => {
         lbl.onclick = function() {
-          const meta = JSON.parse(this.dataset.reportMeta||'{}');
-          document.getElementById('fin-existente-info').textContent =
-            `Creado el ${meta.fecha||'—'} por ${meta.creador||'—'}`;
+          const m = JSON.parse(this.dataset.reportMeta||'{}');
+          document.getElementById('fin-existente-info').textContent = `Creado el ${m.fecha||'—'} por ${m.creador||'—'}`;
           document.getElementById('fin-existente-alert').classList.remove('hidden');
         };
       });
-
-      // Dropdowns: poblar con todos al abrir (sin fin seleccionado aún)
       poblarDropdownsPorFin('');
-
       openModal('create-report-modal');
     });
   });
-  
-  // Actualizar hidden input y filtrar dropdowns al seleccionar fin
-  document.querySelectorAll('input[name="fines_educativos"]').forEach(radio => {
-    radio.addEventListener('change', function(){
+
+  document.querySelectorAll('input[name="fines_educativos"]').forEach(r => {
+    r.addEventListener('change', function() {
       document.getElementById('purpose-hidden').value = this.value;
       document.getElementById('fin-existente-alert').classList.add('hidden');
       poblarDropdownsPorFin(this.value);
     });
   });
 
-  document.getElementById('fines_educativos_select')?.addEventListener('change', function(){
-    document.getElementById('purpose-hidden').value=this.value;
-  });
+  /* ── Close modals ── */
+  document.querySelectorAll('[data-close-modal]').forEach(btn =>
+    btn.addEventListener('click', () => closeModal(btn.dataset.closeModal))
+  );
 
-  // Cerrar Modales
-  document.querySelectorAll('[data-close-modal]').forEach(btn=>btn.addEventListener('click', ()=>closeModal(btn.dataset.closeModal)));
+  /* ── Open Workspace ── */
+  document.querySelectorAll('[data-workspace-open="1"]').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const header    = document.getElementById('course-header-section');
+      const workspace = document.getElementById('report-workspace-panel');
+      const table     = document.getElementById('students-table-section');
+      workspace.classList.remove('hidden');
+      header.classList.add('hidden');
+      table.classList.add('hidden');
 
-  // Abrir Workspace (al hacer clic en badge de reporte)
-  document.querySelectorAll('[data-workspace-open="1"]').forEach(btn=>{
-    btn.addEventListener('click', function(){
-      const headerSection = document.getElementById('course-header-section');
-      const workspacePanel = document.getElementById('report-workspace-panel');
-      const tableSection = document.getElementById('students-table-section');
-      
-      // Mostrar workspace y ocultar header/tabla
-      workspacePanel.classList.remove('hidden');
-      headerSection.classList.add('hidden');
-      tableSection.classList.add('hidden');
-      
-      // Cargar datos del estudiante en las tarjetas
-      setText('workspace-purpose-card', this.dataset.reportPurpose);
-      setText('workspace-student-name', this.dataset.studentName);
-      setText('workspace-student-code', this.dataset.studentCode);
-      setText('workspace-course', this.dataset.studentCourse);
-      setText('workspace-status', this.dataset.reportStatus);
-      setText('workspace-date', this.dataset.reportDate);
-      setText('workspace-created-by', this.dataset.reportCreatedBy);
-      setText('workspace-assigned-to', this.dataset.reportAssignedTo);
-      setText('workspace-objective', this.dataset.reportObjective);
-      
-      // Guardar IDs para los formularios
-      document.getElementById('close-case-report-id').value=this.dataset.reportId||'';
-      document.getElementById('obs-modal-report-id').value=this.dataset.reportId||'';
-      document.getElementById('rec-modal-report-id').value=this.dataset.reportId||'';
+      setText('workspace-purpose-card',  this.dataset.reportPurpose);
+      setText('workspace-student-name',  this.dataset.studentName);
+      setText('workspace-student-code',  this.dataset.studentCode);
+      setText('workspace-course',        this.dataset.studentCourse);
+      setText('workspace-date',          this.dataset.reportDate);
+      setText('workspace-created-by',    this.dataset.reportCreatedBy);
+      setText('workspace-assigned-to',   this.dataset.reportAssignedTo);
+      setText('workspace-objective',     this.dataset.reportObjective);
 
-      const obs=this.dataset.obsItems||'';
-      const rec=this.dataset.recItems||'';
-      
-      // Actualizar foto del estudiante
-      const studentCode = this.dataset.studentCode;
-      const studentImg = document.getElementById('workspace-student-img');
-      const studentInitial = document.getElementById('workspace-student-initial');
-      if (studentCode) {
-        studentImg.src = '/archivos/registro_fotografico/' + studentCode + '.jpg';
-        studentImg.onerror = function() { 
-          this.classList.add('hidden'); 
-          studentInitial.classList.add('flex'); 
-          studentInitial.classList.remove('hidden');
-          studentInitial.textContent = (document.getElementById('workspace-student-name').textContent || '-').charAt(0).toUpperCase();
+      // Status badge
+      const stEl = document.getElementById('workspace-status');
+      const stMap = {
+        'Programado':{'cls':'badge-prog','label':'Programado'},
+        'En Seguimiento':{'cls':'badge-seg','label':'En Seguimiento'},
+        'Seguimiento':{'cls':'badge-seg','label':'En Seguimiento'},
+        'Atendido':{'cls':'badge-aten','label':'Atendido'},
+      };
+      const st = stMap[this.dataset.reportStatus] || {cls:'badge-seg',label:this.dataset.reportStatus||'—'};
+      stEl.className = 'inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold ' + st.cls;
+      stEl.textContent = st.label;
+
+      document.getElementById('close-case-report-id').value = this.dataset.reportId||'';
+      document.getElementById('obs-modal-report-id').value  = this.dataset.reportId||'';
+      document.getElementById('rec-modal-report-id').value  = this.dataset.reportId||'';
+      CAN_EDIT_CURRENT_REPORT = this.dataset.canEdit === '1';
+      REPORT_CLOSED_CURRENT = this.dataset.isClosed === '1';
+      CURRENT_REPORT_ID = this.dataset.reportId || '';
+
+      // Bloquear controles cuando el reporte está ATENDIDO
+      const isAtendido = this.dataset.reportStatus === 'Atendido';
+      const canReopen  = this.dataset.canReopen === '1';
+      document.getElementById('btn-nueva-obs').classList.toggle('hidden', isAtendido);
+      document.getElementById('btn-nueva-rec').classList.toggle('hidden', isAtendido);
+      document.getElementById('tab-btn-close').classList.toggle('hidden', isAtendido);
+      document.getElementById('ws-atendido-notice').classList.toggle('hidden', !isAtendido);
+      document.getElementById('btn-reabrir-caso').classList.toggle('hidden', !(isAtendido && canReopen));
+
+      // Close-case form fields
+      document.getElementById('close-form-student-name').textContent   = this.dataset.studentName||'-';
+      document.getElementById('close-form-student-code').textContent   = this.dataset.studentCode||'-';
+      document.getElementById('close-form-student-course').textContent = this.dataset.studentCourse||'-';
+      document.getElementById('close-form-report-date').textContent    = this.dataset.reportDate||'-';
+      document.getElementById('close-form-purpose').textContent        = this.dataset.reportPurpose||'-';
+      document.getElementById('close-form-created-by').textContent     = this.dataset.reportCreatedBy||'-';
+      document.getElementById('close-form-objective').textContent      = this.dataset.reportObjective||'-';
+
+      // Student photo
+      const code = this.dataset.studentCode;
+      const img  = document.getElementById('workspace-student-img');
+      const init = document.getElementById('workspace-student-initial');
+      if (code) {
+        img.src = '/archivos/registro_fotografico/' + code + '.jpg';
+        img.onerror = function() {
+          this.classList.add('hidden');
+          init.classList.remove('hidden'); init.classList.add('flex');
+          init.textContent = (document.getElementById('workspace-student-name').textContent||'-').charAt(0).toUpperCase();
         };
-        studentImg.onload = function() {
-          studentImg.classList.remove('hidden');
-          studentInitial.classList.add('hidden');
-        };
+        img.onload = function() { img.classList.remove('hidden'); init.classList.add('hidden'); };
       }
 
-      // Actualizar contadores de tabs
-      const obsCount = obs ? obs.split('##').filter(Boolean).length : 0;
-      const recCount = rec ? rec.split('##').filter(Boolean).length : 0;
-      document.querySelectorAll('.obs-count').forEach(el => el.textContent = obsCount);
-      document.querySelectorAll('.rec-count').forEach(el => el.textContent = recCount);
+      // Tab counters
+      const obs = this.dataset.obsItems||'';
+      const rec = this.dataset.recItems||'';
+      const obsN = obs ? obs.split('##').filter(Boolean).length : 0;
+      const recN = rec ? rec.split('##').filter(Boolean).length : 0;
+      document.querySelectorAll('.obs-count').forEach(el => el.textContent = obsN);
+      document.querySelectorAll('.rec-count').forEach(el => el.textContent = recN);
 
-      // Reset tabs - aplicar color默认 del tab Resumen
-      document.querySelectorAll('.workspace-tab').forEach(tab => {
-        tab.classList.remove('active', 'bg-[#2563eb]', 'text-white', 'bg-slate-600', 'bg-blue-600', 'bg-green-600', 'bg-pink-600', 'text-white');
-      });
-      document.querySelectorAll('.workspace-tab-content').forEach(content => {
-        content.classList.add('hidden');
-        content.classList.remove('tab-active');
-      });
-      document.querySelector('[data-tab="overview"]').classList.add('active', 'tab-resumen');
+      // Reset tabs
+      document.querySelectorAll('.ws-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.workspace-tab-content').forEach(c => c.classList.add('hidden'));
+      document.querySelector('[data-tab="overview"]').classList.add('active');
       document.getElementById('tab-overview').classList.remove('hidden');
 
-      // Función para renderizar timeline
-      function renderTimeline(rawItems, containerId, type) {
-        const container = document.getElementById(containerId);
-        container.innerHTML = '';
-        
-        const colors = type === 'recommendation' 
-          ? { bg: '#f0fdf4', text: '#16a34a', border: '#bbf7d0', icon: '#22c55e' }
-          : { bg: '#eff6ff', text: '#2563eb', border: '#bfdbfe', icon: '#3b82f6' };
-        
-        const typeLabel = type === 'recommendation' ? 'Recomendación' : 'Observación';
-        
-        if (!rawItems) {
-          container.innerHTML = `<div class="flex flex-col items-center py-8 text-center">
-            <i class="fa-regular fa-clipboard text-4xl text-slate-200 mb-3"></i>
-            <p class="text-sm text-slate-500">No hay ${typeLabel.toLowerCase()}es registradas</p>
-            <button onclick="openModal('${type === 'recommendation' ? 'edit-recommendation-modal' : 'edit-observation-modal'}')" class="mt-3 text-sm font-semibold text-[${colors.text}] hover:underline">
-              Agregar ${typeLabel.toLowerCase()}
-            </button>
-          </div>`;
-          return;
-        }
-        
-        const items = rawItems.split('##').filter(Boolean).map(item => {
-          const parts = item.split('||');
-          return { date: parts[0]?.trim() || '', content: parts[1]?.trim() || '', author: parts[2]?.trim() || 'Usuario' };
-        });
-        
-        items.sort((a, b) => {
-          const dateA = a.date.split('/').reverse().join('');
-          const dateB = b.date.split('/').reverse().join('');
-          return dateB.localeCompare(dateA);
-        });
-        
-        items.forEach((item, index) => {
-          const itemDiv = document.createElement('div');
-          itemDiv.className = 'relative flex gap-3 rounded-lg border border-slate-200 bg-white p-3.5 hover:bg-slate-50 transition-colors';
-          itemDiv.innerHTML = `
-            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg" style="background:${colors.bg}">
-              <i class="fa-solid fa-${type === 'recommendation' ? 'lightbulb' : 'magnifying-glass'} text-sm" style="color:${colors.icon}"></i>
-            </div>
-            <div class="flex-1 min-w-0">
-              <div class="flex items-center gap-2 mb-1">
-                <span class="text-sm font-medium text-slate-900">${item.author}</span>
-                <span class="rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-500">${item.date}</span>
-              </div>
-              <p class="text-sm text-slate-600 leading-relaxed">${item.content}</p>
-            </div>
-          `;
-          container.appendChild(itemDiv);
-        });
-      }
+      // Render timelines eagerly
+      renderTimeline(obs||null, 'observations-container', 'observation', CAN_EDIT_CURRENT_REPORT, REPORT_CLOSED_CURRENT);
+      renderTimeline(rec||null, 'recommendations-container', 'recommendation', CAN_EDIT_CURRENT_REPORT, REPORT_CLOSED_CURRENT);
 
-      // Renderizar observaciones y recomendaciones
-      renderTimeline(obs, 'observations-container', 'observation');
-      renderTimeline(rec, 'recommendations-container', 'recommendation');
-
-      // Tabs con colores específicos
-      document.querySelectorAll('.workspace-tab').forEach(tab => {
-        tab.addEventListener('click', function() {
-          const tabName = this.dataset.tab;
-          const tabClassMap = {
-            'overview': 'tab-resumen',
-            'observations': 'tab-observaciones',
-            'recommendations': 'tab-recomendaciones',
-            'close': 'tab-cerrar'
-          };
-          
-          // Quitar todos los colores activos
-          document.querySelectorAll('.workspace-tab').forEach(t => {
-            t.classList.remove('active', 'bg-[#2563eb]', 'text-white', 'bg-slate-600', 'text-white', 'bg-green-600', 'text-white', 'bg-pink-600', 'text-white');
-          });
-          document.querySelectorAll('.workspace-tab-content').forEach(c => {
-            c.classList.add('hidden');
-            c.classList.remove('tab-active');
-          });
-          
-          // Aplicar color según el tab
-          const colorClass = tabClassMap[tabName];
-          this.classList.add('active', colorClass);
-          
-          const content = document.getElementById('tab-' + tabName);
-          if (content) {
-            content.classList.remove('hidden');
-            content.classList.add('tab-active');
-          }
+      // Wire tab clicks (clone to remove old listeners)
+      document.querySelectorAll('.ws-tab').forEach(tab => {
+        const fresh = tab.cloneNode(true);
+        tab.parentNode.replaceChild(fresh, tab);
+        fresh.addEventListener('click', function() {
+          document.querySelectorAll('.ws-tab').forEach(t => t.classList.remove('active'));
+          document.querySelectorAll('.workspace-tab-content').forEach(c => c.classList.add('hidden'));
+          this.classList.add('active');
+          const content = document.getElementById('tab-' + this.dataset.tab);
+          if (content) content.classList.remove('hidden');
         });
       });
 
-      // Scroll suave al workspace
-      workspacePanel.scrollIntoView({behavior:'smooth', block:'start'});
+      workspace.scrollIntoView({ behavior:'smooth', block:'start' });
     });
   });
 
-  // Botón Volver al Listado
-  document.getElementById('btn-back-to-list')?.addEventListener('click', function () {
+  /* ── Back button ── */
+  document.getElementById('btn-back-to-list')?.addEventListener('click', function() {
     document.getElementById('course-header-section').classList.remove('hidden');
     document.getElementById('report-workspace-panel').classList.add('hidden');
     document.getElementById('students-table-section').classList.remove('hidden');
   });
 
-  // Búsqueda de estudiantes
-  const searchInput = document.getElementById('student-search');
+  /* ── Search ── */
+  const searchInput  = document.getElementById('student-search');
   const studentCards = document.querySelectorAll('.student-card');
-  
   searchInput?.addEventListener('input', function() {
-    const query = this.value.toLowerCase().trim();
-    studentCards.forEach(card => {
-      const name = card.dataset.studentName || '';
-      const code = card.dataset.studentCode || '';
-      if (query === '' || name.includes(query) || code.includes(query)) {
-        card.classList.remove('hidden');
-      } else {
-        card.classList.add('hidden');
-      }
+    const q = this.value.toLowerCase().trim();
+    studentCards.forEach(c => {
+      c.classList.toggle('hidden', q !== '' && !(c.dataset.studentName||'').includes(q) && !(c.dataset.studentCode||'').includes(q));
     });
-    updateVisibleCount();
   });
 
-  // Toggle filtros
-  const filterToggleBtn = document.getElementById('filter-toggle-btn');
-  const filterChips = document.getElementById('filter-chips');
-  
-  filterToggleBtn?.addEventListener('click', function() {
-    filterChips.classList.toggle('hidden');
+  /* ── Filter toggle ── */
+  document.getElementById('filter-toggle-btn')?.addEventListener('click', function() {
+    const chips = document.getElementById('filter-chips');
+    chips.classList.toggle('hidden');
+    chips.classList.toggle('flex');
   });
 
-  // Filtros por tipo
+  /* ── Filter chips ── */
   document.querySelectorAll('.filter-chip').forEach(chip => {
     chip.addEventListener('click', function() {
-      const filter = this.dataset.filter;
-
-      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('bg-blue-600', 'text-white'));
-      this.classList.add('bg-blue-600', 'text-white');
-      
+      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('ring-2','ring-[#2256F2]'));
+      this.classList.add('ring-2','ring-[#2256F2]');
+      const f = this.dataset.filter;
       studentCards.forEach(card => {
-        const reportsCount = parseInt(card.dataset.reportsCount || '0');
-        const purposes = card.dataset.reportPurposes || '';
-        
+        const n = parseInt(card.dataset.reportsCount||'0');
+        const p = card.dataset.reportPurposes||'';
         let show = true;
-        if (filter === 'with-reports') {
-          show = reportsCount > 0;
-        } else if (filter === 'without-reports') {
-          show = reportsCount === 0;
-        } else if (filter === 'all') {
-          show = true;
-        } else if (filter && purposes) {
-          show = purposes.includes(filter);
-        } else if (filter) {
-          show = filter === 'all';
-        }
-        
-        if (show) {
-          card.classList.remove('hidden');
-        } else {
-          card.classList.add('hidden');
-        }
+        if      (f === 'with-reports')    show = n > 0;
+        else if (f === 'without-reports') show = n === 0;
+        else if (f === 'all')             show = true;
+        else if (f && p)                  show = p.includes(f);
+        card.classList.toggle('hidden', !show);
       });
-      
-      updateVisibleCount();
     });
   });
 
-  // Contador de estudiantes visibles
-  function updateVisibleCount() {
-    const visible = document.querySelectorAll('.student-card:not(.hidden)').length;
-    // Opcional: mostrar contador
-  }
-
-  // Keyboard shortcuts
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-      filterChips?.classList.add('hidden');
-    }
-    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-      e.preventDefault();
-      searchInput?.focus();
-    }
+  /* ── Keyboard shortcuts ── */
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') document.getElementById('filter-chips')?.classList.add('hidden');
+    if ((e.metaKey||e.ctrlKey) && e.key === 'k') { e.preventDefault(); searchInput?.focus(); }
   });
 </script>
 {% endblock %}

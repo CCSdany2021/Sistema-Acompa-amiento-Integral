@@ -39,15 +39,34 @@ if not files:
 fname = files[0]
 print('Importando:', fname)
 
-with open(fname, encoding='latin-1') as f:
-    rows = list(csv.DictReader(f))
-
-print('Filas en CSV:', len(rows))
-print('Columnas:', list(rows[0].keys()))
-
 # Normalizar claves (quitar caracteres especiales)
 def clean_key(k):
     return k.encode('latin-1', errors='replace').decode('latin-1')
+
+def build_name_map(rows):
+    """Construye {nombre_normalizado: email} desde Quien Atiende + Institucional Quien Atiende."""
+    name_map = {}
+    for r in rows:
+        name = (r.get('Quien Atiende') or '').strip()
+        email = (r.get('Institucional Quien Atiende') or '').strip().lower()
+        if name and email and '@' in email:
+            name_map[name.lower()] = email
+            parts = name.lower().split()
+            if len(parts) >= 2:
+                name_map[parts[-1]] = email
+                name_map[' '.join(parts[-2:])] = email
+    return name_map
+
+def fuzzy_name_lookup(full_name, name_map):
+    if not full_name:
+        return None
+    words = set(full_name.lower().split())
+    best_email, best_score = None, 0
+    for stored_name, email in name_map.items():
+        score = len(words & set(stored_name.split()))
+        if score > best_score:
+            best_score, best_email = score, email
+    return best_email if best_score >= 2 else None
 
 def lookup_user(email_raw, fallback):
     if not email_raw:
@@ -59,6 +78,12 @@ def lookup_user(email_raw, fallback):
         .filter(is_active=True).first()
         or fallback
     )
+
+with open(fname, encoding='latin-1') as f:
+    rows = list(csv.DictReader(f))
+
+name_map = build_name_map(rows)
+print(f'Mapa nombre-email: {len(name_map)} entradas')
 
 created = skipped = errors = 0
 not_found_students = []
@@ -105,11 +130,10 @@ for i, raw in enumerate(rows):
     # Estado
     status = STATUS_MAP.get(r.get('Estado', '').strip(), ReportStatus.PROGRAMADO)
 
-    # Usuarios: quien remite y quien atiende
-    email_remite  = (r.get('Institucional Quien Remite', '') or
-                     r.get('Quien Remite', '') or r.get('Remitente', '')).strip()
-    email_atiende = (r.get('Institucional Quien Atiende', '') or
-                     r.get('Quien Atiende', '') or r.get('Asignado', '')).strip().lower()
+    # Usuarios: quien remite (nombre) → buscar email en mapa; quien atiende → email directo
+    nombre_remite = (r.get('Quien Remite') or r.get('Remitente') or '').strip()
+    email_remite  = fuzzy_name_lookup(nombre_remite, name_map) or nombre_remite
+    email_atiende = (r.get('Institucional Quien Atiende') or r.get('Quien Atiende') or '').strip().lower()
     remite_user  = lookup_user(email_remite, fallback_user)
     assigned_to  = lookup_user(email_atiende, fallback_user)
 

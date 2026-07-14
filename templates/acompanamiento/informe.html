@@ -87,15 +87,38 @@ tr:last-child td{border-bottom:none}
 .fp-ps{background:#fce7f3;color:#9d174d}
 
 /* ── Bar chart CSS ── */
-.chart{display:flex;align-items:flex-end;gap:5px;height:90px;padding:0 2px;
+.chart{display:flex;align-items:flex-end;gap:4px;height:96px;padding:0 2px;
        border-bottom:1px solid #e2e8f0}
 .bc{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:2px}
-.bbar{width:100%;border-radius:3px 3px 0 0;min-height:3px;transition:none}
-.bval{font-size:7.5px;font-weight:700;color:#334155}
-.blbl{font-size:7.5px;color:#94a3b8}
-.legend{display:flex;gap:12px;margin-top:7px;flex-wrap:wrap}
-.li{display:flex;align-items:center;gap:4px;font-size:8.5px;color:#475569}
+.bstack{width:100%;display:flex;flex-direction:column-reverse;border-radius:3px 3px 0 0;overflow:hidden}
+.bseg{width:100%;min-height:0px}
+.bval{font-size:7px;font-weight:700;color:#334155}
+.blbl{font-size:7px;color:#94a3b8}
+.legend{display:flex;gap:10px;margin-top:7px;flex-wrap:wrap}
+.li{display:flex;align-items:center;gap:4px;font-size:8px;color:#475569}
 .ld{width:8px;height:8px;border-radius:2px}
+
+/* ── Stacked h-bar (por período/sección) ── */
+.hbar-row{margin-bottom:11px}
+.hbar-label{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px}
+.hbar-name{font-size:10px;font-weight:600;color:#1e293b}
+.hbar-tot{font-size:11px;font-weight:800;color:#0f172a}
+.hbar-track{display:flex;height:14px;border-radius:4px;overflow:hidden;gap:1px}
+.hbar-seg{min-width:0;transition:none}
+.hbar-meta{display:flex;gap:10px;margin-top:3px;flex-wrap:wrap}
+.hbar-mi{font-size:7.5px;color:#64748b;display:flex;align-items:center;gap:3px}
+.hbar-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+
+/* ── Tabla de fines ── */
+.fin-table{width:100%;border-collapse:collapse;font-size:9.5px;margin-top:2px}
+.fin-table th{padding:5px 8px;text-align:center;font-weight:700;font-size:8px;color:#64748b;
+              text-transform:uppercase;letter-spacing:0.6px;border-bottom:2px solid #e2e8f0}
+.fin-table th:first-child{text-align:left}
+.fin-table td{padding:6px 8px;border-bottom:1px solid #f1f5f9;text-align:center;font-weight:600}
+.fin-table td:first-child{text-align:left;font-weight:500;color:#334155}
+.fin-table tr:last-child td{border-bottom:none}
+.fc-ac{color:#2563eb}.fc-ps{color:#db2777}.fc-es{color:#7c3aed}.fc-co{color:#d97706}
+.ftot{font-weight:800;color:#0f172a}
 
 /* ── Indicadores tabla ── */
 .badge-g{border-radius:999px;padding:2px 8px;font-size:8px;font-weight:700;background:#dcfce7;color:#166534;white-space:nowrap}
@@ -259,23 +282,28 @@ tr:last-child td{border-bottom:none}
 
   <div class="body" style="padding-top:12px">
 
-    <!-- TENDENCIA MENSUAL -->
-    <div class="stitle">Tendencia Mensual — Casos Registrados</div>
+    <!-- TENDENCIA MENSUAL (barras apiladas por fin educativo) -->
+    <div class="stitle">Tendencia Mensual — Casos por Fin Educativo</div>
     {% if monthly %}
     <div class="chart">
       {% for m in monthly %}
       <div class="bc">
         <span class="bval">{{ m.total }}</span>
-        <div class="bbar" style="height:{% widthratio m.total monthly_max 76 %}px;background:linear-gradient(180deg,#3b82f6,#1d4ed8)"></div>
+        <div class="bstack" style="height:{{ m.h_total }}px">
+          <div class="bseg" style="height:{{ m.h_ac }}px;background:#2563eb"></div>
+          <div class="bseg" style="height:{{ m.h_ps }}px;background:#db2777"></div>
+          <div class="bseg" style="height:{{ m.h_es }}px;background:#7c3aed"></div>
+          <div class="bseg" style="height:{{ m.h_co }}px;background:#f59e0b"></div>
+        </div>
         <span class="blbl">{{ m.mes }}</span>
       </div>
       {% endfor %}
     </div>
     <div class="legend">
       <span class="li"><span class="ld" style="background:#2563eb"></span>Académico</span>
-      <span class="li"><span class="ld" style="background:#f59e0b"></span>Convivencia</span>
-      <span class="li"><span class="ld" style="background:#7c3aed"></span>Espiritual</span>
       <span class="li"><span class="ld" style="background:#db2777"></span>Psicoafectivo</span>
+      <span class="li"><span class="ld" style="background:#7c3aed"></span>Espiritual</span>
+      <span class="li"><span class="ld" style="background:#f59e0b"></span>Convivencia</span>
     </div>
     {% else %}
     <p style="color:#94a3b8;font-size:10px;padding:6px 0">Sin datos de tendencia mensual.</p>
@@ -359,7 +387,144 @@ tr:last-child td{border-bottom:none}
   <div class="footer">
     <span class="ftxt">CONFIDENCIAL · Sistema SAI Calasanz Suba</span>
     <span class="ftxt">{{ fecha|date:"d/m/Y" }}</span>
-    <span class="ftxt">Pág 2 / 2</span>
+    <span class="ftxt">Pág 2 / 3</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════ PÁGINA 3 ══════════════════════════ -->
+<div class="page">
+
+  <div class="mini-hd">
+    <span class="mini-hd-label">Informe de Acompañamiento Integral &nbsp;·&nbsp; {{ anio }} &nbsp;·&nbsp; Desglose por Fin Educativo</span>
+    <span style="font-size:9px;font-weight:700;color:#f59e0b">{{ anio }}</span>
+  </div>
+  <div class="mini-accent"></div>
+
+  <div class="body" style="padding-top:14px">
+
+    <!-- FINES POR PERÍODO -->
+    <div class="stitle">Fines Educativos por Período Académico</div>
+    {% if por_periodo_fin %}
+
+    <!-- Barras horizontales apiladas -->
+    {% for row in por_periodo_fin %}
+    <div class="hbar-row">
+      <div class="hbar-label">
+        <span class="hbar-name">{{ row.periodo }}</span>
+        <span class="hbar-tot">{{ row.total }} casos</span>
+      </div>
+      <div class="hbar-track">
+        {% if row.academico %}<div class="hbar-seg" style="width:{{ row.pct_ac|floatformat:0 }}%;background:#2563eb" title="Académico {{ row.academico }}"></div>{% endif %}
+        {% if row.psicoafectivo %}<div class="hbar-seg" style="width:{{ row.pct_ps|floatformat:0 }}%;background:#db2777" title="Psicoafectivo {{ row.psicoafectivo }}"></div>{% endif %}
+        {% if row.espiritual %}<div class="hbar-seg" style="width:{{ row.pct_es|floatformat:0 }}%;background:#7c3aed" title="Espiritual {{ row.espiritual }}"></div>{% endif %}
+        {% if row.convivencia %}<div class="hbar-seg" style="width:{{ row.pct_co|floatformat:0 }}%;background:#f59e0b" title="Convivencia {{ row.convivencia }}"></div>{% endif %}
+      </div>
+      <div class="hbar-meta">
+        <span class="hbar-mi"><span class="hbar-dot" style="background:#2563eb"></span>Académico <strong>{{ row.academico }}</strong> ({{ row.pct_ac|floatformat:0 }}%)</span>
+        <span class="hbar-mi"><span class="hbar-dot" style="background:#db2777"></span>Psicoafectivo <strong>{{ row.psicoafectivo }}</strong> ({{ row.pct_ps|floatformat:0 }}%)</span>
+        <span class="hbar-mi"><span class="hbar-dot" style="background:#7c3aed"></span>Espiritual <strong>{{ row.espiritual }}</strong> ({{ row.pct_es|floatformat:0 }}%)</span>
+        <span class="hbar-mi"><span class="hbar-dot" style="background:#f59e0b"></span>Convivencia <strong>{{ row.convivencia }}</strong> ({{ row.pct_co|floatformat:0 }}%)</span>
+      </div>
+    </div>
+    {% endfor %}
+
+    <!-- Tabla resumen por período -->
+    <table class="fin-table" style="margin-top:10px">
+      <thead>
+        <tr>
+          <th style="text-align:left">Período</th>
+          <th style="color:#2563eb">Académico</th>
+          <th style="color:#db2777">Psicoafectivo</th>
+          <th style="color:#7c3aed">Espiritual</th>
+          <th style="color:#d97706">Convivencia</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in por_periodo_fin %}
+        <tr>
+          <td>{{ row.periodo }}</td>
+          <td class="fc-ac">{{ row.academico }}</td>
+          <td class="fc-ps">{{ row.psicoafectivo }}</td>
+          <td class="fc-es">{{ row.espiritual }}</td>
+          <td class="fc-co">{{ row.convivencia }}</td>
+          <td class="ftot">{{ row.total }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p style="color:#94a3b8;font-size:10px;padding:4px 0">Sin datos por período.</p>
+    {% endif %}
+
+    <!-- FINES POR SECCIÓN -->
+    <div class="stitle" style="margin-top:20px">Fines Educativos por Sección Institucional</div>
+    {% if por_seccion_fin %}
+
+    {% for row in por_seccion_fin %}
+    <div class="hbar-row">
+      <div class="hbar-label">
+        <span class="hbar-name">{{ row.seccion }}</span>
+        <span class="hbar-tot">{{ row.total }} casos</span>
+      </div>
+      <div class="hbar-track">
+        {% if row.academico %}<div class="hbar-seg" style="width:{{ row.pct_ac|floatformat:0 }}%;background:#2563eb"></div>{% endif %}
+        {% if row.psicoafectivo %}<div class="hbar-seg" style="width:{{ row.pct_ps|floatformat:0 }}%;background:#db2777"></div>{% endif %}
+        {% if row.espiritual %}<div class="hbar-seg" style="width:{{ row.pct_es|floatformat:0 }}%;background:#7c3aed"></div>{% endif %}
+        {% if row.convivencia %}<div class="hbar-seg" style="width:{{ row.pct_co|floatformat:0 }}%;background:#f59e0b"></div>{% endif %}
+      </div>
+      <div class="hbar-meta">
+        <span class="hbar-mi"><span class="hbar-dot" style="background:#2563eb"></span>Académico <strong>{{ row.academico }}</strong> ({{ row.pct_ac|floatformat:0 }}%)</span>
+        <span class="hbar-mi"><span class="hbar-dot" style="background:#db2777"></span>Psicoafectivo <strong>{{ row.psicoafectivo }}</strong> ({{ row.pct_ps|floatformat:0 }}%)</span>
+        <span class="hbar-mi"><span class="hbar-dot" style="background:#7c3aed"></span>Espiritual <strong>{{ row.espiritual }}</strong> ({{ row.pct_es|floatformat:0 }}%)</span>
+        <span class="hbar-mi"><span class="hbar-dot" style="background:#f59e0b"></span>Convivencia <strong>{{ row.convivencia }}</strong> ({{ row.pct_co|floatformat:0 }}%)</span>
+      </div>
+    </div>
+    {% endfor %}
+
+    <!-- Tabla resumen por sección -->
+    <table class="fin-table" style="margin-top:10px">
+      <thead>
+        <tr>
+          <th style="text-align:left">Sección</th>
+          <th style="color:#2563eb">Académico</th>
+          <th style="color:#db2777">Psicoafectivo</th>
+          <th style="color:#7c3aed">Espiritual</th>
+          <th style="color:#d97706">Convivencia</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in por_seccion_fin %}
+        <tr>
+          <td>{{ row.seccion }}</td>
+          <td class="fc-ac">{{ row.academico }}</td>
+          <td class="fc-ps">{{ row.psicoafectivo }}</td>
+          <td class="fc-es">{{ row.espiritual }}</td>
+          <td class="fc-co">{{ row.convivencia }}</td>
+          <td class="ftot">{{ row.total }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p style="color:#94a3b8;font-size:10px;padding:4px 0">Sin datos por sección.</p>
+    {% endif %}
+
+    <!-- LEYENDA GENERAL -->
+    <div class="legend" style="margin-top:18px;padding-top:10px;border-top:1px solid #e2e8f0">
+      <span class="li"><span class="ld" style="background:#2563eb"></span>Académico</span>
+      <span class="li"><span class="ld" style="background:#db2777"></span>Psicoafectivo</span>
+      <span class="li"><span class="ld" style="background:#7c3aed"></span>Espiritual</span>
+      <span class="li"><span class="ld" style="background:#f59e0b"></span>Convivencia</span>
+    </div>
+
+  </div><!-- /body -->
+
+  <div class="footer">
+    <span class="ftxt">CONFIDENCIAL · Sistema SAI Calasanz Suba</span>
+    <span class="ftxt">{{ fecha|date:"d/m/Y" }}</span>
+    <span class="ftxt">Pág 3 / 3</span>
   </div>
 </div>
 

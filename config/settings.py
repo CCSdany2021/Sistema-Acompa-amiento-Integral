@@ -31,6 +31,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -96,6 +97,7 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "static", BASE_DIR / "archivos"]
+STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
@@ -110,6 +112,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000",
     "http://127.0.0.1:8000",
     "http://127.0.0.1:8005",
+    "https://sai.portalcalasanzsuba.com",
+    "https://portalcalasanzsuba.com",
 ]
 
 # API Externa - Sistema Gestor Educativo
@@ -137,6 +141,8 @@ REST_FRAMEWORK = {
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:8005",
     "http://127.0.0.1:8005",
+    "https://sai.portalcalasanzsuba.com",
+    "http://sai.portalcalasanzsuba.com",
 ]
 
 # Email - Microsoft 365
@@ -148,3 +154,9 @@ EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 DEFAULT_FROM_EMAIL = config('EMAIL_HOST_USER', default='noreply@calasanzsuba.edu.co')
 EMAIL_SUBJECT_PREFIX = '[SAI Calasanz] '
+
+# Notificaciones vía Microsoft Graph (App registrada en Azure — mismo mecanismo
+# que ya usan otras aplicaciones del colegio para enviar desde ccs@calasanzsuba.edu.co)
+MS_CLIENT_ID = config('MS_CLIENT_ID', default='')
+MS_CLIENT_SECRET = config('MS_CLIENT_SECRET', default='')
+MS_TENANT_ID = config('MS_TENANT_ID', default='')

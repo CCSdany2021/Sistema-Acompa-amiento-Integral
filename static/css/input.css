@@ -1,0 +1,44 @@
+@import "tailwindcss";
+@source "../../templates/**/*.html";
+
+/* Clases arbitrarias usadas en los templates — Tailwind v4 las incluye explícitamente */
+@source inline("bg-[#012844] bg-[#023059] bg-[#1a2847] bg-[#1a45d4] bg-[#1d4ed8] bg-[#2256F2] bg-[#2563eb] bg-[#EEF2FF] bg-[#EFF6FF] bg-[#F0FDF4] bg-[#F1F5F9] bg-[#F2C144] bg-[#F8FAFC] bg-[#FBFBFC] bg-[#ef4444]");
+@source inline("text-[#023059] text-[#16A34A] text-[#1D4ED8] text-[#2256F2] text-[#F2C144]");
+@source inline("border-[#034078] border-[#2256F2]");
+@source inline("hover:bg-[#1d4ed8] hover:bg-[#1a2847] hover:bg-[#012844] hover:opacity-90");
+
+@theme {
+  --color-ink: #0f172a;
+  --color-azul-insti: #27418C;
+  --color-ocean: #0ea5e9;
+  --color-mint: #10b981;
+  --color-coral: #fb7185;
+  --color-sand: #f8fafc;
+  --color-brand-50:  #f0fdfa;
+  --color-brand-100: #ccfbf1;
+  --color-brand-200: #99f6e4;
+  --color-brand-300: #5eead4;
+  --color-brand-400: #2dd4bf;
+  --color-brand-500: #14b8a6;
+  --color-brand-600: #0d9488;
+  --color-brand-700: #0f766e;
+  --color-brand-800: #115e59;
+  --color-brand-900: #134e4a;
+
+  --shadow-soft: 0 10px 30px rgba(2, 6, 23, 0.08);
+  --shadow-glow: 0 0 20px rgba(13, 148, 136, 0.5);
+  --shadow-glow-lg: 0 0 30px rgba(13, 148, 136, 0.6);
+
+  --animate-pulse-slow: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-slide-in: slideIn 0.3s ease-out;
+  --animate-fade-in: fadeIn 0.2s ease-out;
+
+  @keyframes slideIn {
+    0%   { transform: translateX(-100%); opacity: 0; }
+    100% { transform: translateX(0);     opacity: 1; }
+  }
+  @keyframes fadeIn {
+    0%   { opacity: 0; }
+    100% { opacity: 1; }
+  }
+}

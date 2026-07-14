@@ -23,6 +23,16 @@ urlpatterns = [
     path('reportes/create/', views.ReportCreateView.as_view(), name='create'),
     path('reportes/<int:pk>/', views.ReportDetailView.as_view(), name='detail'),
     path('reportes/<int:pk>/cerrar/', views.cerrar_report, name='cerrar'),
+    path('reportes/<int:pk>/reabrir/', views.reabrir_reporte, name='reabrir'),
+    path('reportes/<int:pk>/editar/', views.editar_reporte, name='editar_reporte'),
+
+    # Observaciones
+    path('observaciones/<int:pk>/editar/', views.editar_observacion, name='editar_observacion'),
+    path('observaciones/<int:pk>/eliminar/', views.eliminar_observacion, name='eliminar_observacion'),
+
+    # Recomendaciones
+    path('recomendaciones/<int:pk>/editar/', views.editar_recomendacion, name='editar_recomendacion'),
+    path('recomendaciones/<int:pk>/eliminar/', views.eliminar_recomendacion, name='eliminar_recomendacion'),
 
     # Módulo de indicadores SGI
     path('indicadores/', views.indicadores_view, name='indicadores'),
@@ -30,4 +40,9 @@ urlpatterns = [
 
     # Administración de educadores (roles y permisos)
     path('admin-sai/educadores/', views.admin_educadores_view, name='admin_educadores'),
+
+    # Simulador de vistas (solo super-admin)
+    path('admin-sai/simulador/', views.simulator_view, name='simulator'),
+    path('admin-sai/simulador/activar/', views.activate_simulation, name='activate_simulation'),
+    path('admin-sai/simulador/salir/', views.stop_simulation, name='stop_simulation'),
 ]

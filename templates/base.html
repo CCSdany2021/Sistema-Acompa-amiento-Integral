@@ -1,65 +1,31 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>{% block title %}SAI - Sistema de Acompañamiento Integral{% endblock %}</title>
+    <!-- PWA -->
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#2256F2">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="SAI">
+    <link rel="apple-touch-icon" href="{% static 'icons/icon-192.png' %}">
+    <link rel="icon" href="{% static 'icons/icon-192.png' %}" type="image/png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Roboto+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Tailwind CSS compilado localmente -->
+    <link rel="stylesheet" href="{% static 'css/app.css' %}">
+    <!-- Alpine.js collapse plugin first, then core -->
+    <script defer src="https://unpkg.com/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     {% block extra_head %}{% endblock %}
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        ink: "#0f172a",
-                        'azul-insti': "#27418C",
-                        ocean: "#0ea5e9",
-                        mint: "#10b981",
-                        coral: "#fb7185",
-                        sand: "#f8fafc",
-                        brand: {
-                            50: '#f0fdfa',
-                            100: '#ccfbf1',
-                            200: '#99f6e4',
-                            300: '#5eead4',
-                            400: '#2dd4bf',
-                            500: '#14b8a6',
-                            600: '#0d9488',
-                            700: '#0f766e',
-                            800: '#115e59',
-                            900: '#134e4a',
-                        }
-                    },
-                    boxShadow: {
-                        soft: "0 10px 30px rgba(2, 6, 23, 0.08)",
-                        glow: "0 0 20px rgba(13, 148, 136, 0.5)",
-                        'glow-lg': "0 0 30px rgba(13, 148, 136, 0.6)",
-                    },
-                    animation: {
-                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        'slide-in': 'slideIn 0.3s ease-out',
-                        'fade-in': 'fadeIn 0.2s ease-out',
-                    },
-                    keyframes: {
-                        slideIn: {
-                            '0%': { transform: 'translateX(-100%)', opacity: '0' },
-                            '100%': { transform: 'translateX(0)', opacity: '1' },
-                        },
-                        fadeIn: {
-                            '0%': { opacity: '0' },
-                            '100%': { opacity: '1' },
-                        },
-                    }
-                }
-            }
-        }
-    </script>
     <style>
         :root {
-            /* Paleta neutral balanceada */
             --brand-primary: #334155;
             --brand-light: #475569;
             --brand-subtle: #f1f5f9;
@@ -75,7 +41,6 @@
             --text-muted: #94a3b8;
         }
 
-        /* --- Escala tipográfica fluida (clamp: min | preferida | max) --- */
         :root {
             --text-xs:   clamp(0.688rem, 0.65rem + 0.19vw,  0.75rem);
             --text-sm:   clamp(0.813rem, 0.77rem + 0.22vw,  0.875rem);
@@ -116,83 +81,81 @@
         .font-heading    { font-weight: 600; letter-spacing: -0.01em; }
         .font-body       { font-weight: 400; }
         .font-muted      { color: var(--text-secondary); font-size: var(--text-sm); }
-        
-        .sidebar-scroll::-webkit-scrollbar { width: 6px; }
-        .sidebar-scroll::-webkit-scrollbar-thumb { background: rgba(242, 193, 68, 0.4); border-radius: 999px; }
+
+        /* Scrollbar sidebar */
+        .sidebar-scroll::-webkit-scrollbar { width: 4px; }
+        .sidebar-scroll::-webkit-scrollbar-thumb { background: rgba(242, 193, 68, 0.35); border-radius: 999px; }
         .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
+
         .glass-card { box-shadow: 0 24px 60px rgba(15, 23, 42, 0.06); }
-        
-        .nav-item { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
-        .nav-item:hover { transform: translateX(4px); }
+
+        /* Nav items */
+        .nav-item {
+            transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .nav-item:hover {
+            transform: translateX(3px);
+            background: rgba(255,255,255,0.08);
+            color: #fff;
+        }
         .nav-item.active {
             background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.25);
             color: #ffffff !important;
             font-weight: 600;
         }
-
-        .nav-item.active .nav-text,
         .nav-item.active i,
         .nav-item.active span {
             color: #ffffff !important;
         }
 
-        /* Sidebar colapsado */
-        #sidebar.collapsed {
-            width: 80px;
+        /* Sidebar section button hover */
+        .section-btn {
+            transition: background 0.18s ease;
+        }
+        .section-btn:hover {
+            background: rgba(255,255,255,0.08);
+        }
+        .section-btn.open {
+            background: rgba(255,255,255,0.05);
         }
 
-        #sidebar.collapsed .nav-text,
-        #sidebar.collapsed .nav-badge,
-        #sidebar.collapsed .sidebar-section-title {
-            display: none;
+        /* ── Tooltip 3D glassmorphism ── */
+        .sai-tooltip {
+            background: rgba(1, 24, 50, 0.82);
+            backdrop-filter: blur(18px) saturate(1.6) brightness(1.1);
+            -webkit-backdrop-filter: blur(18px) saturate(1.6) brightness(1.1);
+            border: 1px solid rgba(255,255,255,0.16);
+            border-top-color: rgba(255,255,255,0.26);
+            border-radius: 6px;
+            box-shadow:
+                0 2px 0 0 rgba(255,255,255,0.07) inset,
+                0 16px 40px rgba(0,0,0,0.5),
+                0 4px 12px rgba(0,0,0,0.35),
+                0 0 0 1px rgba(0,0,0,0.25);
+            transform-style: preserve-3d;
         }
-
-        #sidebar.collapsed .details-chevron {
-            display: none;
-        }
-
-        /* Tooltips para sidebar colapsado */
-        #sidebar.collapsed .nav-item {
-            position: relative;
-            justify-content: center;
-        }
-
-        #sidebar.collapsed .nav-item::after {
-            content: attr(data-tooltip);
+        .sai-tooltip::before {
+            content: '';
             position: absolute;
-            left: 100%;
+            left: -5px;
+            top: 50%;
+            transform: translateY(-50%) rotateY(-10deg);
+            border-width: 5px 5px 5px 0;
+            border-style: solid;
+            border-color: transparent rgba(255,255,255,0.16) transparent transparent;
+        }
+        .sai-tooltip::after {
+            content: '';
+            position: absolute;
+            left: -4px;
             top: 50%;
             transform: translateY(-50%);
-            background: #1e293b;
-            color: white;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: var(--text-xs);
-            white-space: nowrap;
-            opacity: 0;
-            pointer-events: none;
-            margin-left: 10px;
-            z-index: 1000;
-            transition: opacity 0.2s;
+            border-width: 5px 5px 5px 0;
+            border-style: solid;
+            border-color: transparent rgba(1,24,50,0.88) transparent transparent;
         }
 
-        #sidebar.collapsed .nav-item:hover::after {
-            opacity: 1;
-        }
-
-        /* Chevron rotation en details */
-        details[open] .details-chevron {
-            transform: rotate(180deg);
-        }
-
-        .bg-gradient-brand { background: linear-gradient(135deg, #334155 0%, #1e293b 100%); }
-        
-        .sidebar-scroll::-webkit-scrollbar-thumb { background: rgba(242, 193, 68, 0.4); border-radius: 999px; }
-        .sidebar-collapsed .nav-text { display: none; }
-        .sidebar-collapsed .nav-badge { display: none; }
-        .sidebar-collapsed .sidebar-section-title { display: none; }
-        
         @keyframes shimmer {
             0% { background-position: -200% 0; }
             100% { background-position: 200% 0; }
@@ -203,314 +166,591 @@
             animation: shimmer 1.5s infinite;
         }
 
-        /* OVERRIDE: Cambiar todos los azules a TEAL para reducir fatiga visual */
+        /* Blue overrides → institutional palette */
         .bg-gradient-to-r.from-\[\\#2256F2\], .bg-gradient-to-r.from-\[\\#2563eb\], .bg-gradient-to-r.from-\[\\#3b82f6\] {
             background: linear-gradient(to right, #F2C144, #e5b13a) !important;
         }
-        .via-\[\\#2563eb\], .via-\[\\#3b82f6\] {
-            --tw-gradient-via: #c99b2a !important;
-        }
-        .to-\[\\#1d4ed8\], .to-\[\\#1a48d4\] {
-            --tw-gradient-to: #c99b2a !important;
-        }
-        
-        /* Shadow overrides - dorado */
-        .shadow-blue-500\/30 {
-            --tw-shadow-color: rgba(21, 52, 89, 0.3);
-            --tw-shadow: var(--tw-shadow-colored);
-        }
-        .shadow-blue-500\/20 {
-            --tw-shadow-color: rgba(21, 52, 89, 0.2);
-            --tw-shadow: var(--tw-shadow-colored);
-        }
-        .shadow-blue-500\/ {
-            --tw-shadow-color: rgba(21, 52, 89, 0.25);
-            --tw-shadow: var(--tw-shadow-colored);
-        }
-        
-        /* Botones principales - SLATE OSCURO */
-        button[type="submit"]:not(.filter-chip), 
-        a.bg-\[\#2256F2\], 
-        a.bg-\[\#2563eb\],
-        .bg-\[\#2256F2\],
-        .bg-\[\#2563eb\],
-        .bg-\[\\#3b82f6\],
-        .bg-\[\#4361ee\] {
+        .shadow-blue-500\/30 { --tw-shadow-color: rgba(21,52,89,0.3); --tw-shadow: var(--tw-shadow-colored); }
+        .shadow-blue-500\/20 { --tw-shadow-color: rgba(21,52,89,0.2); --tw-shadow: var(--tw-shadow-colored); }
+
+        button[type="submit"]:not(.filter-chip),
+        a.bg-\[\#2256F2\], a.bg-\[\#2563eb\],
+        .bg-\[\#2256F2\], .bg-\[\#2563eb\], .bg-\[\#3b82f6\], .bg-\[\#4361ee\] {
             background-color: #334155 !important;
             background: linear-gradient(135deg, #334155 0%, #1e293b 100%) !important;
             color: #ffffff !important;
             font-weight: 600 !important;
         }
-        
-        button[type="submit"]:not(.filter-chip):hover, 
-        a.bg-\[\#2256F2\]:hover, 
-        a.bg-\[\#2563eb\"]:hover {
+        button[type="submit"]:not(.filter-chip):hover,
+        a.bg-\[\#2256F2\]:hover, a.bg-\[\#2563eb\]:hover {
             background-color: #1e293b !important;
             background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;
             color: #ffffff !important;
         }
-        
-        /* Textos en botones dorados - OSCURO para contraste */
-        button[type="submit"]:not(.filter-chip), 
-        button[type="submit"]:not(.filter-chip):hover,
-        .btn-primary {
-            color: #1a1a2e !important;
-        }
-        
-        /* Textos - dorado */
-        .text-\[\#2256F2\], .text-\[\#2563eb\], .text-\[\#3b82f6\], .text-blue-600, .text-blue-700 {
-            color: #c99b2a !important;
-        }
-        
-        /* Bordes - AZUL INSTITUCIONAL */
-        .border-\[\#2256F2\], .border-\[\#2563eb\], .focus\:border-\[\#2256F2\], .focus\:border-\[\#2563eb\] {
-            border-color: #153459 !important;
-        }
-        
-        /* Hover states */
-        .hover\:bg-\[\#2256F2\]:hover, 
-        .hover\:bg-\[\#2563eb\]:hover,
-        .hover\:bg-blue-50:hover,
-        .hover\:bg-blue-100:hover {
-            background-color: #f0f5f9 !important;
-        }
-        
-        /* Badge counts */
-        .bg-blue-50, .bg-blue-100, .bg-blue-200 {
-            background-color: #f0f5f9 !important;
-        }
-        
-        /* Focus rings */
-        .focus\:ring-blue-100\/50:focus {
-            --tw-ring-color: rgba(21, 52, 89, 0.1) !important;
-        }
-        
-        /* REDONDEO MAX 12px para tarjetas */
-        .rounded-2xl { border-radius: 12px !important; }
-        .rounded-3xl { border-radius: 12px !important; }
-        /* rounded-full: solo aplicar a elementos no-imagen/no-avatar */
+        .text-\[\#2256F2\], .text-\[\#2563eb\], .text-\[\#3b82f6\], .text-blue-600, .text-blue-700 { color: #c99b2a !important; }
+        .border-\[\#2256F2\], .border-\[\#2563eb\], .focus\:border-\[\#2256F2\], .focus\:border-\[\#2563eb\] { border-color: #153459 !important; }
+        .hover\:bg-\[\#2256F2\]:hover, .hover\:bg-\[\#2563eb\]:hover, .hover\:bg-blue-50:hover, .hover\:bg-blue-100:hover { background-color: #f0f5f9 !important; }
+        .bg-blue-50, .bg-blue-100, .bg-blue-200 { background-color: #f0f5f9 !important; }
+        .focus\:ring-blue-100\/50:focus { --tw-ring-color: rgba(21,52,89,0.1) !important; }
+
+        /* Border radius máx 5px */
+        .rounded-xl  { border-radius: 5px !important; }
+        .rounded-2xl { border-radius: 5px !important; }
+        .rounded-3xl { border-radius: 5px !important; }
         .rounded-full:not(img):not(.avatar-ring) { border-radius: 999px !important; }
-        
-        /* Full width layout fixes */
+
+        /* Layout */
+        #main-content { width: 100%; max-width: 100%; }
+        main { max-width: 100% !important; }
+        .grid { width: 100% !important; max-width: 100% !important; }
+        [class*="grid-cols-"] { width: 100%; }
+
+        /* Sidebar transition */
+        #sai-sidebar {
+            transition: width 0.28s cubic-bezier(0.4,0,0.2,1),
+                        transform 0.28s cubic-bezier(0.4,0,0.2,1);
+        }
         #main-content {
-            width: 100%;
-            max-width: 100%;
+            transition: padding-left 0.28s cubic-bezier(0.4,0,0.2,1);
         }
-        
-        main {
-            max-width: 100% !important;
+
+        /* Flyout menu */
+        .flyout-menu {
+            animation: fadeIn 0.15s ease-out;
         }
-        
-        /* Fix grid containers to fill width */
-        .grid {
-            width: 100% !important;
-            max-width: 100% !important;
+
+        /* Mobile bottom nav safe area */
+        @supports (padding-bottom: env(safe-area-inset-bottom)) {
+            .bottom-nav { padding-bottom: calc(0.5rem + env(safe-area-inset-bottom)); }
         }
-        
-        /* Ensure proper distribution */
-        [class*="grid-cols-"] {
-            width: 100%;
+
+        /* Hide sidebar on mobile by default */
+        @media (max-width: 1023px) {
+            #sai-sidebar { transform: translateX(-100%); }
+            #sai-sidebar.mobile-open { transform: translateX(0); }
         }
     </style>
 </head>
-<body class="min-h-screen bg-[#FBFBFC] text-slate-900">
-    <div class="flex min-h-screen">
-        <aside id="sidebar" class="sidebar-scroll fixed left-0 top-0 z-40 h-screen w-[280px] flex flex-col bg-[#023059] border-r border-[#034078] text-white shadow-xl transition-all duration-300 lg:block overflow-hidden">
-            <!-- Header del sidebar -->
-            <div class="shrink-0 border-b border-white/10 bg-[#012844] px-5 py-4">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 shrink-0">
-                            <i class="fa-solid fa-graduation-cap text-white text-sm"></i>
-                        </div>
-                        <div class="nav-text">
-                            <span class="text-base font-bold tracking-tight text-white">SAI flow</span>
-                        </div>
-                    </div>
-                    <button id="sidebar-toggle" class="nav-text rounded-lg p-1.5 text-white/50 hover:bg-white/10 hover:text-white transition-colors">
-                        <i class="fa-solid fa-bars text-sm"></i>
-                    </button>
-                </div>
-            </div>
-            <!-- Scroll area -->
-            <div class="flex-1 overflow-y-auto sidebar-scroll">
+<body class="min-h-screen bg-[#FBFBFC] text-slate-900" x-data="saiApp()">
 
-            <div class="px-3 py-4">
-                <a href="/" class="nav-item mb-1 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/80 hover:bg-white/8 hover:text-white {% if request.path == '/' %}active{% endif %}" data-tooltip="Principal">
-                    <i class="fa-solid fa-house w-4 text-center text-white/60"></i>
-                    <span class="nav-text flex-1">Principal</span>
-                </a>
-                <a href="{% url 'acompanamiento:list' %}" class="nav-item mb-1 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold text-white hover:bg-white/8 {% if 'reportes' in request.path and 'indicadores' not in request.path and 'admin-sai' not in request.path %}active{% endif %}" data-tooltip="Reportes">
-                    <i class="fa-solid fa-chart-bar w-4 text-center text-white/60"></i>
-                    <span class="nav-text flex-1">Reportes</span>
-                </a>
-                <a href="{% url 'acompanamiento:indicadores' %}" class="nav-item mb-1 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/80 hover:bg-white/8 hover:text-white {% if 'indicadores' in request.path %}active{% endif %}" data-tooltip="Indicadores SGI">
-                    <i class="fa-solid fa-gauge-high w-4 text-center text-white/60"></i>
-                    <span class="nav-text flex-1">Indicadores SGI</span>
-                </a>
-                <a href="{% url 'acompanamiento:admin_educadores' %}" class="nav-item mb-1 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/80 hover:bg-white/8 hover:text-white {% if 'admin-sai' in request.path %}active{% endif %}" data-tooltip="Educadores">
-                    <i class="fa-solid fa-users-gear w-4 text-center text-white/60"></i>
-                    <span class="nav-text flex-1">Educadores</span>
-                </a>
-
-                <div class="sidebar-section-title my-4 px-1">
-                    <p class="nav-text text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">Cursos por sección</p>
-                </div>
-
-                <!-- JARDIN A TERCERO -->
-                <details class="mb-1 rounded-lg" {% if request.GET.course in 'JR01,TR01,TR02,101,102,201,202,301,302' %}open{% endif %}>
-                    <summary class="cursor-pointer list-none flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium text-white/80 hover:bg-white/8 hover:text-white transition-colors">
-                        <span class="flex items-center gap-2.5">
-                            <i class="fa-regular fa-folder w-4 text-center text-white/50"></i>
-                            <span class="nav-text">Jardín a Tercero</span>
-                        </span>
-                        <i class="fa-solid fa-chevron-down nav-text details-chevron text-[10px] text-white/40 transition-transform"></i>
-                    </summary>
-                    <div class="mt-1 space-y-0.5 pl-3">
-                        <a class="nav-item flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm text-white/70 hover:text-white hover:bg-white/8 {% if request.GET.course == 'JR01' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=JR01"><span class="nav-text">JR01</span></a>
-                        <a class="nav-item flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm text-white/70 hover:text-white hover:bg-white/8 {% if request.GET.course == 'TR01' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=TR01"><span class="nav-text">TR01</span></a>
-                        <a class="nav-item flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm text-white/70 hover:text-white hover:bg-white/8 {% if request.GET.course == 'TR02' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=TR02"><span class="nav-text">TR02</span></a>
-                        <a class="nav-item flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm text-white/70 hover:text-white hover:bg-white/8 {% if request.GET.course == '101' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=101"><span class="nav-text">101</span></a>
-                        <a class="nav-item flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm text-white/70 hover:text-white hover:bg-white/8 {% if request.GET.course == '102' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=102"><span class="nav-text">102</span></a>
-                        <a class="nav-item flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm text-white/70 hover:text-white hover:bg-white/8 {% if request.GET.course == '201' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=201"><span class="nav-text">201</span></a>
-                        <a class="nav-item flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm text-white/70 hover:text-white hover:bg-white/8 {% if request.GET.course == '202' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=202"><span class="nav-text">202</span></a>
-                        <a class="nav-item flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm text-white/70 hover:text-white hover:bg-white/8 {% if request.GET.course == '301' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=301"><span class="nav-text">301</span></a>
-                        <a class="nav-item flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm text-white/70 hover:text-white hover:bg-white/8 {% if request.GET.course == '302' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=302"><span class="nav-text">302</span></a>
-                    </div>
-                </details>
-
-                <!-- CUARTO A SEPTIMO -->
-                <details class="mb-1 rounded-lg" {% if request.GET.course in '401,402,501,502,503,601,602,603,701,702,703' %}open{% endif %}>
-                    <summary class="cursor-pointer list-none flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium text-white/80 hover:bg-white/8 hover:text-white transition-colors">
-                        <span class="flex items-center gap-2.5">
-                            <i class="fa-regular fa-folder w-4 text-center text-white/50"></i>
-                            <span class="nav-text">Cuarto a Séptimo</span>
-                        </span>
-                        <i class="fa-solid fa-chevron-down nav-text details-chevron text-[10px] text-white/40 transition-transform"></i>
-                    </summary>
-                    <div class="mt-1 space-y-0.5 pl-3">
-                        {% for item in cuarto_septimo_courses %}
-                        <a class="nav-item flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm text-white/70 hover:text-white hover:bg-white/8 {% if request.GET.course == item.code %}active{% endif %}" href="{% url 'estudiantes:list' %}?section={{ item.section }}&course={{ item.code }}">
-                            <span class="nav-text">{{ item.code }}</span>
-                        </a>
-                        {% endfor %}
-                    </div>
-                </details>
-
-                <!-- OCTAVO A UNDECIMO -->
-                <details class="mb-1 rounded-lg" {% if request.GET.course in '801,802,803,901,902,903,1001,1002,1003,1101,1102,1103' %}open{% endif %}>
-                    <summary class="cursor-pointer list-none flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium text-white/80 hover:bg-white/8 hover:text-white transition-colors">
-                        <span class="flex items-center gap-2.5">
-                            <i class="fa-regular fa-folder w-4 text-center text-white/50"></i>
-                            <span class="nav-text">Octavo a Undécimo</span>
-                        </span>
-                        <i class="fa-solid fa-chevron-down nav-text details-chevron text-[10px] text-white/40 transition-transform"></i>
-                    </summary>
-                    <div class="mt-1 space-y-0.5 pl-3">
-                        {% for item in octavo_once_courses %}
-                        <a class="nav-item flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm text-white/70 hover:text-white hover:bg-white/8 {% if request.GET.course == item.code %}active{% endif %}" href="{% url 'estudiantes:list' %}?section={{ item.section }}&course={{ item.code }}">
-                            <span class="nav-text">{{ item.code }}</span>
-                        </a>
-                        {% endfor %}
-                    </div>
-                </details>
-            </div>
-            </div><!-- /scroll area -->
-
-            <!-- Footer del sidebar (limpio) -->
-        </aside>
-        
-        <div id="main-content" class="flex-1 min-w-0 transition-all duration-300 lg:pl-[280px]">
-            <nav class="sticky top-0 z-30 flex items-center justify-between border-b border-slate-200 bg-white backdrop-blur px-4 py-3 lg:px-5">
-                <div class="flex items-center gap-3 ">
-                    <button id="mobile-menu-btn" class="lg:hidden rounded-lg bg-slate-100 p-2 text-slate-600 hover:bg-slate-200">
-                        <i class="fa-solid fa-bars text-lg"></i>
-                    </button>
-                    <div class="hidden text-sm font-medium text-slate-500 lg:block">
-                        <span class="text-slate-900">Panel de Control</span> /
-                        <span class="text-blue-600">{% block breadcrumb %}{% endblock %}</span>
-                    </div>
-                </div>
-                <div class="flex items-center gap-3">
-                    <div class="relative hidden md:block">
-                        <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                        <input type="text" placeholder="Buscar..." 
-                            class="w-48 rounded-xl border border-slate-200 bg-slate-50 py-2 pl-9 pr-4 text-sm focus:border-[#3b82f6] focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-100">
-                    </div>
-                    <button class="relative rounded-xl bg-slate-100 p-2.5 text-slate-600 hover:bg-slate-200 hover:text-slate-900">
-                        <i class="fa-regular fa-bell text-lg"></i>
-                        <span class="absolute right-1 top-1 h-2 w-2 rounded-full bg-[#ef4444]"></span>
-                    </button>
-                    <div class="flex items-center gap-2 rounded-xl bg-slate-100 px-3 py-2">
-                        <div class="h-8 w-8 rounded-full bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center text-xs font-bold text-white">
-                            <i class="fa-solid fa-user"></i>
-                        </div>
-                        <span class="hidden text-sm font-medium text-slate-700 md:block">Admin</span>
-                    </div>
-                </div>
-            </nav>
-
-            <main class="w-full px-4 py-4 lg:px-5">
-                {% if messages %}
-                    {% for message in messages %}
-                        <div class="animate-slide-in mb-4 flex items-center gap-3 rounded-xl border-l-4 bg-white px-4 py-3 shadow-lg
-                            {% if message.tags == 'success' %}border-l-[#22c55e] bg-emerald-50 text-emerald-700{% elif message.tags == 'error' %}border-l-[#ef4444] bg-red-50 text-red-700{% elif message.tags == 'warning' %}border-l-[#f59e0b] bg-amber-50 text-amber-700{% else %}border-l-[#3b82f6] bg-blue-50 text-blue-700{% endif %}">
-                            <i class="fa-solid {% if message.tags == 'success' %}fa-check-circle text-lg{% elif message.tags == 'error' %}fa-circle-xmark text-lg{% elif message.tags == 'warning' %}fa-triangle-exclamation text-lg{% else %}fa-circle-info text-lg{% endif %}"></i>
-                            <span class="flex-1 font-medium">{{ message }}</span>
-                            <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-slate-600">
-                                <i class="fa-solid fa-xmark"></i>
-                            </button>
-                        </div>
-                    {% endfor %}
-                {% endif %}
-
-                {% block content %}{% endblock %}
-            </main>
-        </div>
+{% if is_simulating %}
+<!-- ═══════════════════ BANNER SIMULACIÓN ACTIVA ═══════════════════ -->
+<div id="sim-banner" style="position:fixed;top:0;left:0;right:0;z-index:9999;background:linear-gradient(90deg,#b45309,#d97706);padding:7px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:0 2px 12px rgba(0,0,0,.3);">
+  <div style="display:flex;align-items:center;gap:10px;min-width:0;">
+    <div style="width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      <i class="fa-solid fa-masks-theater" style="color:#fff;font-size:13px;"></i>
     </div>
+    <div style="min-width:0;">
+      <p style="margin:0;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;">Simulación Activa</p>
+      <p style="margin:0;font-size:12px;color:rgba(255,255,255,.9);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+        Viendo como <strong>{{ viewer.get_full_name|default:viewer.username }}</strong>
+        <span style="opacity:.7;font-size:11px;">&nbsp;·&nbsp;{{ viewer.email }}</span>
+      </p>
+    </div>
+  </div>
+  <form method="post" action="{% url 'acompanamiento:stop_simulation' %}" style="flex-shrink:0;">
+    {% csrf_token %}
+    <button type="submit" style="display:flex;align-items:center;gap:6px;padding:5px 14px;border-radius:4px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);color:#fff;font-size:11px;font-weight:700;cursor:pointer;transition:background .15s;"
+      onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.18)'">
+      <i class="fa-solid fa-arrow-right-from-bracket" style="font-size:11px;"></i> Salir de simulación
+    </button>
+  </form>
+</div>
+<div style="height:42px;"></div><!-- espacio para el banner fijo -->
+{% endif %}
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const sidebar = document.getElementById('sidebar');
-            const mainContent = document.getElementById('main-content');
-            const toggleBtn = document.getElementById('sidebar-toggle');
-            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-            
-            if (toggleBtn) {
-                toggleBtn.addEventListener('click', function() {
-                    sidebar.classList.toggle('collapsed');
+<!-- Mobile overlay -->
+<div
+    x-show="mobileOpen"
+    x-transition:enter="transition-opacity ease-out duration-250"
+    x-transition:enter-start="opacity-0"
+    x-transition:enter-end="opacity-100"
+    x-transition:leave="transition-opacity ease-in duration-200"
+    x-transition:leave-start="opacity-100"
+    x-transition:leave-end="opacity-0"
+    @click="mobileOpen=false"
+    class="fixed inset-0 bg-black/50 z-40 lg:hidden"
+    style="display:none"></div>
 
-                    if (sidebar.classList.contains('collapsed')) {
-                        mainContent.classList.remove('lg:pl-[280px]');
-                        mainContent.classList.add('lg:pl-[80px]');
-                    } else {
-                        mainContent.classList.remove('lg:pl-[80px]');
-                        mainContent.classList.add('lg:pl-[280px]');
-                    }
-                });
-            }
-            
-            if (mobileMenuBtn) {
-                mobileMenuBtn.addEventListener('click', function() {
-                    sidebar.classList.toggle('-translate-x-full');
-                    sidebar.classList.toggle('lg:translate-x-0');
-                });
-            }
+<div class="flex min-h-screen">
 
-            // Cerrar otros details cuando se abre uno
-            document.querySelectorAll('details').forEach(detail => {
-                detail.addEventListener('toggle', function() {
-                    if (this.open) {
-                        document.querySelectorAll('details').forEach(other => {
-                            if (other !== this && other.open) {
-                                other.removeAttribute('open');
-                            }
-                        });
-                    }
-                });
-            });
-        });
-    </script>
-    {% block extra_js %}{% endblock %}
+    <!-- ═══════════════════════════════════ SIDEBAR ══════════════════════════════════ -->
+    <aside
+        id="sai-sidebar"
+        :class="[
+            collapsed ? 'w-16' : 'w-64',
+            mobileOpen ? 'mobile-open' : ''
+        ]"
+        class="fixed left-0 top-0 z-50 flex h-screen flex-col bg-[#023059] border-r border-[#034078] text-white shadow-xl overflow-hidden lg:translate-x-0">
+
+        <!-- Header -->
+        <div class="shrink-0 border-b border-white/10 bg-[#012844] flex items-center"
+             :class="collapsed ? 'justify-center px-3 py-4' : 'justify-between px-4 py-4'">
+            <div x-show="!collapsed" x-transition:enter="transition-opacity duration-200 delay-100" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="flex items-center gap-2 min-w-0">
+                <div class="h-7 w-7 rounded-full bg-[#F2C144] flex items-center justify-center shrink-0">
+                    <i class="fa-solid fa-graduation-cap text-[#023059] text-xs"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-xs font-bold text-white leading-tight truncate">Calasanz Suba</p>
+                    <p class="text-[10px] text-white/50 truncate">Acompañamiento Integral</p>
+                </div>
+            </div>
+            <button
+                @click="toggleCollapse()"
+                class="shrink-0 rounded-lg p-1.5 text-white/60 hover:bg-white/10 hover:text-white transition-colors"
+                :title="collapsed ? 'Expandir menú' : 'Colapsar menú'">
+                <i class="fa-solid fa-bars text-sm"></i>
+            </button>
+        </div>
+
+        <!-- Scrollable nav area -->
+        <div class="flex-1 overflow-y-auto sidebar-scroll px-2 py-3 space-y-0.5">
+
+            <!-- Principal -->
+            <div x-data="{ tip:false, tipY:0 }"
+                 @mouseenter="if(collapsed){ tipY=$el.getBoundingClientRect().top + $el.getBoundingClientRect().height/2; tip=true }"
+                 @mouseleave="tip=false"
+                 class="relative">
+                <a href="/"
+                   class="nav-item flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/80 {% if request.path == '/' %}active{% endif %}"
+                   :class="collapsed ? 'justify-center px-0' : ''">
+                    <i class="fa-solid fa-house w-4 text-center shrink-0 {% if request.path == '/' %}text-white{% else %}text-white/60{% endif %}"></i>
+                    <span x-show="!collapsed" x-transition:enter="transition-opacity duration-150" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="flex-1 whitespace-nowrap">Principal</span>
+                </a>
+                <div x-show="collapsed && tip"
+                     x-transition:enter="transition-all duration-150" x-transition:enter-start="opacity-0 translate-x-2 scale-95" x-transition:enter-end="opacity-100 translate-x-0 scale-100"
+                     x-transition:leave="transition-all duration-100" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+                     :style="`top:${tipY-18}px;left:4.4rem`"
+                     class="sai-tooltip fixed z-[80] px-3.5 py-2 pointer-events-none" style="display:none">
+                    <span class="text-sm font-semibold text-white tracking-wide">Principal</span>
+                </div>
+            </div>
+
+            <!-- Reportes -->
+            <div x-data="{ tip:false, tipY:0 }"
+                 @mouseenter="if(collapsed){ tipY=$el.getBoundingClientRect().top + $el.getBoundingClientRect().height/2; tip=true }"
+                 @mouseleave="tip=false"
+                 class="relative">
+                <a href="{% url 'acompanamiento:list' %}"
+                   class="nav-item flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/80 {% if 'reports' in request.path and 'indicadores' not in request.path and 'admin-sai' not in request.path %}active{% endif %}"
+                   :class="collapsed ? 'justify-center px-0' : ''">
+                    <i class="fa-solid fa-chart-bar w-4 text-center shrink-0 {% if 'reports' in request.path and 'indicadores' not in request.path and 'admin-sai' not in request.path %}text-white{% else %}text-white/60{% endif %}"></i>
+                    <span x-show="!collapsed" x-transition:enter="transition-opacity duration-150" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="flex-1 whitespace-nowrap">Reportes</span>
+                </a>
+                <div x-show="collapsed && tip"
+                     x-transition:enter="transition-all duration-150" x-transition:enter-start="opacity-0 translate-x-2 scale-95" x-transition:enter-end="opacity-100 translate-x-0 scale-100"
+                     x-transition:leave="transition-all duration-100" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+                     :style="`top:${tipY-18}px;left:4.4rem`"
+                     class="sai-tooltip fixed z-[80] px-3.5 py-2 pointer-events-none" style="display:none">
+                    <span class="text-sm font-semibold text-white tracking-wide">Reportes</span>
+                </div>
+            </div>
+
+            <!-- Indicadores SGI -->
+            <div x-data="{ tip:false, tipY:0 }"
+                 @mouseenter="if(collapsed){ tipY=$el.getBoundingClientRect().top + $el.getBoundingClientRect().height/2; tip=true }"
+                 @mouseleave="tip=false"
+                 class="relative">
+                <a href="{% url 'acompanamiento:indicadores' %}"
+                   class="nav-item flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/80 {% if 'indicadores' in request.path %}active{% endif %}"
+                   :class="collapsed ? 'justify-center px-0' : ''">
+                    <i class="fa-solid fa-gauge-high w-4 text-center shrink-0 {% if 'indicadores' in request.path %}text-white{% else %}text-white/60{% endif %}"></i>
+                    <span x-show="!collapsed" x-transition:enter="transition-opacity duration-150" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="flex-1 whitespace-nowrap">Indicadores SGI</span>
+                </a>
+                <div x-show="collapsed && tip"
+                     x-transition:enter="transition-all duration-150" x-transition:enter-start="opacity-0 translate-x-2 scale-95" x-transition:enter-end="opacity-100 translate-x-0 scale-100"
+                     x-transition:leave="transition-all duration-100" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+                     :style="`top:${tipY-18}px;left:4.4rem`"
+                     class="sai-tooltip fixed z-[80] px-3.5 py-2 pointer-events-none" style="display:none">
+                    <span class="text-sm font-semibold text-white tracking-wide">Indicadores SGI</span>
+                </div>
+            </div>
+
+            {% if can_simulate and not is_simulating %}
+            <!-- Simulador de Vistas (super-admin y coordinadoras habilitadas) -->
+            <div x-data="{ tip:false, tipY:0 }"
+                 @mouseenter="if(collapsed){ tipY=$el.getBoundingClientRect().top + $el.getBoundingClientRect().height/2; tip=true }"
+                 @mouseleave="tip=false"
+                 class="relative">
+                <a href="{% url 'acompanamiento:simulator' %}"
+                   class="nav-item flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/80 {% if 'simulador' in request.path %}active{% endif %}"
+                   :class="collapsed ? 'justify-center px-0' : ''">
+                    <i class="fa-solid fa-masks-theater w-4 text-center shrink-0 {% if 'simulador' in request.path %}text-white{% else %}text-yellow-400/80{% endif %}"></i>
+                    <span x-show="!collapsed" x-transition:enter="transition-opacity duration-150" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="flex-1 whitespace-nowrap text-yellow-300/90">Simulador de Vistas</span>
+                </a>
+                <div x-show="collapsed && tip"
+                     :style="`top:${tipY-18}px;left:4.4rem`"
+                     class="sai-tooltip fixed z-[80] px-3.5 py-2 pointer-events-none" style="display:none">
+                    <span class="text-sm font-semibold text-white tracking-wide">Simulador</span>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if viewer_can_manage %}
+            <!-- Educadores (solo CAP) -->
+            <div x-data="{ tip:false, tipY:0 }"
+                 @mouseenter="if(collapsed){ tipY=$el.getBoundingClientRect().top + $el.getBoundingClientRect().height/2; tip=true }"
+                 @mouseleave="tip=false"
+                 class="relative">
+                <a href="{% url 'acompanamiento:admin_educadores' %}"
+                   class="nav-item flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/80 {% if 'admin-sai' in request.path %}active{% endif %}"
+                   :class="collapsed ? 'justify-center px-0' : ''">
+                    <i class="fa-solid fa-users-gear w-4 text-center shrink-0 {% if 'admin-sai' in request.path %}text-white{% else %}text-white/60{% endif %}"></i>
+                    <span x-show="!collapsed" x-transition:enter="transition-opacity duration-150" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="flex-1 whitespace-nowrap">Educadores</span>
+                </a>
+                <div x-show="collapsed && tip"
+                     x-transition:enter="transition-all duration-150" x-transition:enter-start="opacity-0 translate-x-2 scale-95" x-transition:enter-end="opacity-100 translate-x-0 scale-100"
+                     x-transition:leave="transition-all duration-100" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+                     :style="`top:${tipY-18}px;left:4.4rem`"
+                     class="sai-tooltip fixed z-[80] px-3.5 py-2 pointer-events-none" style="display:none">
+                    <span class="text-sm font-semibold text-white tracking-wide">Educadores</span>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Divider -->
+            <div class="pt-2 pb-1">
+                <div x-show="!collapsed" x-transition:enter="transition-opacity duration-150" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="px-2">
+                    <p class="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400/80">Cursos por sección</p>
+                </div>
+                <div x-show="collapsed" class="border-t border-white/10 mx-1 mt-1"></div>
+            </div>
+
+            <!-- ── JARDÍN A TERCERO ── -->
+            {% if not viewer_sections or 'preescolar' in viewer_sections %}
+            <div x-data="{ flyout: false, flyY: 0 }"
+                 @mouseenter="if(collapsed){ flyY = $el.getBoundingClientRect().top; flyout=true }"
+                 @mouseleave="flyout=false"
+                 class="relative">
+                <button
+                    @click="if(!collapsed) toggleSection('jardin')"
+                    class="section-btn w-full flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium text-white/80 hover:text-white transition-colors"
+                    :class="[collapsed ? 'justify-center px-0' : 'justify-between', isActive('jardin') ? 'open' : '']"
+                    title="Jardín a Tercero">
+                    <span class="flex items-center gap-2.5">
+                        <i class="fa-regular fa-folder w-4 text-center shrink-0 text-white/50"></i>
+                        <span x-show="!collapsed" x-transition:enter="transition-opacity duration-150" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="whitespace-nowrap">Jardín a Tercero</span>
+                    </span>
+                    <i x-show="!collapsed"
+                       class="fa-solid fa-chevron-down text-[10px] text-white/40 transition-transform duration-200"
+                       :class="isActive('jardin') ? 'rotate-180' : ''"></i>
+                </button>
+
+                <!-- Accordion content -->
+                <div x-show="!collapsed && isActive('jardin')" x-collapse class="overflow-hidden">
+                    <div class="mt-0.5 space-y-0.5 pl-3 pb-1">
+                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == 'JR01' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=JR01">JR01</a>
+                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == 'TR01' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=TR01">TR01</a>
+                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == 'TR02' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=TR02">TR02</a>
+                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '101' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=101">101</a>
+                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '102' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=102">102</a>
+                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '201' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=201">201</a>
+                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '202' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=202">202</a>
+                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '301' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=301">301</a>
+                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '302' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=302">302</a>
+                    </div>
+                </div>
+
+                <!-- Flyout (collapsed hover) -->
+                <div x-show="collapsed && flyout"
+                     x-transition:enter="transition-all duration-150"
+                     x-transition:enter-start="opacity-0 translate-x-2"
+                     x-transition:enter-end="opacity-100 translate-x-0"
+                     :style="`top: ${flyY}px; left: 4.25rem`"
+                     class="sai-tooltip flyout-menu fixed w-44 py-2 z-[70]"
+                     style="display:none">
+                    <p class="px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-1">Jardín – Tercero</p>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == 'JR01' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=JR01">JR01</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == 'TR01' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=TR01">TR01</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == 'TR02' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=TR02">TR02</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '101' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=101">101</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '102' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=102">102</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '201' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=201">201</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '202' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=202">202</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '301' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=301">301</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '302' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=302">302</a>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- ── CUARTO A SÉPTIMO ── -->
+            {% if not viewer_sections or 'basica_primaria' in viewer_sections %}
+            <div x-data="{ flyout: false, flyY: 0 }"
+                 @mouseenter="if(collapsed){ flyY = $el.getBoundingClientRect().top; flyout=true }"
+                 @mouseleave="flyout=false"
+                 class="relative">
+                <button
+                    @click="if(!collapsed) toggleSection('cuarto')"
+                    class="section-btn w-full flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium text-white/80 hover:text-white transition-colors"
+                    :class="[collapsed ? 'justify-center px-0' : 'justify-between', isActive('cuarto') ? 'open' : '']"
+                    title="Cuarto a Séptimo">
+                    <span class="flex items-center gap-2.5">
+                        <i class="fa-regular fa-folder w-4 text-center shrink-0 text-white/50"></i>
+                        <span x-show="!collapsed" x-transition:enter="transition-opacity duration-150" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="whitespace-nowrap">Cuarto a Séptimo</span>
+                    </span>
+                    <i x-show="!collapsed"
+                       class="fa-solid fa-chevron-down text-[10px] text-white/40 transition-transform duration-200"
+                       :class="isActive('cuarto') ? 'rotate-180' : ''"></i>
+                </button>
+
+                <div x-show="!collapsed && isActive('cuarto')" x-collapse class="overflow-hidden">
+                    <div class="mt-0.5 space-y-0.5 pl-3 pb-1">
+                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '401' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=401">401</a>
+                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '402' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=402">402</a>
+                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '501' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=501">501</a>
+                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '502' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=502">502</a>
+                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '503' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=503">503</a>
+                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '601' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=601">601</a>
+                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '602' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=602">602</a>
+                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '603' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=603">603</a>
+                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '701' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=701">701</a>
+                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '702' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=702">702</a>
+                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '703' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=703">703</a>
+                    </div>
+                </div>
+
+                <div x-show="collapsed && flyout"
+                     x-transition:enter="transition-all duration-150"
+                     x-transition:enter-start="opacity-0 translate-x-2"
+                     x-transition:enter-end="opacity-100 translate-x-0"
+                     :style="`top: ${flyY}px; left: 4.25rem`"
+                     class="sai-tooltip flyout-menu fixed w-44 py-2 z-[70]"
+                     style="display:none">
+                    <p class="px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-1">Cuarto – Séptimo</p>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '401' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=401">401</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '402' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=402">402</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '501' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=501">501</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '502' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=502">502</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '503' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=503">503</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '601' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=601">601</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '602' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=602">602</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '603' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=603">603</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '701' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=701">701</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '702' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=702">702</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '703' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=703">703</a>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- ── OCTAVO A UNDÉCIMO ── -->
+            {% if not viewer_sections or 'basica_secundaria' in viewer_sections or 'media_academica' in viewer_sections %}
+            <div x-data="{ flyout: false, flyY: 0 }"
+                 @mouseenter="if(collapsed){ flyY = $el.getBoundingClientRect().top; flyout=true }"
+                 @mouseleave="flyout=false"
+                 class="relative">
+                <button
+                    @click="if(!collapsed) toggleSection('octavo')"
+                    class="section-btn w-full flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium text-white/80 hover:text-white transition-colors"
+                    :class="[collapsed ? 'justify-center px-0' : 'justify-between', isActive('octavo') ? 'open' : '']"
+                    title="Octavo a Undécimo">
+                    <span class="flex items-center gap-2.5">
+                        <i class="fa-regular fa-folder w-4 text-center shrink-0 text-white/50"></i>
+                        <span x-show="!collapsed" x-transition:enter="transition-opacity duration-150" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="whitespace-nowrap">Octavo a Undécimo</span>
+                    </span>
+                    <i x-show="!collapsed"
+                       class="fa-solid fa-chevron-down text-[10px] text-white/40 transition-transform duration-200"
+                       :class="isActive('octavo') ? 'rotate-180' : ''"></i>
+                </button>
+
+                <div x-show="!collapsed && isActive('octavo')" x-collapse class="overflow-hidden">
+                    <div class="mt-0.5 space-y-0.5 pl-3 pb-1">
+                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '801' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=801">801</a>
+                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '802' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=802">802</a>
+                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '803' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=803">803</a>
+                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '901' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=901">901</a>
+                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '902' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=902">902</a>
+                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '903' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=903">903</a>
+                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '1001' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=1001">1001</a>
+                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '1002' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=1002">1002</a>
+                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '1003' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=1003">1003</a>
+                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '1101' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=1101">1101</a>
+                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '1102' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=1102">1102</a>
+                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '1103' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=1103">1103</a>
+                    </div>
+                </div>
+
+                <div x-show="collapsed && flyout"
+                     x-transition:enter="transition-all duration-150"
+                     x-transition:enter-start="opacity-0 translate-x-2"
+                     x-transition:enter-end="opacity-100 translate-x-0"
+                     :style="`top: ${flyY}px; left: 4.25rem`"
+                     class="sai-tooltip flyout-menu fixed w-44 py-2 z-[70]"
+                     style="display:none">
+                    <p class="px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-1">Octavo – Undécimo</p>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '801' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=801">801</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '802' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=802">802</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '803' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=803">803</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '901' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=901">901</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '902' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=902">902</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '903' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=903">903</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '1001' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=1001">1001</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '1002' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=1002">1002</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '1003' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=1003">1003</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '1101' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=1101">1101</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '1102' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=1102">1102</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '1103' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=1103">1103</a>
+                </div>
+            </div>
+            {% endif %}
+
+        </div><!-- /scroll area -->
+
+        <!-- Sidebar footer — usuario -->
+        <div class="shrink-0 border-t border-white/10 bg-[#012844]"
+             :class="collapsed ? 'px-2 py-3 flex justify-center' : 'px-4 py-3'">
+            <div x-show="!collapsed" x-transition:enter="transition-opacity duration-150" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="flex items-center gap-2.5 min-w-0">
+                <div class="h-7 w-7 rounded-full bg-gradient-to-br from-slate-600 to-slate-800 flex items-center justify-center text-xs font-bold text-white shrink-0">
+                    <i class="fa-solid fa-user text-[10px]"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-xs font-medium text-white/90 truncate">{{ viewer.get_full_name|default:viewer.username }}</p>
+                    <p class="text-[10px] text-white/40 truncate">{{ viewer.email|default:"" }}</p>
+                </div>
+            </div>
+            <div x-show="collapsed" title="{{ viewer.get_full_name|default:viewer.username }}">
+                <div class="h-7 w-7 rounded-full bg-gradient-to-br from-slate-600 to-slate-800 flex items-center justify-center text-xs font-bold text-white">
+                    <i class="fa-solid fa-user text-[10px]"></i>
+                </div>
+            </div>
+        </div>
+
+    </aside>
+    <!-- ══════════════════════════════════ /SIDEBAR ══════════════════════════════════ -->
+
+    <!-- ══════════════════════════════ MAIN CONTENT ══════════════════════════════════ -->
+    <div id="main-content"
+         class="flex-1 min-w-0 flex flex-col"
+         :class="collapsed ? 'lg:pl-16' : 'lg:pl-64'">
+
+        <!-- Top nav -->
+        <nav class="sticky top-0 z-30 flex items-center justify-between border-b border-slate-200 bg-white/95 backdrop-blur px-4 py-3 lg:px-5">
+            <div class="flex items-center gap-3">
+                <!-- Hamburger (mobile) -->
+                <button
+                    @click="mobileOpen=true"
+                    class="lg:hidden rounded-lg bg-slate-100 p-2 text-slate-600 hover:bg-slate-200 transition-colors"
+                    aria-label="Abrir menú">
+                    <i class="fa-solid fa-bars text-lg"></i>
+                </button>
+                <div class="hidden text-sm font-medium text-slate-500 lg:block">
+                    <span class="text-slate-900">Panel de Control</span>
+                    {% block breadcrumb %}{% endblock %}
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <div class="relative hidden md:block">
+                    <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                    <input type="text" placeholder="Buscar..."
+                        class="w-44 rounded-lg border border-slate-200 bg-slate-50 py-2 pl-9 pr-4 text-sm focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-100">
+                </div>
+                <button class="relative rounded-lg bg-slate-100 p-2.5 text-slate-600 hover:bg-slate-200 hover:text-slate-900 transition-colors">
+                    <i class="fa-regular fa-bell"></i>
+                    <span class="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-[#ef4444]"></span>
+                </button>
+                <div class="flex items-center gap-2 rounded-lg bg-slate-100 px-3 py-2">
+                    <div class="h-7 w-7 rounded-full bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center text-xs font-bold text-white">
+                        <i class="fa-solid fa-user text-[10px]"></i>
+                    </div>
+                    <span class="hidden text-sm font-medium text-slate-700 md:block">{{ viewer.get_full_name|default:viewer.username|truncatechars:18 }}</span>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Page content -->
+        <main class="flex-1 w-full px-4 py-4 lg:px-5 pb-20 lg:pb-4">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="animate-slide-in mb-4 flex items-center gap-3 rounded-lg border-l-4 bg-white px-4 py-3 shadow-lg
+                        {% if message.tags == 'success' %}border-l-[#22c55e] bg-emerald-50 text-emerald-700{% elif message.tags == 'error' %}border-l-[#ef4444] bg-red-50 text-red-700{% elif message.tags == 'warning' %}border-l-[#f59e0b] bg-amber-50 text-amber-700{% else %}border-l-[#3b82f6] bg-blue-50 text-blue-700{% endif %}">
+                        <i class="fa-solid {% if message.tags == 'success' %}fa-check-circle text-lg{% elif message.tags == 'error' %}fa-circle-xmark text-lg{% elif message.tags == 'warning' %}fa-triangle-exclamation text-lg{% else %}fa-circle-info text-lg{% endif %}"></i>
+                        <span class="flex-1 font-medium">{{ message }}</span>
+                        <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-slate-600">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </main>
+
+    </div>
+    <!-- ════════════════════════════════ /MAIN CONTENT ════════════════════════════════ -->
+
+</div>
+
+<!-- ═══════════════════════════ MOBILE BOTTOM NAV ═══════════════════════════════ -->
+<nav class="bottom-nav fixed bottom-0 inset-x-0 z-30 bg-[#023059] border-t border-[#034078] lg:hidden flex items-stretch">
+    <a href="/"
+       class="flex-1 flex flex-col items-center justify-center gap-1 py-2 text-white/60 hover:text-white transition-colors {% if request.path == '/' %}!text-[#F2C144]{% endif %}">
+        <i class="fa-solid fa-house text-lg"></i>
+        <span class="text-[10px] font-medium leading-none">Inicio</span>
+    </a>
+    <a href="{% url 'estudiantes:list' %}"
+       class="flex-1 flex flex-col items-center justify-center gap-1 py-2 text-white/60 hover:text-white transition-colors {% if 'students' in request.path %}!text-[#F2C144]{% endif %}">
+        <i class="fa-solid fa-users text-lg"></i>
+        <span class="text-[10px] font-medium leading-none">Estudiantes</span>
+    </a>
+    <a href="{% url 'acompanamiento:list' %}"
+       class="flex-1 flex flex-col items-center justify-center gap-1 py-2 text-white/60 hover:text-white transition-colors {% if 'reports' in request.path and 'indicadores' not in request.path and 'admin-sai' not in request.path %}!text-[#F2C144]{% endif %}">
+        <i class="fa-solid fa-chart-bar text-lg"></i>
+        <span class="text-[10px] font-medium leading-none">Reportes</span>
+    </a>
+    <a href="{% url 'acompanamiento:indicadores' %}"
+       class="flex-1 flex flex-col items-center justify-center gap-1 py-2 text-white/60 hover:text-white transition-colors {% if 'indicadores' in request.path %}!text-[#F2C144]{% endif %}">
+        <i class="fa-solid fa-gauge-high text-lg"></i>
+        <span class="text-[10px] font-medium leading-none">Indicadores</span>
+    </a>
+    <!-- Burger to open full sidebar -->
+    <button
+        @click="mobileOpen=true"
+        class="flex-1 flex flex-col items-center justify-center gap-1 py-2 text-white/60 hover:text-white transition-colors">
+        <i class="fa-solid fa-grip text-lg"></i>
+        <span class="text-[10px] font-medium leading-none">Menú</span>
+    </button>
+</nav>
+<!-- ═════════════════════════ /MOBILE BOTTOM NAV ════════════════════════════════ -->
+
+<script>
+function saiApp() {
+    function detectSection() {
+        var c = new URLSearchParams(location.search).get('course') || '';
+        var jr = ['JR01','TR01','TR02','101','102','201','202','301','302'];
+        var cs = ['401','402','501','502','503','601','602','603','701','702','703'];
+        var ou = ['801','802','803','901','902','903','1001','1002','1003','1101','1102','1103'];
+        if (jr.indexOf(c) !== -1) return 'jardin';
+        if (cs.indexOf(c) !== -1) return 'cuarto';
+        if (ou.indexOf(c) !== -1) return 'octavo';
+        return '';
+    }
+
+    return {
+        collapsed: localStorage.getItem('sai-sidebar-collapsed') === 'true',
+        mobileOpen: false,
+        activeSection: detectSection(),
+
+        toggleCollapse() {
+            this.collapsed = !this.collapsed;
+            localStorage.setItem('sai-sidebar-collapsed', String(this.collapsed));
+        },
+
+        toggleSection(name) {
+            this.activeSection = this.activeSection === name ? '' : name;
+        },
+
+        isActive(name) {
+            return this.activeSection === name;
+        }
+    };
+}
+</script>
+
+{% block extra_js %}{% endblock %}
+<script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js')
+            .catch(function(err) { console.warn('SW:', err); });
+    }
+</script>
 </body>
 </html>

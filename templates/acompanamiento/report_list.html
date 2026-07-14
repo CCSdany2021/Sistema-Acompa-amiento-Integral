@@ -1,200 +1,259 @@
 {% extends 'base.html' %}
 
-{% block title %}Reportes - SAI{% endblock %}
-
+{% block title %}Reportes – SAI{% endblock %}
 {% block breadcrumb %}Reportes{% endblock %}
 
 {% block extra_head %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
-  .report-row { transition: all 0.2s ease; }
-  .report-row:hover { background: linear-gradient(to right, #f8fafc, #eff6ff); }
-  .report-row:hover .row-actions { opacity: 1; }
-  .status-badge { transition: all 0.2s ease; }
-  .status-badge:hover { transform: scale(1.05); }
-  
-  .table-container {
-    scrollbar-width: thin;
-    scrollbar-color: #cbd5e1 transparent;
+  :root {
+    --c-primary:#2256F2; --c-primary-h:#1a45d4;
+    --c-success:#22C55E; --c-danger:#EF4444; --c-warn:#F59E0B;
+    --c-bg:#F8FAFC; --c-surface:#FFFFFF; --c-border:#E2E8F0;
+    --c-text:#0F172A; --c-muted:#64748B;
+    --r-card:5px; --r-input:3px;
   }
-  .table-container::-webkit-scrollbar { height: 8px; }
-  .table-container::-webkit-scrollbar-track { background: transparent; }
-  .table-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-  
-  @keyframes slideIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+  body { font-family:'Inter',sans-serif; background:var(--c-bg); }
+
+  /* fin pills */
+  .pill-acad { background:#EFF6FF; color:#1D4ED8; border:1px solid #BFDBFE; }
+  .pill-conv { background:#FFFBEB; color:#B45309; border:1px solid #FDE68A; }
+  .pill-espi { background:#F5F3FF; color:#7C3AED; border:1px solid #DDD6FE; }
+  .pill-psic { background:#FFF1F2; color:#BE185D; border:1px solid #FBCFE8; }
+
+  /* status badges */
+  .badge-prog { background:#FEF2F2; color:#DC2626; border:1px solid #FECACA; }
+  .badge-seg  { background:#FFFBEB; color:#D97706; border:1px solid #FDE68A; }
+  .badge-aten { background:#F0FDF4; color:#16A34A; border:1px solid #BBF7D0; }
+
+  /* base input/select */
+  .sai-input {
+    border:1px solid var(--c-border); border-radius:var(--r-input);
+    padding:7px 10px; font-size:12px; font-family:'Inter',sans-serif;
+    width:100%; outline:none; background:white;
+    transition:border-color .15s,box-shadow .15s; color:#0F172A;
   }
-  .animate-slide-in { animation: slideIn 0.3s ease-out forwards; }
+  .sai-input:focus { border-color:var(--c-primary); box-shadow:0 0 0 3px rgba(34,86,242,.08); }
+
+  /* table row */
+  .report-row { border-bottom:1px solid #F1F5F9; transition:background .15s; }
+  .report-row:hover { background:#F8FAFC; }
+  .report-row:last-child { border-bottom:none; }
+
+  /* scrollable table body */
+  .tbl-scroll { max-height:62vh; overflow-y:auto; scrollbar-width:thin; scrollbar-color:#CBD5E1 transparent; }
+  .tbl-scroll::-webkit-scrollbar { width:4px; }
+  .tbl-scroll::-webkit-scrollbar-thumb { background:#CBD5E1; border-radius:4px; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  .row-anim { animation:fadeUp .2s ease both; }
 </style>
 {% endblock %}
 
 {% block content %}
-<!-- Header Mejorado -->
-<div class="mb-6 rounded-l bg-[#27418C] p-6 text-white shadow-xl shadow-blue-500/20">
-  <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-    <div class="flex items-center gap-4">
-      <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/20 backdrop-blur shadow-lg">
-        <i class="fa-solid fa-file-shield text-2xl"></i>
-      </div>
-      <div>
-        <h1 class="text-2xl font-bold">Lista de Reportes</h1>
-        <p class="text-blue-100 text-sm">Gestiona todos los reportes de acompañamiento</p>
-      </div>
+<!-- ── PAGE HEADER ────────────────────────────────────────── -->
+<div class="mb-4 flex items-center justify-between rounded-[5px] border border-slate-200 bg-white px-5 py-3.5" style="border-top:4px solid #2256F2">
+  <div class="flex items-center gap-3">
+    <div class="flex h-9 w-9 items-center justify-center rounded-[3px] bg-[#EEF2FF]">
+      <i class="fa-solid fa-file-shield text-[#2256F2] text-sm"></i>
     </div>
-    <div class="flex items-center gap-3 bg-[#078C5B]">
-      <div class="flex items-center gap-2 rounded-xl bg-white/20 backdrop-blur px-4 py-2">
-        <i class="fa-solid fa-file-lines"></i>
-        <span class="font-bold">{{ reports|length }}</span>
-        <span class="text-sm text-blue-100">reportes</span>
-      </div>
+    <div>
+      <h1 class="text-sm font-bold text-slate-900">Lista de Reportes</h1>
+      <p class="text-[11px] text-slate-500">Gestiona todos los reportes de acompañamiento</p>
+    </div>
+  </div>
+  <div class="flex items-center gap-2">
+    <a href="?assigned_to={{ viewer.pk }}"
+       class="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all
+       {% if request.GET.assigned_to == viewer.pk|stringformat:'s' %}bg-[#2256F2] text-white{% else %}bg-white border border-slate-200 text-slate-600 hover:border-[#2256F2] hover:text-[#2256F2]{% endif %}">
+      <i class="fa-solid fa-user-check text-[10px]"></i> Mis reportes
+    </a>
+    {% if request.GET.assigned_to %}
+    <a href="{% url 'acompanamiento:list' %}" class="flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-500 hover:bg-slate-50">
+      <i class="fa-solid fa-xmark text-[10px]"></i> Quitar filtro
+    </a>
+    {% endif %}
+    <div class="flex items-center gap-2 rounded-full bg-[#EEF2FF] px-3 py-1">
+      <i class="fa-solid fa-file-lines text-[#2256F2] text-xs"></i>
+      <span class="text-xs font-bold text-[#2256F2]">{{ reports|length }}</span>
+      <span class="text-xs text-slate-500">reportes</span>
     </div>
   </div>
 </div>
 
-<!-- Filtros Avanzados -->
-<div class="mb-6 rounded-xl border border-slate-200  p-5 shadow-sm">
-  <form method="get" class="space-y-4">
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
-      <!-- Buscar -->
+<!-- ── FILTROS ────────────────────────────────────────────── -->
+<div class="mb-4 rounded-[5px] border border-slate-200 bg-white p-4">
+  <form method="get">
+    <!-- Fila 1: búsqueda + selects -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2 mb-2">
+
+      <!-- Buscar (span 2) -->
       <div class="lg:col-span-2">
-        <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Buscar</label>
+        <label class="block text-[10px] font-semibold uppercase tracking-wide text-slate-500 mb-1">
+          <i class="fa-solid fa-magnifying-glass mr-1 text-slate-400"></i>Buscar
+        </label>
         <div class="relative">
-          <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-          <input type="text" name="search" value="{{ request.GET.search|default:'' }}" 
-            placeholder="Nombre, código o objetivo..."
-            class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-200 text-sm font-medium focus:border-[#153459] focus:outline-none focus:ring-2 focus:ring-slate-200/50 bg-[#F5F6FA]">
+          <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" style="font-size:10px"></i>
+          <input type="text" name="search" value="{{ request.GET.search|default:'' }}"
+            placeholder="Nombre, código o objetivo…"
+            class="sai-input" style="padding-left:28px">
         </div>
       </div>
-      
+
       <!-- Estado -->
       <div>
-        <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Estado</label>
-        <select name="status" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm font-medium focus:border-[#153459] focus:outline-none focus:ring-2 focus:ring-slate-200/50 bg-slate-50">
-          <option value="">Todos los estados</option>
+        <label class="block text-[10px] font-semibold uppercase tracking-wide text-slate-500 mb-1">Estado</label>
+        <select name="status" class="sai-input cursor-pointer">
+          <option value="">Todos</option>
           {% for value, label in status_choices %}
           <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
           {% endfor %}
         </select>
       </div>
-      
-      <!-- Fin Educativo -->
+
+      <!-- Tipo -->
       <div>
-        <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Tipo</label>
-        <select name="purpose" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm font-medium focus:border-[#153459] focus:outline-none focus:ring-2 focus:ring-slate-200/50 bg-slate-50">
-          <option value="">Todos los tipos</option>
+        <label class="block text-[10px] font-semibold uppercase tracking-wide text-slate-500 mb-1">Fin educativo</label>
+        <select name="purpose" class="sai-input cursor-pointer">
+          <option value="">Todos</option>
           {% for value, label in purpose_choices %}
           <option value="{{ value }}" {% if request.GET.purpose == value %}selected{% endif %}>{{ label }}</option>
           {% endfor %}
         </select>
       </div>
-    </div>
-    
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
       <!-- Período -->
       <div>
-        <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Período</label>
-        <select name="period" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm font-medium focus:border-[#153459] focus:outline-none bg-slate-50">
+        <label class="block text-[10px] font-semibold uppercase tracking-wide text-slate-500 mb-1">Período</label>
+        <select name="period" class="sai-input cursor-pointer">
           <option value="">Todos</option>
           {% for p in periodos %}
           <option value="{{ p }}" {% if request.GET.period == p %}selected{% endif %}>{{ p }}</option>
           {% endfor %}
         </select>
       </div>
-      
-      <!-- Grado -->
+
+      <!-- Quien atendió -->
       <div>
-        <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Grado</label>
-        <select name="grado" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm font-medium focus:border-[#153459] focus:outline-none bg-slate-50">
+        <label class="block text-[10px] font-semibold uppercase tracking-wide text-slate-500 mb-1">Quien atendió</label>
+        <select name="assigned_to" class="sai-input cursor-pointer">
           <option value="">Todos</option>
-          {% for g in grado_choices %}
-          <option value="{{ g }}" {% if request.GET.grado == g %}selected{% endif %}>{{ g }}</option>
+          {% for ed in educators_filter %}
+          <option value="{{ ed.pk }}" {% if request.GET.assigned_to == ed.pk|stringformat:"s" %}selected{% endif %}>{{ ed.get_full_name|default:ed.username }}</option>
           {% endfor %}
         </select>
       </div>
-      
-      <!-- Acciones -->
-      <div class="flex items-end gap-2">
-        <a href="{% url 'acompanamiento:list' %}" class="flex-1 px-4 py-2.5 rounded-lg border border-slate-200 text-sm font-medium text-slate-600 text-center hover:bg-slate-50 transition-colors">
-          <i class="fa-solid fa-eraser mr-2"></i>Limpiar
-        </a>
-        <button type="submit" class="flex-1 px-4 py-2.5 rounded-lg bg-[#059669] text-sm font-bold text-white hover:bg-slate-900 transition-colors shadow-md">
-          <i class="fa-solid fa-filter mr-2 text-white"></i>Filtrar
-        </button>
+
+      <!-- Sección -->
+      <div>
+        <label class="block text-[10px] font-semibold uppercase tracking-wide text-slate-500 mb-1">Sección</label>
+        <select name="grado" class="sai-input cursor-pointer">
+          <option value="">Todas</option>
+          {% for val, lbl in seccion_choices %}
+          <option value="{{ val }}" {% if request.GET.grado == val %}selected{% endif %}>{{ lbl }}</option>
+          {% endfor %}
+        </select>
       </div>
+    </div>
+
+    <!-- Fila 2: botones alineados a la derecha -->
+    <div class="flex items-center justify-end gap-2">
+      <a href="{% url 'acompanamiento:list' %}"
+        class="flex items-center gap-1.5 rounded-[3px] border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 transition-all">
+        <i class="fa-solid fa-eraser text-[10px]"></i> Limpiar
+      </a>
+      <button type="submit"
+        class="flex items-center gap-1.5 rounded-[3px] bg-[#2256F2] px-4 py-1.5 text-xs font-semibold text-white hover:bg-[#1a45d4] transition-all"
+        style="color:#ffffff !important">
+        <i class="fa-solid fa-filter text-[10px]" style="color:#ffffff"></i> Filtrar
+      </button>
     </div>
   </form>
 </div>
 
-<!-- Vista de Tabla Mejorada -->
+<!-- ── TABLE ──────────────────────────────────────────────── -->
 {% if reports %}
-<div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-  <!-- Header de tabla -->
-  <div class="hidden md:grid grid-cols-12 gap-4 bg-slate-50 border-b border-slate-200 px-4 py-3 text-xs font-bold uppercase text-slate-500">
-    <div class="col-span-4">Estudiante</div>
-    <div class="col-span-2">Fin educativo</div>
-    <div class="col-span-2">Estado</div>
-    <div class="col-span-2">Fecha</div>
-    <div class="col-span-2">Acciones</div>
+<div class="rounded-[5px] border border-slate-200 bg-white overflow-hidden">
+
+  <!-- Column headers -->
+  <div class="hidden md:grid grid-cols-12 gap-3 border-b border-slate-200 bg-slate-50 px-4 py-2.5">
+    <div class="col-span-4 text-[10px] font-semibold uppercase tracking-wide text-slate-500">Estudiante</div>
+    <div class="col-span-2 text-[10px] font-semibold uppercase tracking-wide text-slate-500">Fin educativo</div>
+    <div class="col-span-2 text-[10px] font-semibold uppercase tracking-wide text-slate-500">Estado</div>
+    <div class="col-span-2 text-[10px] font-semibold uppercase tracking-wide text-slate-500">Sección</div>
+    <div class="col-span-1 text-[10px] font-semibold uppercase tracking-wide text-slate-500">Fecha</div>
+    <div class="col-span-1 text-[10px] font-semibold uppercase tracking-wide text-slate-500">Acción</div>
   </div>
-  
-  <!-- Filas de reportes -->
-  <div class="table-container max-h-[70vh] overflow-y-auto">
+
+  <!-- Rows -->
+  <div class="tbl-scroll">
     {% for report in reports %}
-    <div class="report-row animate-slide-in border-b border-slate-100 grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4 px-4 py-4 items-center" style="animation-delay: {{ forloop.counter0 }}0ms">
+    <div class="report-row row-anim grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-3 px-4 py-2.5 items-center"
+         style="animation-delay:{{ forloop.counter0 }}0ms">
+
       <!-- Estudiante -->
-      <div class="col-span-4 flex items-center gap-3">
-        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#2563eb] to-[#1d4ed8] text-sm font-bold text-white shadow">
+      <div class="col-span-4 flex items-center gap-2.5">
+        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#2256F2] text-xs font-bold text-white">
           {{ report.student.full_name|slice:":1"|upper }}
         </div>
         <div class="min-w-0">
-          <p class="text-sm font-bold text-slate-900 truncate">{{ report.student.full_name }}</p>
-          <p class="text-xs text-slate-500">{{ report.student.code }}</p>
+          <p class="text-[12px] font-semibold text-slate-900 truncate">{{ report.student.full_name }}</p>
+          <p class="text-[10px] text-slate-500">{{ report.student.code }}</p>
         </div>
       </div>
-      
-      <!-- Tipo -->
+
+      <!-- Fin educativo pill -->
       <div class="col-span-2">
-        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold
-          {% if report.purpose == 'ACADEMICO' %}bg-[#12527f] text-white border border-blue-200
-          {% elif report.purpose == 'CONVIVENCIA' %}bg-[#217b97] text-white border border-amber-200
-          {% elif report.purpose == 'ESPIRITUAL' %}bg-[#9a99e1] text-white border border-violet-200
-          {% elif report.purpose == 'PSICOAFECTIVO' %}bg-[#F24405] text-white border border-rose-200
-          {% else %}bg-slate-50 text-slate-600 border border-slate-200{% endif %}">
-          {% if report.purpose == 'ACADEMICO' %}<i class="fa-solid fa-book text-[10px]"></i>
-          {% elif report.purpose == 'CONVIVENCIA' %}<i class="fa-solid fa-users text-[10px]"></i>
-          {% elif report.purpose == 'ESPIRITUAL' %}<i class="fa-solid fa-heart text-[10px]"></i>
-          {% elif report.purpose == 'PSICOAFECTIVO' %}<i class="fa-solid fa-brain text-[10px]"></i>
-          {% endif %}
-          {{ report.get_purpose_display|default:"General" }}
+        <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold
+          {% if report.purpose == 'ACADEMICO' %}pill-acad
+          {% elif report.purpose == 'CONVIVENCIA' %}pill-conv
+          {% elif report.purpose == 'ESPIRITUAL' %}pill-espi
+          {% elif report.purpose == 'PSICOAFECTIVO' %}pill-psic
+          {% else %}bg-slate-100 text-slate-500 border border-slate-200{% endif %}">
+          {{ report.get_purpose_display }}
         </span>
       </div>
-      
-      <!-- Estado -->
+
+      <!-- Estado badge -->
       <div class="col-span-2">
-        <span class="status-badge inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold
-          {% if report.status == 'ATENDIDO' %}bg-green-100 text-green-700 border border-green-200
-          {% elif report.status == 'SEGUIMIENTO' %}bg-amber-100 text-amber-700 border border-amber-200
-          {% else %}bg-blue-100 text-blue-700 border border-blue-200{% endif %}">
-          {% if report.status == 'ATENDIDO' %}<i class="fa-solid fa-check-circle"></i>
-          {% elif report.status == 'SEGUIMIENTO' %}<i class="fa-solid fa-clock"></i>
-          {% else %}<i class="fa-solid fa-calendar"></i>{% endif %}
+        <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold
+          {% if report.status == 'ATENDIDO' %}badge-aten
+          {% elif report.status == 'SEGUIMIENTO' %}badge-seg
+          {% else %}badge-prog{% endif %}">
+          {% if report.status == 'ATENDIDO' %}<i class="fa-solid fa-check-circle" style="font-size:8px"></i>
+          {% elif report.status == 'SEGUIMIENTO' %}<i class="fa-solid fa-clock" style="font-size:8px"></i>
+          {% else %}<i class="fa-solid fa-calendar" style="font-size:8px"></i>{% endif %}
           {{ report.get_status_display }}
         </span>
       </div>
-      
-      <!-- Fecha -->
-      <div class="col-span-2 text-sm">
-        <p class="font-medium text-slate-700">{{ report.created_at|date:"d/m/Y" }}</p>
-        <p class="text-xs text-slate-500">{{ report.created_at|date:"H:i" }}</p>
+
+      <!-- Sección -->
+      <div class="col-span-2">
+        {% with sec=report.student.section %}
+        <span class="text-[11px] font-medium text-slate-600">
+          {% if sec == 'preescolar' %}Jardín–Tercero
+          {% elif sec == 'basica_primaria' %}Cuarto–Séptimo
+          {% elif sec == 'basica_secundaria' or sec == 'media_academica' %}Octavo–Undécimo
+          {% else %}{{ report.student.course.name|default:sec|default:"—" }}{% endif %}
+        </span>
+        {% endwith %}
       </div>
-      
-      <!-- Acciones -->
-      <div class="col-span-2 row-actions opacity-0 md:opacity-100 transition-opacity ">
-        <a href="{% url 'acompanamiento:detail' report.pk %}" 
-          class="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-[#27418C] text-xs font-bold text-white hover:bg-[#1d4ed8] transition-colors">
-          <i class="fa-solid fa-eye"></i>
-          <span class="hidden sm:inline ">Ver</span>
+
+      <!-- Fecha -->
+      <div class="col-span-1">
+        <p class="text-[11px] font-semibold text-slate-700">{{ report.created_at|date:"d/m/Y" }}</p>
+        <p class="text-[10px] text-slate-400">{{ report.created_at|date:"H:i" }}</p>
+      </div>
+
+      <!-- Acción -->
+      <div class="col-span-1">
+        <a href="{% url 'acompanamiento:detail' report.pk %}"
+          class="inline-flex items-center gap-1 rounded-[3px] bg-[#2256F2] px-2.5 py-1.5 text-[10px] font-semibold text-white hover:bg-[#1a45d4] transition-all">
+          <i class="fa-solid fa-eye" style="font-size:9px"></i>
+          <span class="hidden sm:inline">Ver</span>
         </a>
       </div>
     </div>
@@ -202,38 +261,37 @@
   </div>
 </div>
 
-<!-- Paginación Mejorada -->
+<!-- ── PAGINACIÓN ─────────────────────────────────────────── -->
 {% if page_obj.has_other_pages %}
-<div class="mt-6 flex items-center justify-between">
-  <p class="text-sm text-slate-500">
-    Página <span class="font-bold text-slate-700">{{ page_obj.number }}</span> de <span class="font-bold text-slate-700">{{ page_obj.paginator.num_pages }}</span>
+<div class="mt-4 flex items-center justify-between">
+  <p class="text-xs text-slate-500">
+    Página <span class="font-semibold text-slate-700">{{ page_obj.number }}</span>
+    de <span class="font-semibold text-slate-700">{{ page_obj.paginator.num_pages }}</span>
   </p>
-  <div class="flex items-center gap-2">
+  <div class="flex items-center gap-1">
     {% if page_obj.has_previous %}
-    <a href="?page={{ page_obj.previous_page_number }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
-      class="flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
-      <i class="fa-solid fa-chevron-left"></i>Anterior
+    <a href="?page={{ page_obj.previous_page_number }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
+      class="flex items-center gap-1 rounded-[3px] border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 transition-all">
+      <i class="fa-solid fa-chevron-left text-[9px]"></i> Ant.
     </a>
     {% endif %}
-    
-    <!-- Números de página -->
-    <div class="flex items-center gap-1">
-      {% for num in page_obj.paginator.page_range %}
-        {% if num >= page_obj.number|add:'-2' and num <= page_obj.number|add:'2' or num == 1 or num == page_obj.paginator.num_pages %}
-        <a href="?page={{ num }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
-          class="w-10 h-10 flex items-center justify-center rounded-lg text-sm font-medium {% if page_obj.number == num %}bg-[#2563eb] text-white{% else %}text-slate-600 hover:bg-slate-50{% endif %} transition-colors">
-          {{ num }}
-        </a>
-        {% elif forloop.counter == 2 or forloop.counter == page_obj.paginator.page_range|length|add:'-1' %}
-        <span class="text-slate-400">...</span>
-        {% endif %}
-      {% endfor %}
-    </div>
-    
+
+    {% for num in page_obj.paginator.page_range %}
+      {% if num >= page_obj.number|add:'-2' and num <= page_obj.number|add:'2' or num == 1 or num == page_obj.paginator.num_pages %}
+      <a href="?page={{ num }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
+        class="flex h-7 w-7 items-center justify-center rounded-[3px] text-xs font-medium transition-all
+          {% if page_obj.number == num %}bg-[#2256F2] text-white{% else %}border border-slate-200 text-slate-600 hover:bg-slate-50{% endif %}">
+        {{ num }}
+      </a>
+      {% elif forloop.counter == 2 or forloop.counter == page_obj.paginator.page_range|length|add:'-1' %}
+      <span class="text-xs text-slate-400 px-1">…</span>
+      {% endif %}
+    {% endfor %}
+
     {% if page_obj.has_next %}
-    <a href="?page={{ page_obj.next_page_number }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
-      class="flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
-      Siguiente<i class="fa-solid fa-chevron-right"></i>
+    <a href="?page={{ page_obj.next_page_number }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
+      class="flex items-center gap-1 rounded-[3px] border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 transition-all">
+      Sig. <i class="fa-solid fa-chevron-right text-[9px]"></i>
     </a>
     {% endif %}
   </div>
@@ -242,13 +300,14 @@
 
 {% else %}
 <!-- Sin resultados -->
-<div class="flex flex-col items-center justify-center py-20 text-center">
-  <div class="mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-slate-100">
-    <i class="fa-solid fa-folder-open text-4xl text-slate-300"></i>
+<div class="flex flex-col items-center justify-center py-16 text-center">
+  <div class="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-slate-100">
+    <i class="fa-solid fa-folder-open text-3xl text-slate-300"></i>
   </div>
-  <h3 class="text-xl font-bold text-slate-700">No hay reportes</h3>
-  <p class="mt-2 max-w-md text-base text-slate-500">No se encontraron reportes con los filtros seleccionados.</p>
-  <a href="{% url 'acompanamiento:list' %}" class="mt-5 px-6 py-3 rounded-xl bg-[#2563eb] text-base font-bold text-white hover:bg-[#1d4ed8] transition-colors shadow-lg">
+  <p class="text-sm font-semibold text-slate-700">No hay reportes</p>
+  <p class="mt-1 text-xs text-slate-400">No se encontraron reportes con los filtros seleccionados.</p>
+  <a href="{% url 'acompanamiento:list' %}"
+    class="mt-4 rounded-[3px] bg-[#2256F2] px-4 py-2 text-xs font-semibold text-white hover:bg-[#1a45d4] transition-all">
     Ver todos los reportes
   </a>
 </div>

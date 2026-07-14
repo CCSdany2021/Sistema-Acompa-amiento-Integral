@@ -1,0 +1,28 @@
+{
+  "name": "sistema_acompanamiento_integral_nuevo",
+  "version": "1.0.0",
+  "description": "Esta es la nueva organización de los archivos para mantener el proyecto limpio y profesional.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "build:css": "node node_modules/@tailwindcss/cli/dist/index.mjs -i static/css/input.css -o static/css/app.css --minify",
+    "watch:css": "node node_modules/@tailwindcss/cli/dist/index.mjs -i static/css/input.css -o static/css/app.css --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CCSdany2021/Sistema-Acompa-amiento-Integral.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/CCSdany2021/Sistema-Acompa-amiento-Integral/issues"
+  },
+  "homepage": "https://github.com/CCSdany2021/Sistema-Acompa-amiento-Integral#readme",
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.3.0",
+    "tailwindcss": "^4.3.0"
+  }
+}

@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 """
 Corrige created_by y assigned_to en reportes importados del CSV de Power Apps.
-El script original asignaba siempre el superuser (cap@...) como created_by.
+El CSV tiene nombre en 'Quien Remite' (no email), entonces se construye un mapa
+nombre→email cruzando 'Quien Atiende' con 'Institucional Quien Atiende'.
 
 Uso:
     python scripts/fix_report_users.py
-    python manage.py shell < scripts/fix_report_users.py
 """
 import os, sys, csv, glob
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -19,8 +19,37 @@ from acompanamiento.models import Report
 User = get_user_model()
 
 
-def lookup_user(email_raw):
-    """Busca usuario por username o email, case-insensitive."""
+def build_name_map(rows):
+    """Construye {nombre_normalizado: email} desde Quien Atiende + Institucional Quien Atiende."""
+    name_map = {}
+    for r in rows:
+        name = (r.get('Quien Atiende') or '').strip()
+        email = (r.get('Institucional Quien Atiende') or '').strip().lower()
+        if name and email and '@' in email:
+            name_map[name.lower()] = email
+            # Indexar también por apellidos (últimas 1-2 palabras) para match parcial
+            parts = name.lower().split()
+            if len(parts) >= 2:
+                name_map[parts[-1]] = email
+                name_map[' '.join(parts[-2:])] = email
+    return name_map
+
+
+def fuzzy_name_lookup(full_name, name_map):
+    """Busca email por nombre completo usando intersección de palabras."""
+    if not full_name:
+        return None
+    words = set(full_name.lower().split())
+    best_email, best_score = None, 0
+    for stored_name, email in name_map.items():
+        stored_words = set(stored_name.split())
+        score = len(words & stored_words)
+        if score > best_score:
+            best_score, best_email = score, email
+    return best_email if best_score >= 2 else None
+
+
+def lookup_user_by_email(email_raw):
     if not email_raw:
         return None
     email = email_raw.strip().lower()
@@ -31,12 +60,12 @@ def lookup_user(email_raw):
     )
 
 
-files = glob.glob('C:/Users/LENOVO/Downloads/Reportes*.csv')
+files = sorted(glob.glob('C:/Users/LENOVO/Downloads/Reportes*.csv'))
 if not files:
-    print('ERROR: No se encontró el CSV en Downloads. Coloca el archivo Reportes*.csv ahí.')
+    print('ERROR: No se encontró el CSV en Downloads.')
     sys.exit(1)
 
-fname = files[0]
+fname = files[-1]
 print(f'Leyendo: {fname}')
 
 with open(fname, encoding='latin-1') as f:
@@ -44,13 +73,20 @@ with open(fname, encoding='latin-1') as f:
 
 print(f'Filas en CSV: {len(rows)}')
 
-# Mostrar columnas disponibles para diagnóstico
-if rows:
-    cols = list(rows[0].keys())
-    print(f'Columnas: {cols}')
+name_map = build_name_map(rows)
+print(f'Mapa nombre-email construido: {len(name_map)} entradas')
 
-updated = skipped = not_found = 0
+# Mostrar mapa para diagnóstico
+print('\nMapa nombre→email:')
+seen = set()
+for k, v in name_map.items():
+    if v not in seen:
+        print(f'  {k!r} : {v}')
+        seen.add(v)
 
+updated = skipped = not_found = no_remite = 0
+
+print('\nProcesando reportes...')
 for raw in rows:
     ext_id = raw.get('ID', '').strip()
     if not ext_id:
@@ -61,24 +97,21 @@ for raw in rows:
         not_found += 1
         continue
 
-    # Buscar quien remite (varios nombres posibles de columna)
-    email_remite = (
-        raw.get('Institucional Quien Remite', '') or
-        raw.get('Quien Remite', '') or
-        raw.get('Remitente', '') or
-        raw.get('Email Remite', '') or
-        ''
-    ).strip()
+    # --- Quien Remite: nombre → buscar email en mapa ---
+    nombre_remite = (raw.get('Quien Remite') or '').strip()
+    email_remite = fuzzy_name_lookup(nombre_remite, name_map)
+    if not email_remite:
+        # Si el campo ya parece un email, usarlo directo
+        if '@' in nombre_remite:
+            email_remite = nombre_remite
+        else:
+            no_remite += 1
 
-    email_atiende = (
-        raw.get('Institucional Quien Atiende', '') or
-        raw.get('Quien Atiende', '') or
-        raw.get('Asignado', '') or
-        ''
-    ).strip()
+    # --- Quien Atiende: ya tiene email institucional ---
+    email_atiende = (raw.get('Institucional Quien Atiende') or '').strip()
 
-    user_remite  = lookup_user(email_remite)
-    user_atiende = lookup_user(email_atiende)
+    user_remite  = lookup_user_by_email(email_remite)
+    user_atiende = lookup_user_by_email(email_atiende)
 
     changed = False
     if user_remite and report.created_by != user_remite:
@@ -99,13 +132,4 @@ print('=' * 45)
 print(f'Actualizados : {updated}')
 print(f'Sin cambio   : {skipped}')
 print(f'No en BD     : {not_found}')
-print()
-
-# Diagnóstico: mostrar columnas de remite/atiende del primer registro
-if rows:
-    r = rows[0]
-    print('--- Diagnóstico primera fila ---')
-    for k, v in r.items():
-        ku = k.upper()
-        if any(x in ku for x in ['REMIT', 'ATIEN', 'ASIGN', 'EMAIL', 'QUIEN']):
-            print(f'  {k!r}: {v!r}')
+print(f'Sin remitente: {no_remite}  (nombre no matcheó ningún usuario)')

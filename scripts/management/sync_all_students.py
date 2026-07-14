@@ -41,8 +41,16 @@ def sync_all_students():
                 url = None
 
             for ext in results:
+                p_ap = (ext.get('primer_apellido') or '').strip()
+                s_ap = (ext.get('segundo_apellido') or '').strip()
+                p_nm = (ext.get('primer_nombre') or '').strip()
+                s_nm = (ext.get('segundo_nombre') or '').strip()
+                apellidos = ' '.join(filter(None, [p_ap, s_ap]))
+                nombres = ' '.join(filter(None, [p_nm, s_nm]))
+                full_name = f"{apellidos} {nombres}" if apellidos and nombres else ext.get("nombre_completo", "Sin Nombre")
+
                 student_data = {
-                    "full_name": ext.get("nombre_completo", "Sin Nombre"),
+                    "full_name": full_name,
                     "code": ext.get("codigo_estudiante"),
                     "course": ext.get("curso"),
                     "section": map_external_section(ext.get("seccion", "")),

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Ficha de seguimiento — {{ student.full_name }}</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#f1f5f9;color:#0f172a;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+
+.page{width:210mm;min-height:297mm;background:#fff;margin:0 auto;padding:0 0 16mm}
+
+/* ── Botones pantalla ── */
+.screen-bar{position:fixed;top:0;left:0;right:0;z-index:999;background:#0f172a;padding:10px 20px;
+            display:flex;align-items:center;justify-content:space-between}
+.screen-bar a,.screen-bar button{font-family:'Inter',sans-serif;font-size:13px;font-weight:500;
+  border-radius:6px;padding:6px 16px;cursor:pointer;text-decoration:none;border:none}
+.btn-back{background:rgba(255,255,255,.08);color:#e2e8f0;border:1px solid rgba(255,255,255,.12)}
+.btn-pdf{background:#f59e0b;color:#0f172a;border:none;font-weight:700}
+@media screen{body{padding-top:52px}}
+@media print{
+  .screen-bar{display:none!important}
+  body{background:#fff;padding-top:0}
+  .page{margin:0}
+  @page{size:A4;margin:14mm 12mm}
+  thead{display:table-header-group}
+  tr{page-break-inside:avoid}
+}
+
+/* ══ HEADER ══ */
+.hd{background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 100%);padding:24px 24px 20px;color:#fff}
+.hd-label{font-size:8px;font-weight:600;letter-spacing:2.5px;color:#94a3b8;text-transform:uppercase;margin-bottom:10px}
+.hd-title{font-size:19px;font-weight:800;letter-spacing:-0.4px;line-height:1.25}
+.hd-sub{font-size:14px;font-weight:600;color:#f59e0b;margin-top:4px}
+.hd-meta{display:flex;justify-content:space-between;align-items:flex-end;margin-top:14px}
+.hd-meta div{font-size:9.5px;color:#cbd5e1}
+.hd-meta b{color:#fff;font-weight:600}
+.accent-bar{height:3px;background:linear-gradient(90deg,#f59e0b 0%,#fbbf24 60%,transparent 100%)}
+
+.body{padding:18px 24px 40px}
+
+/* ── Info del estudiante ── */
+.info-strip{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;margin-bottom:18px}
+.info-cell{padding:10px 12px;border-right:1px solid #e2e8f0}
+.info-cell:last-child{border-right:none}
+.info-l{font-size:8px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;margin-bottom:3px}
+.info-v{font-size:12px;font-weight:700;color:#1e293b}
+
+.stitle{font-size:8.5px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;
+        color:#64748b;margin:0 0 10px;display:flex;align-items:center;gap:8px}
+.stitle::after{content:'';flex:1;height:1px;background:#e2e8f0}
+
+/* ── Tabla historial ── */
+table{width:100%;border-collapse:collapse;font-size:9.5px}
+thead tr{background:#f8fafc}
+th{padding:7px 8px;text-align:left;font-weight:700;font-size:8px;color:#64748b;
+   text-transform:uppercase;letter-spacing:0.6px;border-bottom:2px solid #e2e8f0}
+td{padding:8px 8px;border-bottom:1px solid #f1f5f9;vertical-align:top}
+tr:last-child td{border-bottom:none}
+.tipo-badge{display:inline-block;padding:2px 7px;border-radius:999px;font-size:8px;font-weight:700;white-space:nowrap}
+.tipo-apertura{background:#eff6ff;color:#1d4ed8}
+.tipo-observacion{background:#fefce8;color:#a16207}
+.tipo-recomendacion{background:#ecfdf5;color:#047857}
+.tipo-cierre{background:#f1f5f9;color:#334155}
+.col-fecha{white-space:nowrap;font-weight:600;color:#1e293b}
+.col-hora{white-space:nowrap;color:#64748b}
+.col-detalle{max-width:220px}
+.empty-state{padding:30px;text-align:center;color:#94a3b8;font-size:11px}
+
+.footer-note{margin-top:22px;padding-top:12px;border-top:1px solid #e2e8f0;font-size:8.5px;color:#94a3b8;display:flex;justify-content:space-between}
+</style>
+</head>
+<body>
+
+<div class="screen-bar">
+  <a href="{% url 'estudiantes:list' %}" class="btn-back">← Volver</a>
+  <button class="btn-pdf" onclick="window.print()">⬇ Guardar PDF</button>
+</div>
+
+<div class="page">
+  <div class="hd">
+    <div class="hd-label">Sistema de Acompañamiento Integral</div>
+    <div class="hd-title">Ficha de seguimiento de acompañamiento del estudiante — {{ student.full_name }}</div>
+    <div class="hd-sub">{{ student.code }}{% if student.course %} · {{ student.course.name }}{% elif student.section %} · {{ student.section }}{% endif %}</div>
+    <div class="hd-meta">
+      <div>Fecha de generación de la ficha<br><b>{{ generado_en|date:"d/m/Y H:i" }}</b></div>
+      <div style="text-align:right">Generado por<br><b>{{ generado_por.get_full_name|default:generado_por.email }}</b></div>
+    </div>
+  </div>
+  <div class="accent-bar"></div>
+
+  <div class="body">
+    <div class="info-strip">
+      <div class="info-cell">
+        <div class="info-l">Estudiante</div>
+        <div class="info-v">{{ student.full_name }}</div>
+      </div>
+      <div class="info-cell">
+        <div class="info-l">Código</div>
+        <div class="info-v">{{ student.code }}</div>
+      </div>
+      <div class="info-cell">
+        <div class="info-l">Curso / Sección</div>
+        <div class="info-v">{{ student.course.name|default:student.section|default:"—" }}</div>
+      </div>
+      <div class="info-cell">
+        <div class="info-l">Total de casos</div>
+        <div class="info-v">{{ total_casos }}</div>
+      </div>
+    </div>
+
+    <div class="stitle">Historial completo de remisiones y seguimiento</div>
+
+    {% if eventos %}
+    <table>
+      <thead>
+        <tr>
+          <th style="width:65px">Fecha</th>
+          <th style="width:42px">Hora</th>
+          <th style="width:85px">Tipo</th>
+          <th style="width:80px">Fin educativo</th>
+          <th style="width:65px">Período</th>
+          <th style="width:100px">Atendido por</th>
+          <th>Detalle / caso</th>
+          <th style="width:70px">Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for e in eventos %}
+        <tr>
+          <td class="col-fecha">{{ e.fecha|date:"d/m/Y" }}</td>
+          <td class="col-hora">{{ e.fecha|date:"H:i" }}</td>
+          <td>
+            <span class="tipo-badge
+              {% if e.tipo == 'Apertura de caso' %}tipo-apertura
+              {% elif e.tipo == 'Observación' %}tipo-observacion
+              {% elif e.tipo == 'Recomendación' %}tipo-recomendacion
+              {% else %}tipo-cierre{% endif %}">{{ e.tipo }}</span>
+          </td>
+          <td>{{ e.fin }}</td>
+          <td>{{ e.periodo }}</td>
+          <td>{{ e.quien }}</td>
+          <td class="col-detalle">{{ e.detalle }}</td>
+          <td>{{ e.estado }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">Este estudiante no tiene reportes de acompañamiento registrados.</div>
+    {% endif %}
+
+    <div class="footer-note">
+      <span>SAI · Ficha confidencial de uso institucional</span>
+      <span>{{ generado_en|date:"d/m/Y H:i" }}</span>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
