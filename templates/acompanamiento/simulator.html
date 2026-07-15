@@ -98,11 +98,6 @@
     <div class="flex-1 min-w-0">
       <div class="flex items-center gap-2 flex-wrap">
         <span class="text-sm font-semibold text-slate-900 truncate">{{ u.get_full_name|default:u.username }}</span>
-        {% if ed.acceso_global %}
-        <span class="role-chip chip-admin"><i class="fa-solid fa-shield-halved text-[8px]"></i> Admin global</span>
-        {% else %}
-        <span class="role-chip chip-coord"><i class="fa-solid fa-user-tie text-[8px]"></i> Coordinador</span>
-        {% endif %}
       </div>
       <p class="text-[11px] text-slate-500 truncate mt-0.5">{{ u.email }}</p>
       <p class="text-[10px] text-slate-400 mt-0.5">
@@ -161,9 +156,6 @@
     <div class="flex-1 min-w-0">
       <div class="flex items-center gap-2 flex-wrap">
         <span class="text-sm font-semibold text-slate-900 truncate">{{ u.get_full_name|default:u.username }}</span>
-        {% if u.is_superuser %}<span class="role-chip chip-admin"><i class="fa-solid fa-star text-[8px]"></i> Superuser</span>
-        {% elif u.is_staff %}<span class="role-chip chip-coord">Staff</span>
-        {% else %}<span class="role-chip chip-other">Usuario</span>{% endif %}
       </div>
       <p class="text-[11px] text-slate-500 truncate mt-0.5">{{ u.email }}</p>
       <div class="flex items-center gap-3 mt-1.5">
