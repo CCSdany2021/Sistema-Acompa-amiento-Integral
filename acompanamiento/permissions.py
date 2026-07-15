@@ -26,6 +26,19 @@ SECTION_NAME_TO_STUDENT_SECTION = {
 
 SECTION_KEY_MAP = {k: v for k, v in SECTION_NAME_TO_STUDENT_SECTION.items()}
 
+# Cursos que integran cada una de las 3 secciones institucionales del SAI
+# (Jardín a Tercero, Cuarto a Séptimo, Octavo a Undécimo). Es la fuente única de
+# verdad — estudiantes/views.py la reutiliza para armar INSTITUTIONAL_STRUCTURE.
+# No coincide 1:1 con Student.section (clasificación del sistema externo, que
+# separa preescolar/basica_primaria/basica_secundaria/media_academica): los
+# cursos 101-302 llegan sincronizados como 'basica_primaria' y 601-703 como
+# 'basica_secundaria', aunque institucionalmente sean parte de otra sección.
+SECTION_KEY_COURSES = {
+    'preescolar':        ['JR01', 'TR01', 'TR02', '101', '102', '201', '202', '301', '302'],
+    'basica_primaria':   ['401', '402', '501', '502', '503', '601', '602', '603', '701', '702', '703'],
+    'basica_secundaria': ['801', '802', '803', '901', '902', '903', '1001', '1002', '1003', '1101', '1102', '1103'],
+}
+
 
 def _get_educador(user):
     if not user or not user.is_authenticated:
@@ -157,9 +170,14 @@ def resolve_viewer(request):
 
 
 def _section_q(seccion_value: str) -> Q:
-    """Construye Q de sección mapeando nombre legacy → claves reales."""
+    """Construye Q de sección. Prioriza la lista de cursos de la sección
+    institucional (SECTION_KEY_COURSES); si seccion_value no es una de esas 3
+    claves, cae al campo legacy Student.section."""
     if not seccion_value:
         return Q()
+    courses = SECTION_KEY_COURSES.get(seccion_value)
+    if courses:
+        return Q(student__course__name__in=courses)
     student_sections = SECTION_NAME_TO_STUDENT_SECTION.get(seccion_value, [seccion_value])
     return Q(student__section__in=student_sections)
 
@@ -215,7 +233,14 @@ def can_manage_report(user, report) -> bool:
     if has_global_access(user):
         return True
     sections = _SECTION_COORDINATOR_SECTIONS.get(user.email)
-    return bool(sections and report.student.section in sections)
+    if not sections:
+        return False
+    courses = set()
+    for sec in sections:
+        courses.update(SECTION_KEY_COURSES.get(sec, []))
+    if courses:
+        return bool(report.student.course_id and report.student.course.name in courses)
+    return bool(report.student.section in sections)
 
 
 def filter_reports_for_user(qs: QuerySet, user) -> QuerySet:

@@ -12,26 +12,14 @@ from django.db.models import Prefetch
 from acompanamiento.models import Student, Report, ReportPurpose, ReportStatus, PeriodoAcademico
 from acompanamiento.permissions import (
     filter_reports_for_user, resolve_viewer, resolve_real_user, has_global_access, sees_global_indicators,
-    SECTION_NAME_TO_STUDENT_SECTION,
+    SECTION_NAME_TO_STUDENT_SECTION, SECTION_KEY_COURSES,
 )
 
 
 INSTITUTIONAL_STRUCTURE = [
-    {
-        "name": "Jardín–Tercero",
-        "key": "preescolar",
-        "courses": ["JR01", "TR01", "TR02", "101", "102", "201", "202", "301", "302"],
-    },
-    {
-        "name": "Cuarto–Séptimo",
-        "key": "basica_primaria",
-        "courses": ["401", "402", "501", "502", "503", "601", "602", "603", "701", "702", "703"],
-    },
-    {
-        "name": "Octavo–Undécimo",
-        "key": "basica_secundaria",
-        "courses": ["801", "802", "803", "901", "902", "903", "1001", "1002", "1003", "1101", "1102", "1103"],
-    },
+    {"name": "Jardín–Tercero", "key": "preescolar", "courses": SECTION_KEY_COURSES['preescolar']},
+    {"name": "Cuarto–Séptimo", "key": "basica_primaria", "courses": SECTION_KEY_COURSES['basica_primaria']},
+    {"name": "Octavo–Undécimo", "key": "basica_secundaria", "courses": SECTION_KEY_COURSES['basica_secundaria']},
 ]
 
 
@@ -62,11 +50,14 @@ class StudentListView(ListView):
         selected_section = (self.request.GET.get("section") or "").strip()
 
         if selected_course:
+            # El código de curso ya identifica al estudiante sin ambigüedad; no
+            # se exige además que coincida section, porque el campo Student.section
+            # (sincronizado del sistema externo) no siempre coincide con la
+            # agrupación institucional del SAI para el mismo curso (ver JR01-302).
             queryset = queryset.filter(
                 Q(course__name__iexact=selected_course) | Q(section__iexact=selected_course)
             )
-
-        if selected_section:
+        elif selected_section:
             section_values = SECTION_NAME_TO_STUDENT_SECTION.get(selected_section, [selected_section])
             queryset = queryset.filter(
                 Q(course__section__name__in=section_values) | Q(section__in=section_values)
