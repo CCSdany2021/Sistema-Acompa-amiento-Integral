@@ -11,7 +11,7 @@ from urllib.parse import urlencode
 from django.db.models import Prefetch
 from acompanamiento.models import Student, Report, ReportPurpose, ReportStatus, PeriodoAcademico
 from acompanamiento.permissions import (
-    filter_reports_for_user, resolve_viewer, has_global_access, sees_global_indicators,
+    filter_reports_for_user, resolve_viewer, resolve_real_user, has_global_access, sees_global_indicators,
     SECTION_NAME_TO_STUDENT_SECTION,
 )
 
@@ -317,7 +317,7 @@ class StudentListView(ListView):
                 })
         context["staff_users"] = staff_users
         context["educadores_json"] = json.dumps(educadores_json)
-        context["real_user"] = resolve_real_user(request)
+        context["real_user"] = resolve_real_user(self.request)
         context["cuarto_septimo_courses"] = [
             {'code': '401', 'section': 'basica_primaria'},
             {'code': '402', 'section': 'basica_primaria'},
