@@ -459,9 +459,11 @@ def simulator_view(request):
         return HttpResponseForbidden('Acceso restringido al super-administrador.')
 
     User = get_user_model()
-    # Todos los usuarios activos con perfil Educador
+    # Todos los usuarios activos con perfil Educador (excepto uno mismo: nadie
+    # puede simularse a sí mismo)
     educadores = (Educador.objects
                   .filter(is_active=True)
+                  .exclude(user_id=real_user.pk)
                   .select_related('user', 'seccion_asignada')
                   .prefetch_related('secciones', 'reglas')
                   .order_by('user__first_name', 'user__last_name'))
@@ -527,6 +529,8 @@ def activate_simulation(request):
     target = User.objects.filter(pk=user_id, is_active=True).first()
     if not target:
         return JsonResponse({'error': 'Usuario no encontrado'}, status=404)
+    if target.pk == real_user.pk:
+        return JsonResponse({'error': 'No puedes simularte a ti mismo'}, status=400)
     if not can_simulate_target(real_user, target):
         return JsonResponse({'error': 'No puedes simular a un usuario fuera de tu sección'}, status=403)
 
@@ -791,13 +795,13 @@ def editar_observacion(request, pk):
 
 @require_POST
 def eliminar_observacion(request, pk):
-    from .permissions import resolve_viewer
+    from .permissions import resolve_viewer, can_delete_content
     obs = get_object_or_404(Observation, pk=pk)
     if _report_is_closed(obs.report):
         return JsonResponse({'error': 'El reporte está cerrado. Solo lectura.'}, status=403)
     viewer = resolve_viewer(request)
-    if not _check_can_edit(viewer, obs.created_by, obs.report):
-        return JsonResponse({'error': 'Sin permiso'}, status=403)
+    if not can_delete_content(viewer):
+        return JsonResponse({'error': 'Sin permiso para eliminar'}, status=403)
     report_pk = obs.report.pk
     report_obj = obs.report
     if not (viewer and obs.created_by and viewer.pk == obs.created_by.pk):
@@ -837,13 +841,13 @@ def editar_recomendacion(request, pk):
 
 @require_POST
 def eliminar_recomendacion(request, pk):
-    from .permissions import resolve_viewer
+    from .permissions import resolve_viewer, can_delete_content
     rec = get_object_or_404(Recommendation, pk=pk)
     if _report_is_closed(rec.report):
         return JsonResponse({'error': 'El reporte está cerrado. Solo lectura.'}, status=403)
     viewer = resolve_viewer(request)
-    if not _check_can_edit(viewer, rec.created_by, rec.report):
-        return JsonResponse({'error': 'Sin permiso'}, status=403)
+    if not can_delete_content(viewer):
+        return JsonResponse({'error': 'Sin permiso para eliminar'}, status=403)
     if not (viewer and rec.created_by and viewer.pk == rec.created_by.pk):
         _log_auditoria(rec.report, 'ELIMINAR_RECOMENDACION', viewer, autor_original=rec.created_by,
                         detalle=f"Contenido eliminado: {rec.content}")

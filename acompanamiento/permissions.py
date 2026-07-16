@@ -86,6 +86,18 @@ _SIMULATOR_COORDINATOR_EMAILS = {
     'pvasquez@calasanzsuba.edu.co',
 }
 
+# Únicas cuentas habilitadas para ELIMINAR observaciones, recomendaciones o
+# reportes. Ser el creador o coordinador de sección (can_manage_report) ya no
+# habilita para eliminar, solo para editar — esa es la diferencia clave con
+# _check_can_edit. Ninguna otra cuenta puede eliminar, sin excepción.
+_DELETE_AUTHORIZED_EMAILS = {
+    'mrodriguez@calasanzsuba.edu.co',
+    'yalejo@calasanzsuba.edu.co',
+    'mpedraza@calasanzsuba.edu.co',
+    'cap@calasanzsuba.edu.co',
+    'dhiguera@calasanzsuba.edu.co',
+}
+
 
 def resolve_real_user(request):
     """Siempre devuelve el usuario Django real de la sesión (nunca el simulado)."""
@@ -241,6 +253,21 @@ def can_manage_report(user, report) -> bool:
     if courses:
         return bool(report.student.course_id and report.student.course.name in courses)
     return bool(report.student.section in sections)
+
+
+def can_delete_content(user) -> bool:
+    """True solo si el usuario es una de las cuentas explícitamente autorizadas
+    para eliminar observaciones, recomendaciones o reportes (_DELETE_AUTHORIZED_EMAILS).
+
+    A diferencia de can_manage_report/_check_can_edit, ser el creador del
+    contenido o coordinador de sección NO habilita para eliminar — solo para
+    editar. Eliminar es una potestad aparte, reservada a estas cuentas.
+    """
+    if not user or not user.is_authenticated:
+        return False
+    if user.is_superuser:
+        return True
+    return user.email in _DELETE_AUTHORIZED_EMAILS
 
 
 def filter_reports_for_user(qs: QuerySet, user) -> QuerySet:

@@ -1,7 +1,7 @@
 from .permissions import (
     resolve_viewer, resolve_real_user, has_global_access,
     can_manage_educadores, can_simulate, sees_global_indicators,
-    get_viewer_sections,
+    get_viewer_sections, can_delete_content,
 )
 
 
@@ -34,4 +34,7 @@ def sai_viewer(request):
         'viewer_sees_global_ind': sees_global_indicators(viewer) and not is_simulating,
         # Secciones visibles en el sidebar (None = todas, lista = solo esas)
         'viewer_sections':       get_viewer_sections(viewer),
+        # Solo las cuentas autorizadas (ver _DELETE_AUTHORIZED_EMAILS) pueden
+        # eliminar observaciones/recomendaciones — independiente de si pueden editar.
+        'viewer_can_delete':     can_delete_content(viewer),
     }

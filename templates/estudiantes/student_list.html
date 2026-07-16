@@ -988,6 +988,7 @@
   const EDUCADORES = {{ educadores_json|safe }};
   const CSRF = '{{ csrf_token }}';
   const CURRENT_VIEWER_ID = {{ viewer.id|default:'null' }};
+  const VIEWER_CAN_DELETE = {{ viewer_can_delete|yesno:"true,false" }};
   const URL_EDIT_OBS = "{% url 'acompanamiento:editar_observacion' 0 %}".replace('/0/', '/{id}/');
   const URL_DEL_OBS  = "{% url 'acompanamiento:eliminar_observacion' 0 %}".replace('/0/', '/{id}/');
   const URL_EDIT_REC = "{% url 'acompanamiento:editar_recomendacion' 0 %}".replace('/0/', '/{id}/');
@@ -1069,6 +1070,11 @@
     items.forEach((item, idx) => {
       if (item.id) window.TIMELINE_ITEMS[type + '-' + item.id] = item;
       const canEdit = !isClosed && (!!canEditAll || (CURRENT_VIEWER_ID !== null && item.authorId !== '' && String(item.authorId) === String(CURRENT_VIEWER_ID)));
+      // Eliminar es una potestad aparte de editar: solo las cuentas autorizadas
+      // (VIEWER_CAN_DELETE, inyectada globalmente) pueden borrar, sin importar
+      // si el item es propio o si tienen alcance de coordinador de sección.
+      const canDelete = !isClosed && VIEWER_CAN_DELETE;
+      const showActions = (canEdit || canDelete) && !!item.id;
       const isLast = idx === items.length - 1;
       const init = (item.author||'?').charAt(0).toUpperCase();
       const div = document.createElement('div');
@@ -1088,18 +1094,20 @@
             ${item.created_at ? `<span class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] text-slate-500"><i class="fa-regular fa-clock" style="font-size:8px"></i> ${item.created_at}</span>` : ''}
             ${item.period ? `<span class="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-700">${item.period}</span>` : ''}
           </div>
-          <div class="relative rounded-[3px] bg-white border border-slate-200 p-2.5 ${canEdit && item.id ? 'pr-14' : ''}" style="border-left:3px solid ${dotColor}">
+          <div class="relative rounded-[3px] bg-white border border-slate-200 p-2.5 ${showActions ? 'pr-16' : ''}" style="border-left:3px solid ${dotColor}">
             <p class="text-xs text-slate-700 leading-relaxed">${item.content}</p>
-            ${canEdit && item.id ? `
+            ${showActions ? `
             <div class="absolute top-1.5 right-1.5 flex items-center gap-1">
+              ${canEdit ? `
               <button type="button" title="Editar ${label}" onclick="openEditItem('${type}','${item.id}')"
                 class="flex h-6 w-6 items-center justify-center rounded-[3px] text-slate-400 hover:bg-slate-100 hover:text-[#2256F2] transition">
                 <i class="fa-solid fa-pen-to-square" style="font-size:10px"></i>
-              </button>
+              </button>` : ''}
+              ${canDelete ? `
               <button type="button" title="Eliminar ${label}" onclick="openDeleteItem('${type}','${item.id}')"
                 class="flex h-6 w-6 items-center justify-center rounded-[3px] text-slate-400 hover:bg-red-50 hover:text-red-600 transition">
                 <i class="fa-solid fa-trash" style="font-size:10px"></i>
-              </button>
+              </button>` : ''}
             </div>` : ''}
           </div>
         </div>`;
