@@ -7,6 +7,8 @@ from django.db import OperationalError
 from django.urls import reverse
 from django.http import Http404
 from django.utils import timezone
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import never_cache
 from urllib.parse import urlencode
 from django.db.models import Prefetch
 from acompanamiento.models import Student, Report, ReportPurpose, ReportStatus, PeriodoAcademico
@@ -23,6 +25,7 @@ INSTITUTIONAL_STRUCTURE = [
 ]
 
 
+@method_decorator(never_cache, name='dispatch')
 class StudentListView(ListView):
     model = Student
     template_name = 'estudiantes/student_list.html'
