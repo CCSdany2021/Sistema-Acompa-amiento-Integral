@@ -89,24 +89,22 @@
 
         .glass-card { box-shadow: 0 24px 60px rgba(15, 23, 42, 0.06); }
 
-        /* Nav items */
+        /* Nav items — paleta institucional: activo = dorado sólido + texto navy */
         .nav-item {
-            transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: background-color 0.18s ease, color 0.18s ease;
         }
         .nav-item:hover {
-            transform: translateX(3px);
-            background: rgba(255,255,255,0.08);
+            background: #003D7A;
             color: #fff;
         }
         .nav-item.active {
-            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.25);
-            color: #ffffff !important;
+            background: #F2C144;
+            color: #002855 !important;
             font-weight: 600;
         }
         .nav-item.active i,
         .nav-item.active span {
-            color: #ffffff !important;
+            color: #002855 !important;
         }
 
         /* Sidebar section button hover */
@@ -114,36 +112,28 @@
             transition: background 0.18s ease;
         }
         .section-btn:hover {
-            background: rgba(255,255,255,0.08);
+            background: #003D7A;
         }
         .section-btn.open {
             background: rgba(255,255,255,0.05);
         }
 
-        /* ── Tooltip 3D glassmorphism ── */
+        /* ── Tooltip institucional (sólido, sin glassmorphism) ── */
         .sai-tooltip {
-            background: rgba(1, 24, 50, 0.82);
-            backdrop-filter: blur(18px) saturate(1.6) brightness(1.1);
-            -webkit-backdrop-filter: blur(18px) saturate(1.6) brightness(1.1);
-            border: 1px solid rgba(255,255,255,0.16);
-            border-top-color: rgba(255,255,255,0.26);
-            border-radius: 6px;
-            box-shadow:
-                0 2px 0 0 rgba(255,255,255,0.07) inset,
-                0 16px 40px rgba(0,0,0,0.5),
-                0 4px 12px rgba(0,0,0,0.35),
-                0 0 0 1px rgba(0,0,0,0.25);
-            transform-style: preserve-3d;
+            background: #002855;
+            border: 1px solid #003D7A;
+            border-radius: 0;
+            box-shadow: 0 12px 28px rgba(0,0,0,0.35);
         }
         .sai-tooltip::before {
             content: '';
             position: absolute;
             left: -5px;
             top: 50%;
-            transform: translateY(-50%) rotateY(-10deg);
+            transform: translateY(-50%);
             border-width: 5px 5px 5px 0;
             border-style: solid;
-            border-color: transparent rgba(255,255,255,0.16) transparent transparent;
+            border-color: transparent #003D7A transparent transparent;
         }
         .sai-tooltip::after {
             content: '';
@@ -153,7 +143,7 @@
             transform: translateY(-50%);
             border-width: 5px 5px 5px 0;
             border-style: solid;
-            border-color: transparent rgba(1,24,50,0.88) transparent transparent;
+            border-color: transparent #002855 transparent transparent;
         }
 
         @keyframes shimmer {
@@ -281,27 +271,23 @@
             collapsed ? 'w-16' : 'w-64',
             mobileOpen ? 'mobile-open' : ''
         ]"
-        class="fixed left-0 top-0 z-50 flex h-screen flex-col bg-[#023059] border-r border-[#034078] text-white shadow-xl overflow-hidden lg:translate-x-0">
+        class="fixed left-0 top-0 z-50 flex h-screen flex-col bg-[#002855] border-r border-[#003D7A] text-white shadow-xl overflow-hidden lg:translate-x-0">
 
-        <!-- Header -->
-        <div class="shrink-0 border-b border-white/10 bg-[#012844] flex items-center"
-             :class="collapsed ? 'justify-center px-3 py-4' : 'justify-between px-4 py-4'">
-            <div x-show="!collapsed" x-transition:enter="transition-opacity duration-200 delay-100" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="flex items-center gap-2 min-w-0">
-                <div class="h-7 w-7 rounded-full bg-[#F2C144] flex items-center justify-center shrink-0">
-                    <i class="fa-solid fa-graduation-cap text-[#023059] text-xs"></i>
-                </div>
-                <div class="min-w-0">
-                    <p class="text-xs font-bold text-white leading-tight truncate">Calasanz Suba</p>
-                    <p class="text-[10px] text-white/50 truncate">Acompañamiento Integral</p>
-                </div>
+        <!-- Header — logo institucional real (blanco horizontal); insignia dorada solo colapsado -->
+        <div class="shrink-0 flex items-center"
+             :class="collapsed ? 'flex-col gap-2 justify-center px-3 py-4' : 'justify-between px-4 py-4'">
+            <div x-show="!collapsed" x-transition:enter="transition-opacity duration-200 delay-100" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="min-w-0">
+                <img src="{% static 'img/logo-calasanz-horizontal-blanco.png' %}" alt="Colegio San José de Calasanz" class="h-8 w-auto shrink-0">
             </div>
+            <div x-show="collapsed" class="h-8 w-8 rounded-full bg-[#F2C144] shrink-0" title="Calasanz Suba"></div>
             <button
                 @click="toggleCollapse()"
-                class="shrink-0 rounded-lg p-1.5 text-white/60 hover:bg-white/10 hover:text-white transition-colors"
+                class="shrink-0 rounded-none p-1.5 text-white/60 hover:bg-[#003D7A] hover:text-white transition-colors"
                 :title="collapsed ? 'Expandir menú' : 'Colapsar menú'">
                 <i class="fa-solid fa-bars text-sm"></i>
             </button>
         </div>
+        <div class="mx-4 border-t border-[#003D7A] mb-2"></div>
 
         <!-- Scrollable nav area -->
         <div class="flex-1 overflow-y-auto sidebar-scroll px-2 py-3 space-y-0.5">
@@ -312,7 +298,7 @@
                  @mouseleave="tip=false"
                  class="relative">
                 <a href="/"
-                   class="nav-item flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/80 {% if request.path == '/' %}active{% endif %}"
+                   class="nav-item flex items-center gap-3 rounded-none px-3 py-2.5 text-sm font-medium text-white/80 {% if request.path == '/' %}active{% endif %}"
                    :class="collapsed ? 'justify-center px-0' : ''">
                     <i class="fa-solid fa-house w-4 text-center shrink-0 {% if request.path == '/' %}text-white{% else %}text-white/60{% endif %}"></i>
                     <span x-show="!collapsed" x-transition:enter="transition-opacity duration-150" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="flex-1 whitespace-nowrap">Principal</span>
@@ -332,7 +318,7 @@
                  @mouseleave="tip=false"
                  class="relative">
                 <a href="{% url 'acompanamiento:list' %}"
-                   class="nav-item flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/80 {% if 'reports' in request.path and 'indicadores' not in request.path and 'admin-sai' not in request.path %}active{% endif %}"
+                   class="nav-item flex items-center gap-3 rounded-none px-3 py-2.5 text-sm font-medium text-white/80 {% if 'reports' in request.path and 'indicadores' not in request.path and 'admin-sai' not in request.path %}active{% endif %}"
                    :class="collapsed ? 'justify-center px-0' : ''">
                     <i class="fa-solid fa-chart-bar w-4 text-center shrink-0 {% if 'reports' in request.path and 'indicadores' not in request.path and 'admin-sai' not in request.path %}text-white{% else %}text-white/60{% endif %}"></i>
                     <span x-show="!collapsed" x-transition:enter="transition-opacity duration-150" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="flex-1 whitespace-nowrap">Reportes</span>
@@ -352,7 +338,7 @@
                  @mouseleave="tip=false"
                  class="relative">
                 <a href="{% url 'acompanamiento:indicadores' %}"
-                   class="nav-item flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/80 {% if 'indicadores' in request.path %}active{% endif %}"
+                   class="nav-item flex items-center gap-3 rounded-none px-3 py-2.5 text-sm font-medium text-white/80 {% if 'indicadores' in request.path %}active{% endif %}"
                    :class="collapsed ? 'justify-center px-0' : ''">
                     <i class="fa-solid fa-gauge-high w-4 text-center shrink-0 {% if 'indicadores' in request.path %}text-white{% else %}text-white/60{% endif %}"></i>
                     <span x-show="!collapsed" x-transition:enter="transition-opacity duration-150" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="flex-1 whitespace-nowrap">Indicadores SGI</span>
@@ -373,7 +359,7 @@
                  @mouseleave="tip=false"
                  class="relative">
                 <a href="{% url 'acompanamiento:simulator' %}"
-                   class="nav-item flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/80 {% if 'simulador' in request.path %}active{% endif %}"
+                   class="nav-item flex items-center gap-3 rounded-none px-3 py-2.5 text-sm font-medium text-white/80 {% if 'simulador' in request.path %}active{% endif %}"
                    :class="collapsed ? 'justify-center px-0' : ''">
                     <i class="fa-solid fa-masks-theater w-4 text-center shrink-0 {% if 'simulador' in request.path %}text-white{% else %}text-yellow-400/80{% endif %}"></i>
                     <span x-show="!collapsed" x-transition:enter="transition-opacity duration-150" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="flex-1 whitespace-nowrap text-yellow-300/90">Simulador de Vistas</span>
@@ -393,7 +379,7 @@
                  @mouseleave="tip=false"
                  class="relative">
                 <a href="{% url 'acompanamiento:admin_educadores' %}"
-                   class="nav-item flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/80 {% if 'admin-sai' in request.path %}active{% endif %}"
+                   class="nav-item flex items-center gap-3 rounded-none px-3 py-2.5 text-sm font-medium text-white/80 {% if 'admin-sai' in request.path %}active{% endif %}"
                    :class="collapsed ? 'justify-center px-0' : ''">
                     <i class="fa-solid fa-users-gear w-4 text-center shrink-0 {% if 'admin-sai' in request.path %}text-white{% else %}text-white/60{% endif %}"></i>
                     <span x-show="!collapsed" x-transition:enter="transition-opacity duration-150" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="flex-1 whitespace-nowrap">Educadores</span>
@@ -424,7 +410,7 @@
                  class="relative">
                 <button
                     @click="if(!collapsed) toggleSection('jardin')"
-                    class="section-btn w-full flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium text-white/80 hover:text-white transition-colors"
+                    class="section-btn w-full flex items-center gap-2.5 rounded-none px-3 py-2.5 text-sm font-medium text-white/80 hover:text-white transition-colors"
                     :class="[collapsed ? 'justify-center px-0' : 'justify-between', isActive('jardin') ? 'open' : '']"
                     title="Jardín a Tercero">
                     <span class="flex items-center gap-2.5">
@@ -439,15 +425,15 @@
                 <!-- Accordion content -->
                 <div x-show="!collapsed && isActive('jardin')" x-collapse class="overflow-hidden">
                     <div class="mt-0.5 space-y-0.5 pl-3 pb-1">
-                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == 'JR01' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=JR01">JR01</a>
-                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == 'TR01' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=TR01">TR01</a>
-                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == 'TR02' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=TR02">TR02</a>
-                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '101' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=101">101</a>
-                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '102' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=102">102</a>
-                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '201' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=201">201</a>
-                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '202' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=202">202</a>
-                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '301' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=301">301</a>
-                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '302' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=302">302</a>
+                        <a class="nav-item flex items-center rounded-none px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == 'JR01' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=JR01">JR01</a>
+                        <a class="nav-item flex items-center rounded-none px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == 'TR01' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=TR01">TR01</a>
+                        <a class="nav-item flex items-center rounded-none px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == 'TR02' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=TR02">TR02</a>
+                        <a class="nav-item flex items-center rounded-none px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '101' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=101">101</a>
+                        <a class="nav-item flex items-center rounded-none px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '102' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=102">102</a>
+                        <a class="nav-item flex items-center rounded-none px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '201' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=201">201</a>
+                        <a class="nav-item flex items-center rounded-none px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '202' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=202">202</a>
+                        <a class="nav-item flex items-center rounded-none px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '301' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=301">301</a>
+                        <a class="nav-item flex items-center rounded-none px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '302' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=302">302</a>
                     </div>
                 </div>
 
@@ -460,15 +446,15 @@
                      class="sai-tooltip flyout-menu fixed w-44 py-2 z-[70]"
                      style="display:none">
                     <p class="px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-1">Jardín – Tercero</p>
-                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == 'JR01' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=JR01">JR01</a>
-                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == 'TR01' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=TR01">TR01</a>
-                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == 'TR02' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=TR02">TR02</a>
-                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '101' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=101">101</a>
-                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '102' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=102">102</a>
-                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '201' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=201">201</a>
-                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '202' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=202">202</a>
-                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '301' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=301">301</a>
-                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '302' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=302">302</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-[#003D7A] hover:text-white {% if request.GET.course == 'JR01' %}bg-[#F2C144] text-[#002855] font-semibold{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=JR01">JR01</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-[#003D7A] hover:text-white {% if request.GET.course == 'TR01' %}bg-[#F2C144] text-[#002855] font-semibold{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=TR01">TR01</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-[#003D7A] hover:text-white {% if request.GET.course == 'TR02' %}bg-[#F2C144] text-[#002855] font-semibold{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=TR02">TR02</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-[#003D7A] hover:text-white {% if request.GET.course == '101' %}bg-[#F2C144] text-[#002855] font-semibold{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=101">101</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-[#003D7A] hover:text-white {% if request.GET.course == '102' %}bg-[#F2C144] text-[#002855] font-semibold{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=102">102</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-[#003D7A] hover:text-white {% if request.GET.course == '201' %}bg-[#F2C144] text-[#002855] font-semibold{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=201">201</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-[#003D7A] hover:text-white {% if request.GET.course == '202' %}bg-[#F2C144] text-[#002855] font-semibold{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=202">202</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-[#003D7A] hover:text-white {% if request.GET.course == '301' %}bg-[#F2C144] text-[#002855] font-semibold{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=301">301</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-[#003D7A] hover:text-white {% if request.GET.course == '302' %}bg-[#F2C144] text-[#002855] font-semibold{% endif %}" href="{% url 'estudiantes:list' %}?section=preescolar&course=302">302</a>
                 </div>
             </div>
             {% endif %}
@@ -481,7 +467,7 @@
                  class="relative">
                 <button
                     @click="if(!collapsed) toggleSection('cuarto')"
-                    class="section-btn w-full flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium text-white/80 hover:text-white transition-colors"
+                    class="section-btn w-full flex items-center gap-2.5 rounded-none px-3 py-2.5 text-sm font-medium text-white/80 hover:text-white transition-colors"
                     :class="[collapsed ? 'justify-center px-0' : 'justify-between', isActive('cuarto') ? 'open' : '']"
                     title="Cuarto a Séptimo">
                     <span class="flex items-center gap-2.5">
@@ -495,17 +481,17 @@
 
                 <div x-show="!collapsed && isActive('cuarto')" x-collapse class="overflow-hidden">
                     <div class="mt-0.5 space-y-0.5 pl-3 pb-1">
-                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '401' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=401">401</a>
-                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '402' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=402">402</a>
-                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '501' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=501">501</a>
-                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '502' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=502">502</a>
-                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '503' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=503">503</a>
-                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '601' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=601">601</a>
-                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '602' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=602">602</a>
-                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '603' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=603">603</a>
-                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '701' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=701">701</a>
-                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '702' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=702">702</a>
-                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '703' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=703">703</a>
+                        <a class="nav-item flex items-center rounded-none px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '401' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=401">401</a>
+                        <a class="nav-item flex items-center rounded-none px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '402' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=402">402</a>
+                        <a class="nav-item flex items-center rounded-none px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '501' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=501">501</a>
+                        <a class="nav-item flex items-center rounded-none px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '502' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=502">502</a>
+                        <a class="nav-item flex items-center rounded-none px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '503' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=503">503</a>
+                        <a class="nav-item flex items-center rounded-none px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '601' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=601">601</a>
+                        <a class="nav-item flex items-center rounded-none px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '602' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=602">602</a>
+                        <a class="nav-item flex items-center rounded-none px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '603' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=603">603</a>
+                        <a class="nav-item flex items-center rounded-none px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '701' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=701">701</a>
+                        <a class="nav-item flex items-center rounded-none px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '702' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=702">702</a>
+                        <a class="nav-item flex items-center rounded-none px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '703' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=703">703</a>
                     </div>
                 </div>
 
@@ -517,17 +503,17 @@
                      class="sai-tooltip flyout-menu fixed w-44 py-2 z-[70]"
                      style="display:none">
                     <p class="px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-1">Cuarto – Séptimo</p>
-                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '401' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=401">401</a>
-                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '402' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=402">402</a>
-                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '501' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=501">501</a>
-                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '502' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=502">502</a>
-                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '503' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=503">503</a>
-                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '601' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=601">601</a>
-                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '602' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=602">602</a>
-                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '603' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=603">603</a>
-                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '701' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=701">701</a>
-                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '702' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=702">702</a>
-                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '703' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=703">703</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-[#003D7A] hover:text-white {% if request.GET.course == '401' %}bg-[#F2C144] text-[#002855] font-semibold{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=401">401</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-[#003D7A] hover:text-white {% if request.GET.course == '402' %}bg-[#F2C144] text-[#002855] font-semibold{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=402">402</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-[#003D7A] hover:text-white {% if request.GET.course == '501' %}bg-[#F2C144] text-[#002855] font-semibold{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=501">501</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-[#003D7A] hover:text-white {% if request.GET.course == '502' %}bg-[#F2C144] text-[#002855] font-semibold{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=502">502</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-[#003D7A] hover:text-white {% if request.GET.course == '503' %}bg-[#F2C144] text-[#002855] font-semibold{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=503">503</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-[#003D7A] hover:text-white {% if request.GET.course == '601' %}bg-[#F2C144] text-[#002855] font-semibold{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=601">601</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-[#003D7A] hover:text-white {% if request.GET.course == '602' %}bg-[#F2C144] text-[#002855] font-semibold{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=602">602</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-[#003D7A] hover:text-white {% if request.GET.course == '603' %}bg-[#F2C144] text-[#002855] font-semibold{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=603">603</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-[#003D7A] hover:text-white {% if request.GET.course == '701' %}bg-[#F2C144] text-[#002855] font-semibold{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=701">701</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-[#003D7A] hover:text-white {% if request.GET.course == '702' %}bg-[#F2C144] text-[#002855] font-semibold{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=702">702</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-[#003D7A] hover:text-white {% if request.GET.course == '703' %}bg-[#F2C144] text-[#002855] font-semibold{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_primaria&course=703">703</a>
                 </div>
             </div>
             {% endif %}
@@ -540,7 +526,7 @@
                  class="relative">
                 <button
                     @click="if(!collapsed) toggleSection('octavo')"
-                    class="section-btn w-full flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium text-white/80 hover:text-white transition-colors"
+                    class="section-btn w-full flex items-center gap-2.5 rounded-none px-3 py-2.5 text-sm font-medium text-white/80 hover:text-white transition-colors"
                     :class="[collapsed ? 'justify-center px-0' : 'justify-between', isActive('octavo') ? 'open' : '']"
                     title="Octavo a Undécimo">
                     <span class="flex items-center gap-2.5">
@@ -554,18 +540,18 @@
 
                 <div x-show="!collapsed && isActive('octavo')" x-collapse class="overflow-hidden">
                     <div class="mt-0.5 space-y-0.5 pl-3 pb-1">
-                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '801' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=801">801</a>
-                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '802' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=802">802</a>
-                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '803' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=803">803</a>
-                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '901' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=901">901</a>
-                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '902' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=902">902</a>
-                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '903' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=903">903</a>
-                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '1001' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=1001">1001</a>
-                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '1002' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=1002">1002</a>
-                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '1003' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=1003">1003</a>
-                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '1101' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=1101">1101</a>
-                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '1102' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=1102">1102</a>
-                        <a class="nav-item flex items-center rounded-lg px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '1103' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=1103">1103</a>
+                        <a class="nav-item flex items-center rounded-none px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '801' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=801">801</a>
+                        <a class="nav-item flex items-center rounded-none px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '802' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=802">802</a>
+                        <a class="nav-item flex items-center rounded-none px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '803' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=803">803</a>
+                        <a class="nav-item flex items-center rounded-none px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '901' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=901">901</a>
+                        <a class="nav-item flex items-center rounded-none px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '902' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=902">902</a>
+                        <a class="nav-item flex items-center rounded-none px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '903' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=903">903</a>
+                        <a class="nav-item flex items-center rounded-none px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '1001' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=1001">1001</a>
+                        <a class="nav-item flex items-center rounded-none px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '1002' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=1002">1002</a>
+                        <a class="nav-item flex items-center rounded-none px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '1003' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=1003">1003</a>
+                        <a class="nav-item flex items-center rounded-none px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '1101' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=1101">1101</a>
+                        <a class="nav-item flex items-center rounded-none px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '1102' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=1102">1102</a>
+                        <a class="nav-item flex items-center rounded-none px-3 py-1.5 text-sm text-white/70 {% if request.GET.course == '1103' %}active{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=1103">1103</a>
                     </div>
                 </div>
 
@@ -577,18 +563,18 @@
                      class="sai-tooltip flyout-menu fixed w-44 py-2 z-[70]"
                      style="display:none">
                     <p class="px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-1">Octavo – Undécimo</p>
-                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '801' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=801">801</a>
-                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '802' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=802">802</a>
-                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '803' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=803">803</a>
-                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '901' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=901">901</a>
-                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '902' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=902">902</a>
-                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '903' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=903">903</a>
-                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '1001' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=1001">1001</a>
-                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '1002' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=1002">1002</a>
-                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '1003' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=1003">1003</a>
-                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '1101' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=1101">1101</a>
-                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '1102' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=1102">1102</a>
-                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-white/8 hover:text-white {% if request.GET.course == '1103' %}bg-white/10{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=1103">1103</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-[#003D7A] hover:text-white {% if request.GET.course == '801' %}bg-[#F2C144] text-[#002855] font-semibold{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=801">801</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-[#003D7A] hover:text-white {% if request.GET.course == '802' %}bg-[#F2C144] text-[#002855] font-semibold{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=802">802</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-[#003D7A] hover:text-white {% if request.GET.course == '803' %}bg-[#F2C144] text-[#002855] font-semibold{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=803">803</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-[#003D7A] hover:text-white {% if request.GET.course == '901' %}bg-[#F2C144] text-[#002855] font-semibold{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=901">901</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-[#003D7A] hover:text-white {% if request.GET.course == '902' %}bg-[#F2C144] text-[#002855] font-semibold{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=902">902</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-[#003D7A] hover:text-white {% if request.GET.course == '903' %}bg-[#F2C144] text-[#002855] font-semibold{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=903">903</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-[#003D7A] hover:text-white {% if request.GET.course == '1001' %}bg-[#F2C144] text-[#002855] font-semibold{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=1001">1001</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-[#003D7A] hover:text-white {% if request.GET.course == '1002' %}bg-[#F2C144] text-[#002855] font-semibold{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=1002">1002</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-[#003D7A] hover:text-white {% if request.GET.course == '1003' %}bg-[#F2C144] text-[#002855] font-semibold{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=1003">1003</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-[#003D7A] hover:text-white {% if request.GET.course == '1101' %}bg-[#F2C144] text-[#002855] font-semibold{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=1101">1101</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-[#003D7A] hover:text-white {% if request.GET.course == '1102' %}bg-[#F2C144] text-[#002855] font-semibold{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=1102">1102</a>
+                    <a class="block px-4 py-1.5 text-sm text-white/80 hover:bg-[#003D7A] hover:text-white {% if request.GET.course == '1103' %}bg-[#F2C144] text-[#002855] font-semibold{% endif %}" href="{% url 'estudiantes:list' %}?section=basica_secundaria&course=1103">1103</a>
                 </div>
             </div>
             {% endif %}
@@ -596,10 +582,10 @@
         </div><!-- /scroll area -->
 
         <!-- Sidebar footer — usuario -->
-        <div class="shrink-0 border-t border-white/10 bg-[#012844]"
+        <div class="shrink-0 border-t border-[#003D7A]"
              :class="collapsed ? 'px-2 py-3 flex justify-center' : 'px-4 py-3'">
             <div x-show="!collapsed" x-transition:enter="transition-opacity duration-150" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="flex items-center gap-2.5 min-w-0">
-                <div class="h-7 w-7 rounded-full bg-gradient-to-br from-slate-600 to-slate-800 flex items-center justify-center text-xs font-bold text-white shrink-0">
+                <div class="h-7 w-7 rounded-none bg-[#F2C144] flex items-center justify-center text-xs font-bold text-[#002855] shrink-0">
                     <i class="fa-solid fa-user text-[10px]"></i>
                 </div>
                 <div class="min-w-0">
@@ -608,7 +594,7 @@
                 </div>
             </div>
             <div x-show="collapsed" title="{{ viewer.get_full_name|default:viewer.username }}">
-                <div class="h-7 w-7 rounded-full bg-gradient-to-br from-slate-600 to-slate-800 flex items-center justify-center text-xs font-bold text-white">
+                <div class="h-7 w-7 rounded-none bg-[#F2C144] flex items-center justify-center text-xs font-bold text-[#002855]">
                     <i class="fa-solid fa-user text-[10px]"></i>
                 </div>
             </div>

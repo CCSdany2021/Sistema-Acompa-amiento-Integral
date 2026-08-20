@@ -1,0 +1,32 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "design-system-color",
+        "value": "#003d7a",
+        "createdAt": "2026-08-20T19:21:01.313Z",
+        "reason": "Color de hover del sidebar institucional (navy claro), definido en la skill /sidebar-institucional y en SETUP-INSTITUCIONAL/DESIGN.md"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "#002855",
+        "createdAt": "2026-08-20T19:21:05.527Z",
+        "reason": "Navy institucional del sidebar, definido en la skill /sidebar-institucional y en SETUP-INSTITUCIONAL/DESIGN.md"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "#f2c144",
+        "createdAt": "2026-08-20T19:21:05.588Z",
+        "reason": "Dorado institucional del estado activo del sidebar, definido en la skill /sidebar-institucional y en SETUP-INSTITUCIONAL/DESIGN.md"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "rgba(0,0,0,0.12)",
+        "createdAt": "2026-08-20T19:33:48.518Z",
+        "reason": "Sombra del header navy del panel de pestañas institucional, definida en la skill /panel-pestanas-institucional"
+      }
+    ]
+  }
+}

@@ -1,9 +1,7 @@
-{% extends "base.html" %}
-{% block title %}Indicadores SGI — SAI{% endblock %}
-{% block breadcrumb %}Indicadores{% endblock %}
+{% extends "acompanamiento/panel_indicadores_base.html" %}
+{% block title %}Indicadores SGI - SAI{% endblock %}
 
 {% block extra_head %}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
   .gauge-track { stroke: #e2e8f0; stroke-width: 10; fill: none; }
   .gauge-fill  { stroke-width: 10; fill: none; stroke-linecap: round;
@@ -23,25 +21,15 @@
 <div class="w-full space-y-6">
 
   <!-- Header -->
-  <div class="flex flex-wrap items-center justify-between gap-4">
-    <div>
-      {% if es_global %}
-      <h1 class="text-2xl font-bold text-slate-900">Indicadores Globales de Gestión</h1>
-      <p class="text-sm text-slate-500 mt-0.5">Todos los educadores · Eficiencia y Eficacia · Meta ≥ 80%</p>
-      {% else %}
-      <h1 class="text-2xl font-bold text-slate-900">Mis Indicadores</h1>
-      <p class="text-sm text-slate-500 mt-0.5">
-        {{ viewer.get_full_name|default:viewer.username }} · Eficiencia y Eficacia · Meta ≥ 80%
-      </p>
-      {% endif %}
-    </div>
-    {% if viewer.email == 'cap@calasanzsuba.edu.co' or viewer.email == 'mrodriguez@calasanzsuba.edu.co' %}
-    <div class="flex gap-2">
-      <a href="{% url 'acompanamiento:informe' %}?anio={{ anio }}{% if periodo %}&periodo={{ periodo }}{% endif %}{% if seccion %}&seccion={{ seccion }}{% endif %}{% if fin %}&fin={{ fin }}{% endif %}"
-        class="flex items-center gap-2 rounded-[5px] bg-[#1a2847] px-4 py-2 text-sm font-semibold hover:opacity-90 transition" style="color:#fff !important">
-        <i class="fa-solid fa-file-pdf text-xs"></i> Generar Informe SGI
-      </a>
-    </div>
+  <div>
+    {% if es_global %}
+    <h1 class="text-2xl font-bold text-slate-900">Indicadores Globales de Gestión</h1>
+    <p class="text-sm text-slate-500 mt-0.5">Todos los educadores · Eficiencia y Eficacia · Meta ≥ 80%</p>
+    {% else %}
+    <h1 class="text-2xl font-bold text-slate-900">Mis Indicadores</h1>
+    <p class="text-sm text-slate-500 mt-0.5">
+      {{ viewer.get_full_name|default:viewer.username }} · Eficiencia y Eficacia · Meta ≥ 80%
+    </p>
     {% endif %}
   </div>
 
